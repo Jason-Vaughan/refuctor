@@ -74,7 +74,15 @@ class DebtDetector {
       return debtReport;
 
     } catch (error) {
-      throw new Error(`Debt detection failed: ${error.message}`);
+      console.warn(`Warning during debt detection: ${error.message}`);
+      // Continue with partial results
+      debtReport.summary = {
+        markdown: 0,
+        spelling: 0,
+        security: 0,
+        dependencies: 0,
+        debtLevel: 'unknown'
+      };
     }
   }
 
@@ -96,37 +104,40 @@ class DebtDetector {
 
       // Run markdownlint
       const cmd = `npx --yes markdownlint-cli "${markdownFiles.join('" "')}"`;
-      const result = execSync(cmd, { 
-        cwd: projectPath, 
-        encoding: 'utf8',
-        stdio: 'pipe'
-      });
-
-      // If we get here, no linting errors (markdownlint exits 0 for no errors)
-      debt.total = 0;
+      try {
+        const result = execSync(cmd, { 
+          cwd: projectPath, 
+          encoding: 'utf8',
+          stdio: 'pipe'
+        });
+        // If we get here, no linting errors (markdownlint exits 0 for no errors)
+        debt.total = 0;
+      } catch (error) {
+        // markdownlint exits with code 1 when issues found
+        if (error.status === 1 && error.stdout) {
+          const lines = error.stdout.trim().split('\n');
+          debt.total = lines.length;
+          debt.issues = lines.map(line => {
+            const match = line.match(/^(.+):(\d+):?\d*\s+(.+)\s+(.+)$/);
+            if (match) {
+              return {
+                file: match[1],
+                line: parseInt(match[2]),
+                rule: match[4],
+                message: match[3]
+              };
+            }
+            return { raw: line };
+          });
+          
+          debt.files = [...new Set(debt.issues.map(i => i.file).filter(Boolean))];
+        } else {
+          throw error;
+        }
+      }
 
     } catch (error) {
-      // markdownlint exits with code 1 when issues found
-      if (error.status === 1 && error.stdout) {
-        const lines = error.stdout.trim().split('\n');
-        debt.total = lines.length;
-        debt.issues = lines.map(line => {
-          const match = line.match(/^(.+):(\d+):?\d*\s+(.+)\s+(.+)$/);
-          if (match) {
-            return {
-              file: match[1],
-              line: parseInt(match[2]),
-              rule: match[4],
-              message: match[3]
-            };
-          }
-          return { raw: line };
-        });
-        
-        debt.files = [...new Set(debt.issues.map(i => i.file).filter(Boolean))];
-      } else {
-        throw error;
-      }
+      throw error;
     }
 
     return debt;

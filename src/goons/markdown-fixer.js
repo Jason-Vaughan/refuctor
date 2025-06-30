@@ -63,8 +63,8 @@ class MarkdownFixerGoon {
     fixed = this.fixBlankLinesAroundCodeBlocks(fixed);
     fixed = this.fixCodeBlockLanguages(fixed);
     fixed = this.fixTrailingSpaces(fixed);
+    fixed = this.fixLineLengthViolations(fixed);
     fixed = this.fixFinalNewline(fixed);
-    // Note: Not fixing line length automatically - too risky for content
 
     return fixed;
   }
@@ -205,6 +205,108 @@ class MarkdownFixerGoon {
   }
 
   /**
+   * Fix MD013 - Line length violations (smart wrapping)
+   */
+  fixLineLengthViolations(content, maxLength = 80) {
+    const lines = content.split('\n');
+    const result = [];
+    
+    for (let line of lines) {
+      if (line.length <= maxLength) {
+        result.push(line);
+        continue;
+      }
+
+      // Don't wrap these line types
+      if (this.shouldSkipLineWrapping(line)) {
+        result.push(line);
+        continue;
+      }
+
+      // Attempt intelligent wrapping
+      const wrapped = this.wrapLineIntelligently(line, maxLength);
+      result.push(...wrapped);
+      this.fixCount++;
+    }
+    
+    return result.join('\n');
+  }
+
+  /**
+   * Determine if line should be skipped for wrapping
+   */
+  shouldSkipLineWrapping(line) {
+    return (
+      /^```/.test(line) ||           // Code fences
+      /^\|/.test(line) ||            // Table rows
+      /^#{1,6}\s/.test(line) ||      // Headers (risky to wrap)
+      /^\s*[-*+]\s/.test(line) ||    // List items (handle specially)
+      /^\s*\d+\.\s/.test(line) ||    // Numbered lists
+      /^\[.*\]:/.test(line) ||       // Link references
+      line.trim().startsWith('http') // URLs
+    );
+  }
+
+  /**
+   * Intelligently wrap a long line
+   */
+  wrapLineIntelligently(line, maxLength) {
+    const result = [];
+    let remaining = line;
+    
+    while (remaining.length > maxLength) {
+      let cutPoint = this.findBestCutPoint(remaining, maxLength);
+      
+      if (cutPoint === -1) {
+        // No good cut point found, take what we can
+        cutPoint = maxLength;
+      }
+      
+      result.push(remaining.substring(0, cutPoint).trimEnd());
+      remaining = remaining.substring(cutPoint).trimStart();
+    }
+    
+    if (remaining.length > 0) {
+      result.push(remaining);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Find the best point to cut a line for wrapping
+   */
+  findBestCutPoint(line, maxLength) {
+    // Look for natural break points in order of preference
+    const breakPoints = [
+      { pattern: /[.!?]\s+/, priority: 1 },    // Sentence endings
+      { pattern: /,\s+/, priority: 2 },        // Commas
+      { pattern: /;\s+/, priority: 2 },        // Semicolons
+      { pattern: /:\s+/, priority: 3 },        // Colons
+      { pattern: /\s+[-–—]\s+/, priority: 3 }, // Dashes
+      { pattern: /\s+/, priority: 4 }          // Any whitespace
+    ];
+    
+    let bestCut = -1;
+    let bestPriority = 999;
+    
+    for (const bp of breakPoints) {
+      const matches = Array.from(line.matchAll(new RegExp(bp.pattern.source, 'g')));
+      
+      for (const match of matches) {
+        const cutPoint = match.index + match[0].length;
+        
+        if (cutPoint <= maxLength && bp.priority < bestPriority) {
+          bestCut = cutPoint;
+          bestPriority = bp.priority;
+        }
+      }
+    }
+    
+    return bestCut;
+  }
+
+  /**
    * Fix MD047 - Files should end with a single newline character
    */
   fixFinalNewline(content) {
@@ -247,4 +349,4 @@ class MarkdownFixerGoon {
 
 // Export singleton instance
 const markdownFixerGoon = new MarkdownFixerGoon();
-module.exports = { markdownFixerGoon, MarkdownFixerGoon }; 
+module.exports = { markdownFixerGoon, MarkdownFixerGoon };

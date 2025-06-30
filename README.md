@@ -87,6 +87,7 @@ npm install -g cspell
 # Customize cspell.json with your project-specific terms
 
 ```text
+
 ### **2. Manual Debt Detection (MVP Commands)**
 
 ```bash
@@ -107,6 +108,7 @@ npm audit
 
 npx markdownlint-cli "*.md" && npx cspell "**/*"
 ```text
+
 ### **3. Session Wrap Protocol**
 
 Follow the 9-step process in `cursorrules_template.mdc` for comprehensive debt
@@ -172,7 +174,9 @@ The foundation system has successfully eliminated:
 
 ### **Meta Validation**
 
-The debt tracker caught its own creator making debt while building it, then used itself to clean up the mess. This recursive validation proves the concept works in practice.
+The debt tracker caught its own creator making debt while building it,
+then used itself to clean up the mess.
+This recursive validation proves the concept works in practice.
 
 ---
 
@@ -277,12 +281,18 @@ cleanup to proactive prevention.** By combining professional-grade tooling
 with irreverent humor and financial metaphors, we're creating a product that
 developers will actually want to use.
 
-The foundation is proven, the roadmap is comprehensive, and the market opportunity is significant.
+The foundation is proven,
+the roadmap is comprehensive, and the market opportunity is significant.
 
-**Ready to build the debt cleansing syndicate that the development world didn't know it needed?**
+**Ready
+to
+build
+the debt cleansing syndicate that the development world didn't know it needed?**
 
 ---
 
-*"Built by someone who created 36 warnings while building a debt warning system. Self-own level: legendary."*
+*"Built
+by someone who created 36 warnings while building a debt warning system.
+Self-own level: legendary."*
 
 **Let's turn technical debt into a solved problem with a sense of humor.** 🚀💪

@@ -17,7 +17,7 @@ priority, and accountability.
   - **Files Affected**: README.md (48 IDE vs 6 CLI), REFUCTOR_ROADMAP.md (81 IDE vs 4 CLI)
   - **Priority**: P1 (blocks project credibility and goon tool validation)
   - **Added**: 2025-01-03 - Goon tool deployment session
-  - **Investigation Needed**: 
+  - **Investigation Needed**:
     - Compare markdownlint configurations (IDE vs CLI)
     - Check if IDE using different rule sets
     - Verify file watching/refresh issues
@@ -106,6 +106,7 @@ npm audit
 
 refuctor scan --verbose
 ```text
+
 ### Real-time Monitoring
 
 - **IDE Warning Count**: Monitor status bar indicators

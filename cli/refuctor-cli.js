@@ -4,7 +4,10 @@ const { Command } = require('commander');
 const { debtDetector } = require('../src/debt-detector');
 const { techDebtManager } = require('../src/techdebt-manager');
 const { markdownFixerGoon } = require('../src/goons/markdown-fixer');
+const { DebtDetector } = require('../src/debt-detector.js');
 const packageJson = require('../package.json');
+const fs = require('fs-extra');
+const path = require('path');
 
 // Simple color functions (avoiding chalk v5 ES module issues)
 const colors = {
@@ -18,6 +21,9 @@ const colors = {
   white: (text) => `\x1b[37m${text}\x1b[0m`,
   bold: (text) => `\x1b[1m${text}\x1b[0m`
 };
+
+// Extract color functions for easier use
+const { red, green, yellow, blue, magenta, cyan, gray, white, bold } = colors;
 
 const program = new Command();
 
@@ -306,5 +312,95 @@ program.on('command:*', function (operands) {
 if (process.argv.length === 2) {
   program.help();
 }
+
+// NEW: Comprehensive debt elimination command
+program
+  .command('exterminate')
+  .description('🔥 AGGRESSIVE DEBT ELIMINATION - Deploy all goons simultaneously')
+  .option('--dry-run', 'Preview changes without applying them')
+  .option('--target <files>', 'Specific files to target (comma-separated)')
+  .option('--auto-approve', 'Skip confirmation prompts')
+  .action(async (options) => {
+    try {
+      console.log(red('\n💀 DEBT EXTERMINATION PROTOCOL INITIATED 💀'));
+      console.log(yellow('🚨 Deploying all available goons to eliminate technical debt...'));
+      
+      const projectRoot = process.cwd();
+      const detector = new DebtDetector();
+      
+      // Step 1: Scan current debt
+      console.log(cyan('\n📊 SCANNING CURRENT DEBT LEVELS...'));
+      const initialScan = await detector.scanProject(projectRoot, true);
+      
+      console.log(red(`\n💸 DEBT REPORT BEFORE EXTERMINATION:`));
+      console.log(`   P1 (Critical): ${initialScan.p1.length}`);
+      console.log(`   P2 (High): ${initialScan.p2.length}`);
+      console.log(`   P3 (Medium): ${initialScan.p3.length}`);
+      console.log(`   P4 (Low): ${initialScan.p4.length}`);
+      console.log(`   Total Debt: ${initialScan.totalDebt}`);
+      
+      // Step 2: Deploy markdown goons
+      console.log(magenta('\n🗂️  DEPLOYING MARKDOWN FIXER GOONS...'));
+      const glob = require('glob');
+      const mdFiles = glob.sync('**/*.{md,mdc}', { 
+        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'] 
+      });
+      
+      let totalFixes = 0;
+      for (const file of mdFiles) {
+        if (options.target && !options.target.split(',').some(t => file.includes(t.trim()))) {
+          continue;
+        }
+        
+        const report = await markdownFixerGoon.eliminateDebt(file, options.dryRun);
+        if (report.fixesApplied > 0) {
+          console.log(green(`   ✅ ${file}: ${report.fixesApplied} violations eliminated`));
+          totalFixes += report.fixesApplied;
+        }
+      }
+      
+      // Step 3: Final scan
+      console.log(cyan('\n📊 SCANNING POST-EXTERMINATION DEBT LEVELS...'));
+      const finalScan = await detector.scanProject(projectRoot, true);
+      
+      console.log(green(`\n🎉 DEBT EXTERMINATION COMPLETE!`));
+      console.log(`   Fixes Applied: ${totalFixes}`);
+      console.log(`   Debt Reduction: ${initialScan.totalDebt - finalScan.totalDebt}`);
+      console.log(`   Remaining Debt: ${finalScan.totalDebt}`);
+      
+      if (finalScan.totalDebt === 0) {
+        console.log(green('\n🏆 DEBT-FREE STATUS ACHIEVED! YOU MAGNIFICENT DEBT-SLAYER!'));
+      } else {
+        console.log(yellow('\n💰 Remaining debt requires manual intervention or specialized goons.'));
+      }
+      
+    } catch (error) {
+      console.error(red(`💥 Debt extermination failed: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// NEW: Add missing dependencies check
+program
+  .command('dependencies')
+  .description('📦 Check for missing dependencies and suggest installation')
+  .action(() => {
+    const packageJson = require('../package.json');
+    const requiredDeps = ['commander', 'chalk', 'fs-extra', 'glob'];
+    const missingDeps = [];
+    
+    for (const dep of requiredDeps) {
+      if (!packageJson.dependencies[dep] && !packageJson.devDependencies[dep]) {
+        missingDeps.push(dep);
+      }
+    }
+    
+    if (missingDeps.length > 0) {
+      console.log(red('💸 Missing dependencies detected!'));
+      console.log(yellow(`Run: npm install ${missingDeps.join(' ')}`));
+    } else {
+      console.log(green('✅ All required dependencies are installed.'));
+    }
+  });
 
 program.parse(process.argv); 
