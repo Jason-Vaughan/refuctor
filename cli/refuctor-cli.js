@@ -3,6 +3,7 @@
 const { Command } = require('commander');
 const { debtDetector } = require('../src/debt-detector');
 const { techDebtManager } = require('../src/techdebt-manager');
+const { markdownFixerGoon } = require('../src/goons/markdown-fixer');
 const packageJson = require('../package.json');
 
 // Simple color functions (avoiding chalk v5 ES module issues)
@@ -215,6 +216,83 @@ program
     console.log(colors.white(`"${quote}"`));
     console.log(colors.gray('\n- The Refuctor Debt Collection Agency\n'));
   });
+
+// Goon command - specialized debt elimination tools
+const goonCommand = program
+  .command('goon')
+  .description(colors.magenta('💀 Deploy specialized debt elimination goons'))
+  .configureOutput({
+    writeOut: (str) => process.stdout.write(str),
+    writeErr: (str) => process.stderr.write(str)
+  });
+
+// Goon: Markdown Fixer
+goonCommand
+  .command('fix-markdown <file>')
+  .description(colors.magenta('📝 Aggressive markdown debt elimination'))
+  .option('-p, --preview', 'Preview fixes without applying them')
+  .action(async (file, options) => {
+    console.log(colors.bold(colors.magenta('\n💀 MARKDOWN FIXER GOON DEPLOYED')));
+    console.log(colors.gray(`Target acquired: ${file}`));
+    console.log(colors.gray('Initiating aggressive document restructuring...\n'));
+    
+    try {
+      const report = options.preview 
+        ? await markdownFixerGoon.previewFixes(file)
+        : await markdownFixerGoon.eliminateDebt(file);
+      
+      console.log(colors.bold(colors.green('📊 DEBT ELIMINATION REPORT:')));
+      console.log(colors.blue(`📄 File: ${report.filePath}`));
+      console.log(colors.blue(`📏 Lines: ${report.originalLines} → ${report.fixedLines}`));
+      console.log(colors.green(`🔧 Fixes Applied: ${report.fixesApplied}`));
+      console.log(colors.magenta(`💬 Status: ${report.message}`));
+      
+      if (options.preview) {
+        console.log(colors.yellow('\n⚠️  PREVIEW MODE: No changes were made'));
+        console.log(colors.gray('Remove --preview flag to apply fixes'));
+      } else {
+        console.log(colors.bold(colors.green('\n✅ DEBT ELIMINATED!')));
+        console.log(colors.green('Your markdown is now cleaner than a loan shark\'s books.'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 GOON DEPLOYMENT FAILED:')));
+      console.error(colors.red(`Even our best goon couldn't handle this mess: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Easter eggs
+program
+  .option('--bailMeOut', 'Motivational quotes from failed startups')
+  .option('--skipSessionWrap', 'Sarcastic rant about responsibility')
+  .hook('preAction', (thisCommand, actionCommand) => {
+    if (thisCommand.opts().bailMeOut) {
+      const quotes = [
+        "\"We're not failing, we're pivoting to success!\" - Every startup ever",
+        "\"Technical debt is just deferred engineering excellence.\" - CTO who got fired",
+        "\"We'll fix it in the next sprint.\" - Famous last words",
+        "\"It's not a bug, it's an undocumented feature.\" - Senior developer",
+        "\"We're disrupting the debugging industry.\" - Startup that never shipped"
+      ];
+      console.log(colors.bold(colors.cyan('\n💡 STARTUP WISDOM:')));
+      console.log(colors.cyan(quotes[Math.floor(Math.random() * quotes.length)]));
+      console.log(colors.gray('\nNow get back to work and fix your debt.\n'));
+    }
+    
+    if (thisCommand.opts().skipSessionWrap) {
+      console.log(colors.bold(colors.red('\n🚨 RESPONSIBILITY ALERT:')));
+      console.log(colors.red('Oh, you want to skip the session wrap? How very... professional of you.'));
+      console.log(colors.yellow('Let me guess - "I\'ll document it later" and "The code is self-explanatory"?'));
+      console.log(colors.gray('This is how technical debt starts. One skipped session at a time.'));
+      console.log(colors.bold(colors.red('DO THE WRAP. YOUR FUTURE SELF WILL THANK YOU.\n')));
+    }
+  });
+
+// Show tagline after command execution
+program.hook('postAction', () => {
+  console.log(colors.gray(`\n${getRandomTagline()}`));
+});
 
 // Handle unknown commands with personality
 program.on('command:*', function (operands) {

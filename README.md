@@ -8,16 +8,16 @@
 
 ## 🎯 What is Refuctor?
 
-**Refuctor** is an AI-powered, snark-fueled technical debt cleansing suite 
-that turns code cleanup into a darkly humorous financial metaphor. It's the 
-world's first debt management system that actually makes developers *want* to 
+**Refuctor** is an AI-powered, snark-fueled technical debt cleansing suite
+that turns code cleanup into a darkly humorous financial metaphor. It's the
+world's first debt management system that actually makes developers *want* to
 clean up their code.
 
 ### 🔥 Origin Story
 
-Born from the meta-irony of a debt tracker that caught its own creator making 
-36 markdown warnings while building the debt detection system. We used the 
-system to fix itself in real-time - proving that recursive debt management 
+Born from the meta-irony of a debt tracker that caught its own creator making
+36 markdown warnings while building the debt detection system. We used the
+system to fix itself in real-time - proving that recursive debt management
 actually works.
 
 ### ✨ Core Philosophy
@@ -76,37 +76,44 @@ actually works.
 ### **1. Project Detection & Setup**
 
 ```bash
+
 # Install dependencies for testing the foundation
+
 npm install -g markdownlint-cli
 npm install -g cspell
 
 # Copy TECHDEBT_TEMPLATE.md to your project as TECHDEBT.md
-# Customize cspell.json with your project-specific terms
-```
 
+# Customize cspell.json with your project-specific terms
+
+```text
 ### **2. Manual Debt Detection (MVP Commands)**
 
 ```bash
+
 # Markdown linting
+
 npx markdownlint-cli "*.md"
 
 # Spell checking
+
 npx cspell "**/*.{md,js,json,ts}"
 
 # Security audit (when package.json exists)
+
 npm audit
 
 # Comprehensive scan
-npx markdownlint-cli "*.md" && npx cspell "**/*"
-```
 
+npx markdownlint-cli "*.md" && npx cspell "**/*"
+```text
 ### **3. Session Wrap Protocol**
 
-Follow the 9-step process in `cursorrules_template.mdc` for comprehensive debt 
+Follow the 9-step process in `cursorrules_template.mdc` for comprehensive debt
 management:
 
 1. Session Summary
-2. Next Session Priorities  
+2. Next Session Priorities
 3. Documentation Maintenance
 4. **Technical Debt Cleanup** (automated scanning)
 5. Configuration Validation
@@ -120,27 +127,32 @@ management:
 ## 🎮 Roadmap Overview
 
 ### **Phase 1: Foundation (Weeks 1-4) - NPM Package**
+
 - Extract core logic into standalone `@puberty-labs/refuctor` package
 - Build CLI interface with commands: `init`, `scan`, `fix`, `status`, `wrap`
 - Automated setup wizard for new projects
 
 ### **Phase 2: GUI Dashboard (Weeks 5-8) - "Debt Collector View"**
+
 - Electron-based desktop app with real-time warning visualization
 - Interactive controls: "Make It Disappear", "Refinance", "Sell to Collection Agency"
 - Debt heat maps and historical trend analysis
 
 ### **Phase 3: MCP Integration (Weeks 9-12) - "Code Broker"**
+
 - Model Context Protocol integration for cross-workspace communication
 - Real-time debt sharing across development teams
 - AI assistant integration with custom refactoring prompts
 
 ### **Phase 4: Specialized Tools (Weeks 13-16) - "The Goons"**
+
 - `refuctor goon fix-lint` - Aggressive linting cleanup
-- `refuctor goon clean-imports` - Unused import elimination  
+- `refuctor goon clean-imports` - Unused import elimination
 - `refuctor goon comment-killer` - Remove outdated comments
 - `refuctor goon dead-code-hunter` - Identify unused functions
 
 ### **Phase 5: Polish & Easter Eggs (Weeks 17-20)**
+
 - After Dark Mode (unlocked with 69 clicks)
 - Motivational startup quotes (`refuctor --bailMeOut`)
 - Advanced AI-powered refactoring suggestions
@@ -150,13 +162,16 @@ management:
 ## 🧪 Proven Results
 
 ### **Real-World Testing**
+
 The foundation system has successfully eliminated:
+
 - **173 markdown warnings** across documentation files
 - **15 spell check issues** with preserved snarky terminology
 - **34 additional warnings** caught during system self-testing
 - **Total**: 222+ warnings eliminated with zero false positives
 
 ### **Meta Validation**
+
 The debt tracker caught its own creator making debt while building it, then used itself to clean up the mess. This recursive validation proves the concept works in practice.
 
 ---
@@ -164,16 +179,19 @@ The debt tracker caught its own creator making debt while building it, then used
 ## 🎨 Branding & Personality
 
 ### **Financial Metaphors**
+
 - **Debt Levels**: P1 Foreclosure → P4 Interest Accruing
 - **Commands**: Refinance debt, file for bankruptcy, sell to collection agency
 - **Messaging**: "Your code called. It wants a debt consolidation loan."
 
 ### **Snarky Humor**
+
 - **Easter Eggs**: 69 clicks unlock After Dark Mode
 - **Taglines**: "Debt Never Sleeps. Neither Should You."
 - **Self-Aware**: "Built by someone who created 36 warnings while building a debt warning system."
 
 ### **Professional Edge**
+
 - **Enterprise-Ready**: Team analytics, custom integrations, priority support
 - **Educational Value**: Teaching clean coding practices through gamification
 - **Developer-Friendly**: Actually makes debt cleanup enjoyable
@@ -183,11 +201,13 @@ The debt tracker caught its own creator making debt while building it, then used
 ## 💰 Business Model (Planned)
 
 ### **Freemium Strategy**
+
 - **Free Tier**: Basic debt detection and cleanup (individual use)
 - **Pro Tier**: $9/month - GUI dashboard, AI suggestions, team features
 - **Enterprise**: $99/month - Custom integrations, team analytics, priority support
 
 ### **Target Markets**
+
 - Individual developers seeking productivity improvements
 - Development teams needing collaborative debt management
 - Code review processes requiring automated quality checks
@@ -198,12 +218,14 @@ The debt tracker caught its own creator making debt while building it, then used
 ## 🚀 Getting Started with Development
 
 ### **Prerequisites**
+
 - Node.js 18+ for core development
 - TypeScript for type safety
 - Commander.js for CLI argument parsing
 - Electron + React for GUI development
 
 ### **Next Steps**
+
 1. **Review `REFUCTOR_ROADMAP.md`** for comprehensive technical specifications
 2. **Study `TECHDEBT_TEMPLATE.md`** to understand the core debt tracking system
 3. **Examine `cursorrules_template.mdc`** for session wrap integration points
@@ -215,12 +237,14 @@ The debt tracker caught its own creator making debt while building it, then used
 ## 🤝 Contributing
 
 ### **Development Philosophy**
+
 - **No Bloat**: Every line of code must justify its existence
 - **Immediate Debt**: Address technical debt the moment it's identified
 - **Snarky but Functional**: Maintain irreverent personality without sacrificing performance
 - **Meta Awareness**: The system must be able to manage its own technical debt
 
 ### **Code Standards**
+
 - TypeScript for type safety and better tooling
 - Comprehensive testing with Jest
 - ESLint + Prettier for code formatting
@@ -231,12 +255,14 @@ The debt tracker caught its own creator making debt while building it, then used
 ## 📋 Current Status
 
 ### ✅ **Foundation Complete**
+
 - Working debt detection and tracking system
 - Proven results on 200+ real warnings
 - Comprehensive roadmap and technical specifications
 - Branding and personality established
 
 ### 🎯 **Ready for Development**
+
 - Core logic ready for extraction into NPM package
 - CLI interface design complete
 - GUI mockups and user experience planned
@@ -246,12 +272,12 @@ The debt tracker caught its own creator making debt while building it, then used
 
 ## 🎬 Conclusion
 
-**Refuctor represents the evolution of technical debt management from reactive 
-cleanup to proactive prevention.** By combining professional-grade tooling 
-with irreverent humor and financial metaphors, we're creating a product that 
+**Refuctor represents the evolution of technical debt management from reactive
+cleanup to proactive prevention.** By combining professional-grade tooling
+with irreverent humor and financial metaphors, we're creating a product that
 developers will actually want to use.
 
-The foundation is proven, the roadmap is comprehensive, and the market opportunity is significant. 
+The foundation is proven, the roadmap is comprehensive, and the market opportunity is significant.
 
 **Ready to build the debt cleansing syndicate that the development world didn't know it needed?**
 
