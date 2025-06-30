@@ -8,11 +8,17 @@
 
 ## 🎯 What is Refuctor?
 
-**Refuctor** is an AI-powered, snark-fueled technical debt cleansing suite that turns code cleanup into a darkly humorous financial metaphor. It's the world's first debt management system that actually makes developers *want* to clean up their code.
+**Refuctor** is an AI-powered, snark-fueled technical debt cleansing suite 
+that turns code cleanup into a darkly humorous financial metaphor. It's the 
+world's first debt management system that actually makes developers *want* to 
+clean up their code.
 
 ### 🔥 Origin Story
 
-Born from the meta-irony of a debt tracker that caught its own creator making 36 markdown warnings while building the debt detection system. We used the system to fix itself in real-time - proving that recursive debt management actually works.
+Born from the meta-irony of a debt tracker that caught its own creator making 
+36 markdown warnings while building the debt detection system. We used the 
+system to fix itself in real-time - proving that recursive debt management 
+actually works.
 
 ### ✨ Core Philosophy
 
@@ -26,6 +32,7 @@ Born from the meta-irony of a debt tracker that caught its own creator making 36
 ## 🚀 Features
 
 ### ✅ **Currently Working (MVP Foundation)**
+
 - **Live Debt Detection**: Markdown linting, spell checking, security audits
 - **TECHDEBT.md Tracking**: Automated session-based debt logging with P1-P4 priorities
 - **Session Wrap Integration**: 9-step comprehensive debt scanning protocol
@@ -33,6 +40,7 @@ Born from the meta-irony of a debt tracker that caught its own creator making 36
 - **Real-time Monitoring**: Command-line integration with IDE warning systems
 
 ### 🎯 **Planned Features (Full Roadmap)**
+
 - **GUI Dashboard**: "Debt Collector View" with real-time visualizations
 - **CLI Commands**: `refuctor scan`, `refuctor fix`, `refuctor shame`
 - **MCP Integration**: Model Context Protocol for cross-workspace debt sharing
@@ -45,17 +53,20 @@ Born from the meta-irony of a debt tracker that caught its own creator making 36
 ## 📦 Package Contents
 
 ### **Core System Files**
+
 - **`REFUCTOR_ROADMAP.md`** - Complete 20-week development roadmap
 - **`TECHDEBT_TEMPLATE.md`** - Working debt tracker template with P1-P4 system
 - **`cspell.json`** - Base spell check configuration with extensible dictionary
 - **`cursorrules_template.mdc`** - Enhanced session wrap protocol template
 
 ### **Project Setup**
+
 - **`package.json`** - NPM structure for `@puberty-labs/refuctor`
 - **`.gitignore`** - Professional Node.js project exclusion patterns
 - **`ORIGINAL_IDEAS.md`** - The original brilliant concepts that sparked Refuctor
 
 ### **Documentation**
+
 - **`README.md`** - This file, comprehensive overview and getting started guide
 
 ---
@@ -63,6 +74,7 @@ Born from the meta-irony of a debt tracker that caught its own creator making 36
 ## 🛠️ Quick Start
 
 ### **1. Project Detection & Setup**
+
 ```bash
 # Install dependencies for testing the foundation
 npm install -g markdownlint-cli
@@ -73,6 +85,7 @@ npm install -g cspell
 ```
 
 ### **2. Manual Debt Detection (MVP Commands)**
+
 ```bash
 # Markdown linting
 npx markdownlint-cli "*.md"
@@ -88,7 +101,10 @@ npx markdownlint-cli "*.md" && npx cspell "**/*"
 ```
 
 ### **3. Session Wrap Protocol**
-Follow the 9-step process in `cursorrules_template.mdc` for comprehensive debt management:
+
+Follow the 9-step process in `cursorrules_template.mdc` for comprehensive debt 
+management:
+
 1. Session Summary
 2. Next Session Priorities  
 3. Documentation Maintenance
@@ -230,7 +246,10 @@ The debt tracker caught its own creator making debt while building it, then used
 
 ## 🎬 Conclusion
 
-**Refuctor represents the evolution of technical debt management from reactive cleanup to proactive prevention.** By combining professional-grade tooling with irreverent humor and financial metaphors, we're creating a product that developers will actually want to use.
+**Refuctor represents the evolution of technical debt management from reactive 
+cleanup to proactive prevention.** By combining professional-grade tooling 
+with irreverent humor and financial metaphors, we're creating a product that 
+developers will actually want to use.
 
 The foundation is proven, the roadmap is comprehensive, and the market opportunity is significant. 
 
@@ -240,4 +259,4 @@ The foundation is proven, the roadmap is comprehensive, and the market opportuni
 
 *"Built by someone who created 36 warnings while building a debt warning system. Self-own level: legendary."*
 
-**Let's turn technical debt into a solved problem with a sense of humor.** 🚀💪 
+**Let's turn technical debt into a solved problem with a sense of humor.** 🚀💪
