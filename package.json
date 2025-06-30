@@ -46,10 +46,12 @@
     "npm": ">=8.0.0"
   },
   "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.6.0",
     "chalk": "^5.4.1",
     "commander": "^11.0.0",
     "fs-extra": "^11.2.0",
     "glob": "^10.4.5",
+    "minimatch": "^9.0.5",
     "moment": "^2.29.0"
   },
   "devDependencies": {

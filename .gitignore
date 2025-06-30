@@ -311,4 +311,6 @@ local.properties
 
 # Scala IDE specific
 .scala_dependencies
-.worksheet 
+.worksheet
+
+# WIP/Brainstorming files are now handled by .debtignore 

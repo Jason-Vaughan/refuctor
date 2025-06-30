@@ -324,7 +324,9 @@ refuctor/
 │
 ├──
 debt-detector.js
+
 # ✅ Core detection logic (markdownlint + cspell + npm audit)
+
 │   ├── techdebt-manager.js   # ✅ TECHDEBT.md file management
 │   └── config-manager.js     # 🎯 Future: Handle cspell.json, project configs
 ├── cli/

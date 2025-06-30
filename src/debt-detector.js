@@ -2,6 +2,7 @@ const { execSync } = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
 const glob = require('glob');
+const { DebtIgnoreParser } = require('./debt-ignore-parser');
 
 /**
  * Core debt detection engine for Refuctor
@@ -15,6 +16,7 @@ class DebtDetector {
       p3: { markdownWarnings: 3, spellErrors: 2, unused: 5 },
       p4: { markdownWarnings: 1, spellErrors: 1, style: 10 }
     };
+    this.ignoreParser = new DebtIgnoreParser();
   }
 
   /**
@@ -37,6 +39,9 @@ class DebtDetector {
     };
 
     try {
+      // Load debt ignore patterns first
+      await this.ignoreParser.loadIgnorePatterns(projectPath);
+      
       // Run all debt detection methods
       const markdownDebt = await this.detectMarkdownDebt(projectPath);
       const spellDebt = await this.detectSpellingDebt(projectPath);
@@ -75,7 +80,9 @@ class DebtDetector {
 
     } catch (error) {
       console.warn(`Warning during debt detection: ${error.message}`);
-      // Continue with partial results
+      // Continue with partial results, ensure totalDebt is defined
+      debtReport.totalDebt = debtReport.p1.length + debtReport.p2.length + 
+                           debtReport.p3.length + debtReport.p4.length;
       debtReport.summary = {
         markdown: 0,
         spelling: 0,
@@ -83,6 +90,8 @@ class DebtDetector {
         dependencies: 0,
         debtLevel: 'unknown'
       };
+      
+      return debtReport;
     }
   }
 
@@ -93,10 +102,13 @@ class DebtDetector {
     const debt = { total: 0, issues: [], files: [] };
     
     try {
-      const markdownFiles = glob.sync('**/*.{md,mdc}', { 
+      const allMarkdownFiles = glob.sync('**/*.{md,mdc}', { 
         cwd: projectPath,
-        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+        ignore: ['node_modules/**', '.git/**']  // Basic ignore only
       });
+      
+      // Filter using debt ignore patterns
+      const markdownFiles = this.ignoreParser.filterIgnored(allMarkdownFiles);
 
       if (markdownFiles.length === 0) {
         return debt;

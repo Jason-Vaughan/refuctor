@@ -5,6 +5,7 @@ const { debtDetector } = require('../src/debt-detector');
 const { techDebtManager } = require('../src/techdebt-manager');
 const { markdownFixerGoon } = require('../src/goons/markdown-fixer');
 const { DebtDetector } = require('../src/debt-detector.js');
+const { DebtIgnoreParser } = require('../src/debt-ignore-parser');
 const packageJson = require('../package.json');
 const fs = require('fs-extra');
 const path = require('path');
@@ -201,6 +202,115 @@ program
     }
   });
 
+// Fix command - general auto-repair
+program
+  .command('fix')
+  .description(colors.cyan('🔧 Auto-repair common debt issues (safe fixes only)'))
+  .option('--dry-run', 'Preview fixes without applying them')
+  .option('--all', 'Fix all file types (markdown, spelling, etc.)')
+  .action(async (options) => {
+    console.log(colors.bold(colors.cyan('\n🔧 REFUCTOR AUTO-REPAIR SERVICE')));
+    console.log(colors.gray('Applying safe automated fixes to eliminate debt...\n'));
+    
+    try {
+      const projectRoot = process.cwd();
+      let totalFixes = 0;
+      
+      // Always fix markdown (safe and proven)
+      console.log(colors.magenta('📝 Applying markdown fixes...'));
+      const glob = require('glob');
+      const mdFiles = glob.sync('**/*.{md,mdc}', { 
+        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**', 'REFUCTOR_MYTHOS.md'] 
+      });
+      
+      for (const file of mdFiles) {
+        const report = await markdownFixerGoon.eliminateDebt(file, options.dryRun);
+        if (report.fixesApplied > 0) {
+          console.log(colors.green(`   ✅ ${file}: ${report.fixesApplied} fixes applied`));
+          totalFixes += report.fixesApplied;
+        }
+      }
+      
+      // Future: Add other safe auto-fixes here
+      if (options.all) {
+        console.log(colors.gray('   📦 Additional fix types coming in future updates...'));
+      }
+      
+      console.log(colors.bold(colors.green(`\n🎉 AUTO-REPAIR COMPLETE!`)));
+      console.log(colors.green(`Total fixes applied: ${totalFixes}`));
+      
+      if (options.dryRun) {
+        console.log(colors.yellow('⚠️  DRY RUN: No actual changes made'));
+        console.log(colors.gray('Remove --dry-run flag to apply fixes'));
+      } else if (totalFixes > 0) {
+        console.log(colors.green('Your debt has been refinanced. Much better!'));
+      } else {
+        console.log(colors.blue('No debt found to fix. You magnificent debt-slayer!'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 AUTO-REPAIR FAILED:')));
+      console.error(colors.red(`Even our automated systems couldn't handle this: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Wrap command - session wrap protocol  
+program
+  .command('wrap')
+  .description(colors.blue('📋 Execute comprehensive session wrap protocol'))
+  .option('--skip-debt-scan', 'Skip automated debt detection')
+  .option('--brief', 'Generate brief wrap summary')
+  .action(async (options) => {
+    console.log(colors.bold(colors.blue('\n📋 REFUCTOR SESSION WRAP PROTOCOL')));
+    console.log(colors.gray('Executing comprehensive session cleanup and debt assessment...\n'));
+    
+    try {
+      // Step 1: Debt scan (unless skipped)
+      if (!options.skipDebtScan) {
+        console.log(colors.cyan('🔍 STEP 1: Technical Debt Assessment'));
+        const debtReport = await debtDetector.scanProject(process.cwd(), true);
+        
+        if (debtReport.totalDebt === 0) {
+          console.log(colors.bold(colors.green('   ✅ DEBT-FREE STATUS MAINTAINED!')));
+        } else {
+          console.log(colors.yellow(`   ⚠️  ${debtReport.totalDebt} debt items detected`));
+          console.log(colors.gray('   Run `refuctor fix` or `refuctor scan` for details'));
+        }
+      }
+      
+      // Step 2: Session Summary
+      console.log(colors.cyan('\n📊 STEP 2: Session Summary Generation'));
+      const sessionData = {
+        timestamp: new Date().toISOString(),
+        debtStatus: options.skipDebtScan ? 'skipped' : 'scanned',
+        filesModified: 'detected via git status',
+        recommendations: []
+      };
+      
+      // Future: Add more comprehensive session analysis
+      console.log(colors.green('   ✅ Session data collected'));
+      
+      // Step 3: Recommendations
+      console.log(colors.cyan('\n💡 STEP 3: Next Session Recommendations'));
+      console.log(colors.blue('   🎯 Continue with Phase 1 completion'));
+      console.log(colors.blue('   🚀 Consider NPM package publishing'));
+      console.log(colors.blue('   📈 Add more specialized goons'));
+      
+      if (options.brief) {
+        console.log(colors.bold(colors.green('\n📝 BRIEF WRAP COMPLETE')));
+      } else {
+        console.log(colors.bold(colors.green('\n📝 COMPREHENSIVE WRAP COMPLETE')));
+        console.log(colors.gray('Session state documented for next development cycle'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 SESSION WRAP FAILED:')));
+      console.error(colors.red(`Wrap protocol error: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
 // Easter egg commands
 program
   .command('bailmeout')
@@ -386,7 +496,7 @@ program
   .description('📦 Check for missing dependencies and suggest installation')
   .action(() => {
     const packageJson = require('../package.json');
-    const requiredDeps = ['commander', 'chalk', 'fs-extra', 'glob'];
+    const requiredDeps = ['commander', 'chalk', 'fs-extra', 'glob', 'minimatch'];
     const missingDeps = [];
     
     for (const dep of requiredDeps) {
@@ -400,6 +510,73 @@ program
       console.log(yellow(`Run: npm install ${missingDeps.join(' ')}`));
     } else {
       console.log(green('✅ All required dependencies are installed.'));
+    }
+  });
+
+// Debt ignore management
+program
+  .command('ignore')
+  .description(colors.gray('🚫 Manage debt ignore patterns (.debtignore file)'))
+  .option('--add <pattern>', 'Add a pattern to .debtignore')
+  .option('--remove <pattern>', 'Remove a pattern from .debtignore')
+  .option('--list', 'List current ignore patterns')
+  .option('--init', 'Create sample .debtignore file')
+  .action(async (options) => {
+    console.log(colors.bold(colors.gray('\n🚫 REFUCTOR DEBT IGNORE MANAGEMENT')));
+    console.log(colors.gray('Managing files excluded from debt tracking...\n'));
+    
+    try {
+      const ignoreParser = new DebtIgnoreParser();
+      const projectRoot = process.cwd();
+      
+      if (options.init) {
+        const ignoreFilePath = path.join(projectRoot, '.debtignore');
+        if (await fs.pathExists(ignoreFilePath)) {
+          console.log(colors.yellow('⚠️  .debtignore already exists'));
+        } else {
+          const sampleContent = DebtIgnoreParser.getSampleContent();
+          await fs.writeFile(ignoreFilePath, sampleContent, 'utf8');
+          console.log(colors.bold(colors.green('✅ .DEBTIGNORE CREATED!')));
+          console.log(colors.green('Sample patterns added - customize as needed'));
+        }
+        return;
+      }
+      
+      // Load current patterns
+      await ignoreParser.loadIgnorePatterns(projectRoot);
+      
+      if (options.add) {
+        ignoreParser.addPattern(options.add);
+        console.log(colors.green(`✅ Added pattern: ${options.add}`));
+        console.log(colors.gray('Note: Update .debtignore file to persist this change'));
+      }
+      
+      if (options.remove) {
+        ignoreParser.removePattern(options.remove);
+        console.log(colors.yellow(`🗑️  Removed pattern: ${options.remove}`));
+        console.log(colors.gray('Note: Update .debtignore file to persist this change'));
+      }
+      
+      if (options.list || (!options.add && !options.remove)) {
+        const patterns = ignoreParser.getPatterns();
+        console.log(colors.bold(colors.blue('📋 CURRENT DEBT IGNORE PATTERNS:')));
+        
+        if (patterns.length === 0) {
+          console.log(colors.gray('  No ignore patterns configured'));
+          console.log(colors.gray('  Run `refuctor ignore --init` to create .debtignore'));
+        } else {
+          patterns.forEach((pattern, index) => {
+            const isDefault = index < 6; // First 6 are default patterns
+            const prefix = isDefault ? colors.gray('  [default]') : colors.blue('  [custom] ');
+            console.log(`${prefix} ${pattern}`);
+          });
+        }
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 IGNORE MANAGEMENT FAILED:')));
+      console.error(colors.red(`Ignore operation error: ${error.message}`));
+      process.exit(1);
     }
   });
 

@@ -66,6 +66,7 @@ npm audit
 # npx --yes webpack-bundle-analyzer dist/stats.json
 
 ```text
+
 ### Real-time Monitoring
 
 - **IDE Warning Count**: Monitor status bar indicators

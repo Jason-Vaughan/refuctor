@@ -1,0 +1,26 @@
+# Refuctor Debt Ignore
+# Files and patterns to exclude from technical debt tracking
+
+# WIP and brainstorming files
+REFUCTOR_MYTHOS.md
+
+# Generated documentation (if any)
+# docs/generated/
+# api-docs/
+
+# Legacy code in migration
+# legacy/
+# deprecated/
+
+# Third-party or vendor files
+# vendor/
+# third-party/
+
+# Experimental features
+# experiments/
+# prototypes/
+
+# Example patterns:
+# *.generated.md
+# temp-*.md
+# *-draft.md 

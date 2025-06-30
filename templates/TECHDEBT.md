@@ -43,18 +43,23 @@ No low priority debt items - zero debt status achieved
 ### Comprehensive Scan (Run During Session Wrap)
 
 ```bash
+
 # Markdown linting
+
 npx --yes markdownlint-cli "*.md"
 
 # Spell checking
+
 npx --yes cspell "**/*.{md,js,json,ts}" "*.mdc"
 
 # Security audit (when package.json exists)
+
 npm audit
 
 # Refuctor comprehensive scan
+
 refuctor scan --verbose
-```
+```text
 
 ### Real-time Monitoring
 
