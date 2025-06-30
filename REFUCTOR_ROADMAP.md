@@ -214,14 +214,34 @@ refuctor goon dead-code-hunter   # Identify unused functions
 refuctor goon dependency-audit   # Package cleanup
 ```text
 
-#### **Accountant** (Debt Interest Calculator)
+#### **Accountant** (Debt Interest Calculator & Credit Rating System)
 
+**Core Financial Tracking:**
 - **Time Tracking**: Log hours spent on debt-related issues
 - **CPU Waste Monitoring**: Track performance impact of debt
 - **Interest Accrual**: Simulate financial interest on technical debt
 - **ROI Calculations**: Show value of debt cleanup efforts
 
-#### **Fluffer** (Pre-build Preparation)
+**Developer Credit Rating System (300-850 score):**
+- **Credit Score Algorithm**: Code quality (40%), payment history (35%), debt load (15%), patterns (10%)
+- **Interest Rate Calculation**: 2.5% APR (Prime) to 24.9% APR (Vibe Coder) based on coding style
+- **Payment History Tracking**: Full payments, partial payments, interest-only, missed payments
+- **Credit Impact Assessment**: Late payment penalties, on-time payment bonuses
+
+**Advanced Financial Features:**
+- **Debt-to-Income Ratio**: Technical debt vs. productive code metrics
+- **Credit Utilization Monitoring**: Current debt load vs. sustainable threshold  
+- **Payment Recommendations**: Minimum payment vs. high-interest debt payoff strategies
+- **Debt Consolidation Alerts**: Refactoring opportunities for related issues
+- **Debt Holiday Management**: Snarky commentary for .debtignore files ("debt jubilee", "debt bahamas")
+
+**Dashboard Integration:**
+- **Live Credit Score Display**: Real-time 300-850 score with trend indicators
+- **Interest Rate Calculator**: Dynamic APR based on current behavior patterns
+- **Payment Timeline Visualization**: Historical debt payment record with late flags
+- **Developer Profile Classification**: Prime Developer, Standard, Subprime, or Vibe Coder status
+
+#### **The Fixer** (Pre-build Preparation)
 
 - **Syntax Pre-cleaning**: Fix blocking syntax errors
 - **Build Preparation**: Ensure clean compilation state

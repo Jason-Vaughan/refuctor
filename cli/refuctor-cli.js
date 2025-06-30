@@ -68,6 +68,43 @@ program
         console.log(colors.bold(colors.red(`💸 DEBT DETECTED: ${debtReport.totalDebt} issues found`)));
         console.log(colors.yellow('Time to refinance this technical disaster...\n'));
         
+        // Check for Guido the Thumb Crusher appearance FIRST
+        if (debtReport.guidoAppearance && debtReport.guidoAppearance.triggered) {
+          console.log(colors.bold(colors.red('\n' + '='.repeat(80))));
+          console.log(colors.bold(colors.red('🤌 GUIDO THE THUMB CRUSHER HAS ARRIVED 🤌')));
+          console.log(colors.bold(colors.red('='.repeat(80))));
+          console.log(colors.red(debtReport.guidoAppearance.message));
+          if (debtReport.guidoAppearance.daysOverdue > 0) {
+            console.log(colors.bold(colors.red(`⏰ VIGorish overdue: ${debtReport.guidoAppearance.daysOverdue} days`)));
+          }
+          console.log(colors.bold(colors.yellow('\n' + debtReport.guidoAppearance.recommendation)));
+          console.log(colors.red('='.repeat(80) + '\n'));
+        }
+
+        // Check for Mafia Takeover
+        if (debtReport.mafiaStatus && debtReport.mafiaStatus.triggered) {
+          console.log(colors.bold(colors.magenta('\n' + '='.repeat(60))));
+          console.log(colors.bold(colors.magenta('🕴️ MAFIA TAKEOVER - DEBT SOLD TO THE FAMILY 🕴️')));
+          console.log(colors.bold(colors.magenta('='.repeat(60))));
+          console.log(colors.magenta(debtReport.mafiaStatus.message));
+          console.log(colors.bold(colors.yellow(`💰 VIGorish Rate: ${debtReport.mafiaStatus.vigorishRate}% daily`)));
+          console.log(colors.bold(colors.yellow(`💸 Daily Penalty: ${debtReport.mafiaStatus.dailyPenalty} debt units`)));
+          console.log(colors.bold(colors.cyan('\n' + debtReport.mafiaStatus.recommendation)));
+          console.log(colors.magenta('='.repeat(60) + '\n'));
+        }
+
+        // Display Guido Level debt
+        if (debtReport.guido.length > 0) {
+          console.log(colors.bold(colors.red('🤌 GUIDO LEVEL - THUMB CRUSHER COLLECTION:')));
+          debtReport.guido.forEach(debt => console.log(colors.red(`  💀 ${debt}`)));
+        }
+
+        // Display Mafia Level debt
+        if (debtReport.mafia.length > 0) {
+          console.log(colors.bold(colors.magenta('🕴️ MAFIA LEVEL - FAMILY BUSINESS:')));
+          debtReport.mafia.forEach(debt => console.log(colors.magenta(`  💰 ${debt}`)));
+        }
+
         // Display debt by priority
         if (debtReport.p1.length > 0) {
           console.log(colors.bold(colors.red('🚨 P1 CRITICAL - FORECLOSURE IMMINENT:')));
@@ -331,6 +368,54 @@ program
     console.log(colors.bold(colors.yellow('\n🆘 EMERGENCY MOTIVATION:')));
     console.log(colors.white(`"${quote}"`));
     console.log(colors.gray('\n- The Refuctor Debt Collection Agency\n'));
+  });
+
+// Mafia/Guido test command - demonstrate loan shark escalation hierarchy
+program
+  .command('guido')
+  .description(colors.red('🤌 [EASTER EGG] Demonstrate the Mafia → Guido escalation hierarchy'))
+  .option('--mafia-only', 'Show only mafia takeover (before Guido)')
+  .action((options) => {
+    const detector = new DebtDetector();
+    
+    if (options.mafiaOnly) {
+      // Show mafia takeover
+      console.log(colors.bold(colors.magenta('\n' + '='.repeat(60))));
+      console.log(colors.bold(colors.magenta('🕴️ MAFIA TAKEOVER - DEBT SOLD TO THE FAMILY 🕴️')));
+      console.log(colors.bold(colors.magenta('='.repeat(60))));
+      
+      const mafiaMessage = detector.mafiaMessages[Math.floor(Math.random() * detector.mafiaMessages.length)];
+      console.log(colors.magenta(mafiaMessage));
+      console.log(colors.bold(colors.yellow('💰 VIGorish Rate: 15% daily')));
+      console.log(colors.bold(colors.yellow('💸 Daily Penalty: 11 debt units')));
+      console.log(colors.bold(colors.cyan('\n💰 DEBT SOLD TO FAMILY: Your technical debt has been purchased by private investors. VIGorish is now being charged daily.')));
+      console.log(colors.magenta('='.repeat(60)));
+      
+      console.log(colors.gray('\n💡 Mafia takeover happens when:'));
+      console.log(colors.gray('   • 100+ markdown errors'));
+      console.log(colors.gray('   • 50+ spelling errors'));
+      console.log(colors.gray('   • 3+ critical security vulnerabilities'));
+      console.log(colors.gray('   • 75+ total debt items'));
+      console.log(colors.gray('   • 5+ P1 critical issues'));
+      console.log(colors.gray('\n⏰ If VIGorish goes unpaid for 2+ days... Guido gets deployed.'));
+    } else {
+      // Show full Guido escalation
+      console.log(colors.bold(colors.red('\n' + '='.repeat(80))));
+      console.log(colors.bold(colors.red('🤌 GUIDO THE THUMB CRUSHER HAS ARRIVED 🤌')));
+      console.log(colors.bold(colors.red('='.repeat(80))));
+      
+      const randomMessage = detector.getGuidoMessage();
+      console.log(colors.red(randomMessage));
+      console.log(colors.bold(colors.red('⏰ VIGorish overdue: 3 days')));
+      console.log(colors.bold(colors.yellow('\n🤌 GUIDO DEPLOYED: VIGorish payment overdue. The Thumb Crusher is here for collection. Fix debt NOW or face "coding accidents".')));
+      console.log(colors.red('='.repeat(80)));
+      
+      console.log(colors.gray('\n💡 Debt Escalation Hierarchy:'));
+      console.log(colors.gray('   1. P4 → P3 → P2 → P1 (Normal Collection Agency)'));
+      console.log(colors.gray('   2. 🕴️ MAFIA TAKEOVER (debt sold to family, VIGorish starts)'));
+      console.log(colors.gray('   3. 🤌 GUIDO DEPLOYED (VIGorish overdue 2+ days)'));
+      console.log(colors.gray('\n🎭 This is a demonstration. Use --mafia-only to see mafia stage.'));
+    }
   });
 
 // Goon command - specialized debt elimination tools

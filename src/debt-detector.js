@@ -11,12 +11,36 @@ const { DebtIgnoreParser } = require('./debt-ignore-parser');
 class DebtDetector {
   constructor() {
     this.debtThresholds = {
+      mafia: { markdownWarnings: 100, spellErrors: 50, securityCritical: 3, extremeDebt: 75, daysOverdue: 3 }, // Mafia Takeover
+      guido: { markdownWarnings: 200, spellErrors: 100, securityCritical: 5, extremeDebt: 150, vigorishDays: 2 }, // Guido Deployment
       p1: { markdownWarnings: 50, spellErrors: 20, securityHigh: 1 },
       p2: { markdownWarnings: 10, spellErrors: 5, securityMedium: 3 },
       p3: { markdownWarnings: 3, spellErrors: 2, unused: 5 },
       p4: { markdownWarnings: 1, spellErrors: 1, style: 10 }
     };
     this.ignoreParser = new DebtIgnoreParser();
+    this.mafiaMessages = [
+      "🕴️ Your debt has been purchased by... let's call them 'private investors'.",
+      "💰 Congratulations! You now owe the family. VIGorish is 20% per day. Compounded.",
+      "🎰 The house always wins, but your code? Your code NEVER wins.",
+      "🍕 Tony says hi. He also says pay up before he sends his nephew.",
+      "📞 *Ring ring* 'Is this about the debt?' 'What debt? We never had this conversation.'",
+      "🚗 Nice development environment you got there. Shame if it suddenly... crashed.",
+      "💼 Your debt collector quit. We bought the contract. Welcome to the big leagues.",
+      "🔫 We don't break legs anymore. We break build pipelines. Much more effective."
+    ];
+    this.guidoMessages = [
+      "🤌 Guido here. You owe me big time, capisce? Your fingers might 'accidentally' forget how to type...",
+      "👨‍💼 *cracks knuckles* Nice coding setup you got here. Shame if something happened to it...",
+      "🚬 Listen here, wise guy. The Debt Collection Agency? They're AMATEURS compared to what I do.",
+      "💀 Your technical debt is so bad, even the grim reaper filed a complaint. Fix it or I fix YOU.",
+      "🔨 I don't just break kneecaps - I break code compilation. Permanently.",
+      "🎯 You think P1 Critical was bad? Wait till you meet P0 'Thumb Crusher' priority.",
+      "🏚️ Your codebase is condemned. I'm here for the demolition... starting with your IDE.",
+      "💸 The Collection Agency gave up on you. Now you deal with ME. Payment is due... in BLOOD... sugar. I'm diabetic.",
+      "⚡ Your debt is so extreme, I had to come out of retirement. This better be worth my time.",
+      "🎭 I've seen cleaner code in a dumpster fire. Actually, the dumpster fire had better documentation."
+    ];
   }
 
   /**
@@ -30,6 +54,8 @@ class DebtDetector {
       timestamp: new Date().toISOString(),
       projectPath,
       totalDebt: 0,
+      guido: [], // Ultimate escalation - Thumb Crusher deployed
+      mafia: [], // Loan shark level - debt sold to family, vigorish charged
       p1: [], // Critical - foreclosure imminent
       p2: [], // High - repossession notice  
       p3: [], // Medium - liens filed
@@ -37,7 +63,9 @@ class DebtDetector {
       summary: {},
       ignoredFiles: verbose ? [] : null,
       ignoredDebt: verbose ? { total: 0, files: [] } : null,
-      details: verbose ? {} : null
+      details: verbose ? {} : null,
+      mafiaStatus: null, // Loan shark takeover status
+      guidoAppearance: null // Thumb crusher deployment
     };
 
     try {
@@ -71,8 +99,12 @@ class DebtDetector {
       this.categorizeDebt(debtReport, 'dependencies', dependencyDebt);
 
       // Calculate totals
-      debtReport.totalDebt = debtReport.p1.length + debtReport.p2.length + 
-                           debtReport.p3.length + debtReport.p4.length;
+      debtReport.totalDebt = debtReport.guido.length + debtReport.mafia.length + debtReport.p1.length + 
+                           debtReport.p2.length + debtReport.p3.length + debtReport.p4.length;
+
+      // Check for mafia takeover and Guido escalation
+      await this.checkMafiaStatus(debtReport);
+      this.checkForGuidoDeployment(debtReport);
 
       // Generate summary
       debtReport.summary = {
@@ -106,8 +138,8 @@ class DebtDetector {
     } catch (error) {
       console.warn(`Warning during debt detection: ${error.message}`);
       // Continue with partial results, ensure totalDebt is defined
-      debtReport.totalDebt = debtReport.p1.length + debtReport.p2.length + 
-                           debtReport.p3.length + debtReport.p4.length;
+      debtReport.totalDebt = debtReport.guido.length + debtReport.mafia.length + debtReport.p1.length + 
+                           debtReport.p2.length + debtReport.p3.length + debtReport.p4.length;
       debtReport.summary = {
         markdown: 0,
         spelling: 0,
@@ -382,15 +414,33 @@ class DebtDetector {
   }
 
   /**
-   * Categorize debt into P1-P4 priorities
+   * Categorize debt into Mafia/Guido/P1-P4 priorities
    */
   categorizeDebt(debtReport, category, debtData) {
     const { total, issues = [], severity = {} } = debtData;
     
     if (total === 0) return;
 
+    // Guido Level (ULTIMATE ESCALATION)
+    if (category === 'markdown' && total >= this.debtThresholds.guido.markdownWarnings) {
+      debtReport.guido.push(`${total} markdown errors - 🤌 Guido: "Capisce? Your documentation is DONE."`);
+    } else if (category === 'spelling' && total >= this.debtThresholds.guido.spellErrors) {
+      debtReport.guido.push(`${total} spelling errors - 🔨 Guido: "I've seen cleaner spelling in ransom notes."`);
+    } else if (category === 'security' && severity.critical >= this.debtThresholds.guido.securityCritical) {
+      debtReport.guido.push(`${severity.critical} critical security holes - 💀 Guido: "Your security is so bad, I'm embarrassed FOR you."`);
+    }
+    
+    // Mafia Level (LOAN SHARK TAKEOVER)
+    else if (category === 'markdown' && total >= this.debtThresholds.mafia.markdownWarnings) {
+      debtReport.mafia.push(`${total} markdown errors - 🕴️ The Family owns this debt now. VIGorish starts today.`);
+    } else if (category === 'spelling' && total >= this.debtThresholds.mafia.spellErrors) {
+      debtReport.mafia.push(`${total} spelling errors - 💰 Tony's dictionary says you owe us. With interest.`);
+    } else if (category === 'security' && severity.critical >= this.debtThresholds.mafia.securityCritical) {
+      debtReport.mafia.push(`${severity.critical} critical security holes - 🚗 Nice firewall. Shame if it 'malfunctioned'.`);
+    }
+    
     // P1 Critical thresholds
-    if (category === 'markdown' && total >= this.debtThresholds.p1.markdownWarnings) {
+    else if (category === 'markdown' && total >= this.debtThresholds.p1.markdownWarnings) {
       debtReport.p1.push(`${total} markdown linting errors - This is fucking embarrassing. Fix it NOW.`);
     } else if (category === 'spelling' && total >= this.debtThresholds.p1.spellErrors) {
       debtReport.p1.push(`${total} spelling errors - Your spell checker filed for bankruptcy.`);
@@ -426,11 +476,85 @@ class DebtDetector {
    * Calculate overall debt level
    */
   calculateDebtLevel(debtReport) {
+    if (debtReport.guido.length > 0) return 'GUIDO_DEPLOYED';
+    if (debtReport.mafia.length > 0) return 'MAFIA_TAKEOVER';
     if (debtReport.p1.length > 0) return 'CRITICAL';
     if (debtReport.p2.length > 0) return 'HIGH';  
     if (debtReport.p3.length > 0) return 'MEDIUM';
     if (debtReport.p4.length > 0) return 'LOW';
     return 'CLEAN';
+  }
+
+  /**
+   * Check for mafia takeover (debt sold to loan sharks)
+   */
+  async checkMafiaStatus(debtReport) {
+    const totalDebt = debtReport.totalDebt;
+    const hasMafiaDebt = debtReport.mafia.length > 0;
+    const extremeP1 = debtReport.p1.length >= 5; // 5+ critical issues
+    const projectFailing = totalDebt >= this.debtThresholds.mafia.extremeDebt;
+
+    // Check if debt should be sold to mafia
+    if (hasMafiaDebt || extremeP1 || projectFailing) {
+      const debtAge = await this.getDebtAge(debtReport.projectPath);
+      const vigorishRate = this.calculateVigorish(totalDebt);
+      
+      debtReport.mafiaStatus = {
+        triggered: true,
+        reason: hasMafiaDebt ? 'MAFIA_DEBT_DETECTED' : 
+                extremeP1 ? 'MASSIVE_P1_DEBT' : 
+                'PROJECT_FAILING',
+        message: this.mafiaMessages[Math.floor(Math.random() * this.mafiaMessages.length)],
+        vigorishRate: vigorishRate,
+        debtAge: debtAge,
+        dailyPenalty: Math.round(totalDebt * (vigorishRate / 100)),
+        recommendation: '💰 DEBT SOLD TO FAMILY: Your technical debt has been purchased by private investors. VIGorish is now being charged daily.'
+      };
+    }
+  }
+
+  /**
+   * Check if Guido the Thumb Crusher should be deployed
+   */
+  checkForGuidoDeployment(debtReport) {
+    const hasGuidoDebt = debtReport.guido.length > 0;
+    const mafiaOverdue = debtReport.mafiaStatus && debtReport.mafiaStatus.debtAge >= this.debtThresholds.guido.vigorishDays;
+    const extremeTotal = debtReport.totalDebt >= this.debtThresholds.guido.extremeDebt;
+
+    // Guido appears when vigorish goes unpaid or extreme debt reached
+    if (hasGuidoDebt || mafiaOverdue || extremeTotal) {
+      const randomMessage = this.guidoMessages[Math.floor(Math.random() * this.guidoMessages.length)];
+      
+      debtReport.guidoAppearance = {
+        triggered: true,
+        reason: hasGuidoDebt ? 'GUIDO_DEBT_DETECTED' : 
+                mafiaOverdue ? 'VIGORISH_OVERDUE' : 
+                'EXTREME_TOTAL_DEBT',
+        message: randomMessage,
+        threatLevel: 'THUMB_CRUSHER',
+        daysOverdue: debtReport.mafiaStatus ? debtReport.mafiaStatus.debtAge : 0,
+        recommendation: '🤌 GUIDO DEPLOYED: VIGorish payment overdue. The Thumb Crusher is here for collection. Fix debt NOW or face "coding accidents".'
+      };
+    }
+  }
+
+  /**
+   * Calculate VIGorish rate based on debt level
+   */
+  calculateVigorish(totalDebt) {
+    if (totalDebt >= 150) return 25; // 25% daily for extreme debt
+    if (totalDebt >= 100) return 20; // 20% daily for high debt
+    if (totalDebt >= 50) return 15;  // 15% daily for moderate debt
+    return 10; // 10% daily minimum vigorish
+  }
+
+  /**
+   * Get debt age in days (mock implementation for now)
+   */
+  async getDebtAge(projectPath) {
+    // TODO: Implement proper debt age tracking via TECHDEBT.md timestamps
+    // For now, return random age for demonstration
+    return Math.floor(Math.random() * 7); // 0-6 days
   }
 
   /**
@@ -487,7 +611,15 @@ class DebtDetector {
     if (totalDebt < 5) return 'mild embarrassment';
     if (totalDebt < 15) return 'public humiliation';
     if (totalDebt < 30) return 'professional disgrace';
-    return 'career ending';
+    if (totalDebt < 150) return 'career ending';
+    return 'guido territory'; // Beyond career ending - loan shark level
+  }
+
+  /**
+   * Get a random Guido threat message
+   */
+  getGuidoMessage() {
+    return this.guidoMessages[Math.floor(Math.random() * this.guidoMessages.length)];
   }
 }
 

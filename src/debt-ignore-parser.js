@@ -99,6 +99,49 @@ class DebtIgnoreParser {
   }
 
   /**
+   * Get snarky debt holiday message for ignored files
+   * @param {string} filePath - File path that's being ignored
+   * @returns {string} Snarky message about debt holiday
+   */
+  getDebtHolidayMessage(filePath) {
+    const holidayMessages = [
+      `🏖️ ${filePath} is on a DEBT HOLIDAY - lucky bastard!`,
+      `🎉 DEBT JUBILEE declared for ${filePath} - all sins forgiven!`,
+      `😎 ${filePath} got a debt moratorium - must know someone important...`,
+      `🏝️ ${filePath} is in the Debt Bahamas - no extradition treaties here!`,
+      `🍹 ${filePath} declared debt amnesty - sipping mai-tais while you fix everything else`,
+      `🎭 ${filePath} pleaded diplomatic immunity - debt collectors can't touch it!`,
+      `🛡️ ${filePath} filed for debt sanctuary status - safe from the goons!`,
+      `🦆 ${filePath} is a debt conscientious objector - refuses to participate!`
+    ];
+    
+    return holidayMessages[Math.floor(Math.random() * holidayMessages.length)];
+  }
+
+  /**
+   * Get debt status with snarky commentary for a file
+   * @param {string} filePath - File path to check
+   * @returns {Object} Status object with ignored flag and message
+   */
+  getDebtStatus(filePath) {
+    const isIgnored = this.shouldIgnore(filePath);
+    
+    if (isIgnored) {
+      return {
+        ignored: true,
+        message: this.getDebtHolidayMessage(filePath),
+        status: 'DEBT_HOLIDAY'
+      };
+    }
+    
+    return {
+      ignored: false,
+      message: `💰 ${filePath} is subject to debt collection - pay up!`,
+      status: 'DEBT_ACTIVE'
+    };
+  }
+
+  /**
    * Filter an array of file paths, removing ignored files
    * @param {Array} filePaths - Array of file paths to filter
    * @returns {Array} Filtered array with ignored files removed
@@ -142,38 +185,39 @@ class DebtIgnoreParser {
    * @returns {string} Sample content
    */
   static getSampleContent() {
-    return `# Refuctor Debt Ignore
+    return `# Refuctor Debt Ignore - Debt Holiday & Jubilee Management
 # Files and patterns to exclude from technical debt tracking
+# 🏖️ Welcome to the Debt Bahamas - no extradition treaties here!
 
-# WIP and brainstorming files
-*-draft.md
-*-notes.md
-brainstorm/
+# WIP and brainstorming files (debt moratorium granted)
+*-draft.md     # 🎭 Diplomatic immunity - still drafting excuses
+*-notes.md     # 🦆 Conscientious objector status  
+brainstorm/    # 😎 Creative sanctuary - goons can't touch inspiration
 
-# Generated documentation
-docs/generated/
-api-docs/
+# Generated documentation (debt amnesty declared)
+docs/generated/  # 🤖 Robots don't pay debt - they just generate more
+api-docs/       # 📖 Documentation debt is an oxymoron anyway
 
-# Legacy code in migration
-legacy/
-deprecated/
+# Legacy code in migration (debt holiday extended indefinitely)
+legacy/         # 🏛️ Historical preservation society protection
+deprecated/     # ⚰️ Already dead - can't collect from corpses
 
-# Third-party or vendor files
-vendor/
-third-party/
+# Third-party or vendor files (not our debt to begin with)
+vendor/         # 💸 Someone else's problem - we just borrowed it
+third-party/    # 🤝 Joint liability - let them handle their own mess
 
-# Experimental features
-experiments/
-prototypes/
+# Experimental features (debt jubilee for innovation)
+experiments/    # 🧪 Mad scientist exemption
+prototypes/     # 🛠️ Proof of concept immunity
 
-# Temporary files
-*.tmp
-*.temp
-temp-*
+# Temporary files (too short-lived for debt collection)
+*.tmp          # ⏰ Gone before the goons arrive
+*.temp         # 🏃‍♂️ Faster than debt collectors
+temp-*         # 🫥 What debt? I don't see any debt...
 
-# Example specific files:
-# SPECIFIC_FILE.md
-# another-file.js
+# Example specific files (customize your debt sanctuary):
+# SPECIFIC_FILE.md    # 🛡️ Personal protection program
+# another-file.js     # 🏖️ Permanent vacation status
 `;
   }
 }

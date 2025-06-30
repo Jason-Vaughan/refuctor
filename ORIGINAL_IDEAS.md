@@ -69,7 +69,7 @@ When you start a new Cursor project:
 - **Debt Collector** – The enforcer, CLI + GUI combo
 - **Goons** – Subtools like `fix-lint`, `clean-imports`, `comment-killer`
 - **Accountant** – Logs warnings and time wasted to simulate "tech debt interest"
-- **Fluffer** – Pre-build script that preps files for cleanup and removes
+- **The Fixer** – Pre-build script that preps files for cleanup and removes
 
   blocking syntax
 
