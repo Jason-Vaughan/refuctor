@@ -4,7 +4,10 @@
 
 ## 📦 Overview
 
-**Refuctor** is your AI-powered, snark-fueled technical debt cleansing suite, birthed from the twisted labs of Puberty Labs. It's what happens when a debt tracker gains sentience and catches its creator in the act of writing sloppy markdown.
+**Refuctor** is your AI-powered, snark-fueled technical debt cleansing suite,
+birthed from the twisted labs of Puberty Labs. It's what happens when a debt
+tracker gains sentience and catches its creator in the act of writing sloppy
+markdown.
 
 ### ✨ Core Features
 
@@ -20,6 +23,7 @@
 ## 🧙‍♂️ Refuctor Setup Wizard (aka Tax Planning Wizard)
 
 When you start a new Cursor project:
+
 - ✅ Installs MCP integration
 - 🧾 Creates a custom `.cursorwrap.json` with mandatory session wrap rules
 - 🧹 Boots the Debt Collector
@@ -65,8 +69,10 @@ When you start a new Cursor project:
 - **Debt Collector** – The enforcer, CLI + GUI combo
 - **Goons** – Subtools like `fix-lint`, `clean-imports`, `comment-killer`
 - **Accountant** – Logs warnings and time wasted to simulate "tech debt interest"
-- **Fluffer** – Pre-build script that preps files for cleanup and removes blocking syntax
-- **BindStormer** – Detects flailing services bouncing across multiple configurations
+- **Fluffer** – Pre-build script that preps files for cleanup and removes
+  blocking syntax
+- **BindStormer** – Detects flailing services bouncing across multiple
+  configurations
 
 ---
 
@@ -90,8 +96,10 @@ When you start a new Cursor project:
 
 ## 🐣 Puberty Labs Approval
 
-Officially branded with our immature, brilliant, questionably legal seal of authenticity.
+Officially branded with our immature, brilliant, questionably legal seal of
+authenticity.
 
 ---
 
-> _"Built by someone who created 36 warnings while building a debt warning system. Self-own level: legendary."_ 
+> _"Built by someone who created 36 warnings while building a debt warning
+> system. Self-own level: legendary."_

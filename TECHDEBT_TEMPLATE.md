@@ -155,6 +155,8 @@ Zero debt, you magnificent developer!
 
 ---
 
-*"Built with Refuctor - The Debt Cleansing Syndicate"*
+## 📋 Footer
 
-*"Because your code deserves better than being held hostage by technical debt."* 
+Built with Refuctor - The Debt Cleansing Syndicate
+
+Because your code deserves better than being held hostage by technical debt.
