@@ -44,22 +44,28 @@ No low priority debt items - zero debt status achieved
 ### Comprehensive Scan (Run During Session Wrap)
 
 ```bash
+
 # Markdown linting
+
 npx --yes markdownlint-cli "*.md"
 
 # Spell checking
+
 npx --yes cspell "**/*.{md,js,json,ts}" "*.mdc"
 
 # Security audit (when package.json exists)
+
 npm audit
 
 # Dead code detection (when applicable)
+
 # npx --yes unimported
 
 # Bundle analysis (when build exists)
-# npx --yes webpack-bundle-analyzer dist/stats.json
-```
 
+# npx --yes webpack-bundle-analyzer dist/stats.json
+
+```text
 ### Real-time Monitoring
 
 - **IDE Warning Count**: Monitor status bar indicators

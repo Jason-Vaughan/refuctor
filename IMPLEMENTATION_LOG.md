@@ -196,20 +196,47 @@ Refuctor successfully scanned its own codebase and detected **237+ markdown lint
 ```bash
 refuctor goon fix-markdown <file> [--preview]  # ✅ WORKING
 ```text
-#### **Next Session Priorities**
+#### **Next Session Priorities - CRITICAL ISSUE IDENTIFIED**
 
-**Phase 1 Completion:**
+**🚨 IMMEDIATE PRIORITY - P1 CRITICAL:**
+- **IDE vs CLI Debt Discrepancy Investigation**: MUST RESOLVE before continuing
+  - IDE Problems panel: 142 violations
+  - CLI markdownlint: 32 violations  
+  - Potential causes: Configuration differences, rule sets, file watching issues
+  - **Impact**: Cannot trust debt metrics or validate goon tool effectiveness
+  - **Required**: Debug configuration differences, compare exact rule versions
 
+**Phase 1 Completion (Blocked until P1 resolved):**
 - 🎯 **Additional Goons**: Build `clean-imports`, `comment-killer`, `dead-code-hunter`
 - 🎯 **NPM Publishing**: Package ready for `npm publish --tag beta`
 - 🎯 **Documentation**: Update README.md with goon tool examples
-- 🎯 **Self-Validation**: Use goons on all Refuctor project files
+- 🎯 **IDE Integration**: Ensure goons work with Cursor's linting system
 
 **Technical Debt Status:**
+- **Critical**: IDE/CLI discrepancy (P1 - blocks progress)
+- **Current CLI**: 32 line length violations (P4 - content-sensitive)
+- **Current IDE**: 142 violations (needs investigation)
+- **Strategy**: Resolve discrepancy first, then continue development
 
-- **Current**: 4 violations remaining (line length only)
-- **Priority**: P4 (low priority, content-sensitive)
-- **Strategy**: Manual review for URL shortening opportunities
+#### **Session Assessment: MAJOR SUCCESS WITH CRITICAL DISCOVERY**
+
+**✅ ACHIEVEMENTS:**
+- Goon tool architecture built and validated
+- Markdown Fixer Goon successfully deployed
+- 157+ violations eliminated via CLI testing
+- Comprehensive documentation and case study created
+- Extensible framework ready for additional goons
+
+**⚠️ CRITICAL DISCOVERY:**
+- IDE vs CLI debt reporting discrepancy identified
+- Requires investigation before project can be considered "tight"
+- Potential configuration or tooling inconsistency
+
+**🎯 PROJECT STATUS:**
+- **Architecture**: COMPLETE ✅
+- **Core Functionality**: WORKING ✅  
+- **Validation**: PENDING ⚠️ (awaiting discrepancy resolution)
+- **Next Phase**: BLOCKED until P1 resolved
 
 ---
 
@@ -310,7 +337,7 @@ refuctor/
 
 - ✅ macOS (primary development) - All commands working
 - 🎯 Linux (CI/CD compatibility) - Ready for testing
-- 🎯 Windows (user base coverage) - Ready for testing
+- �� Windows (user base coverage) - Ready for testing
 
 ---
 

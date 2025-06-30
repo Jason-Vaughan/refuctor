@@ -12,23 +12,35 @@ priority, and accountability.
 
 ### P1 - Critical (Fix Immediately)
 
-No critical debt items - maintaining clean codebase
+- **IDE vs CLI Debt Discrepancy**: CRITICAL INVESTIGATION REQUIRED
+  - **Issue**: IDE Problems panel shows 142 violations vs CLI showing 32
+  - **Files Affected**: README.md (48 IDE vs 6 CLI), REFUCTOR_ROADMAP.md (81 IDE vs 4 CLI)
+  - **Priority**: P1 (blocks project credibility and goon tool validation)
+  - **Added**: 2025-01-03 - Goon tool deployment session
+  - **Investigation Needed**: 
+    - Compare markdownlint configurations (IDE vs CLI)
+    - Check if IDE using different rule sets
+    - Verify file watching/refresh issues
+    - Test with fresh IDE restart
+    - Compare exact rule versions and configs
+  - **Impact**: Cannot trust debt metrics until resolved
+  - **Next Steps**: Debug configuration differences before continuing development
 
 ### P2 - High (Fix This Session)
 
-No high priority debt items - clean slate achieved
+No high priority debt items - pending P1 resolution
 
 ### P3 - Medium (Fix Next Session)
 
-No medium priority debt items - excellent technical hygiene
+No medium priority debt items - pending P1 resolution
 
 ### P4 - Low (Fix When Convenient)
 
-- **REFUCTOR_ROADMAP.md Line Length**: 4 remaining MD013 violations (line length >80)
-  - Lines 13, 387, 389, 399 contain long URLs and technical specifications
+- **Remaining Line Length Violations**: 32 MD013 violations across multiple files
+  - **Status**: Intentionally preserved by goon tools for content safety
   - **Priority**: P4 (content-sensitive, manual review needed)
-  - **Added**: 2025-01-03 - Goon tool deployment session
-  - **Strategy**: Manual review for content safety, potential URL shortening
+  - **Added**: 2025-01-03 - Post-goon cleanup
+  - **Strategy**: Manual review for URL shortening opportunities
 
 ## ✅ Resolved Debt (Session History)
 
@@ -43,6 +55,7 @@ No medium priority debt items - excellent technical hygiene
 #### MASSIVE DEBT ELIMINATION: 77 violations obliterated
 
 **Goon Tool Performance Metrics:**
+
 - **Target File**: REFUCTOR_ROADMAP.md (368 lines)
 - **Violations Before**: 81 (multiple rule types)
 - **Violations After**: 4 (line length only)
@@ -51,8 +64,9 @@ No medium priority debt items - excellent technical hygiene
 - **Content Safety**: 100% (no content alterations)
 
 **Rules Successfully Eliminated:**
+
 - ✅ MD022 (Blank lines around headings): All violations fixed
-- ✅ MD032 (Blank lines around lists): All violations fixed  
+- ✅ MD032 (Blank lines around lists): All violations fixed
 - ✅ MD031 (Blank lines around code blocks): All violations fixed
 - ✅ MD040 (Code block languages): All violations fixed
 - ✅ MD009 (Trailing spaces): All violations fixed
@@ -75,19 +89,23 @@ No medium priority debt items - excellent technical hygiene
 ### Comprehensive Scan (Run During Session Wrap)
 
 ```bash
+
 # Markdown linting
+
 npx --yes markdownlint-cli "*.md"
 
 # Spell checking
+
 npx --yes cspell "**/*.{md,js,json,ts}" "*.mdc"
 
 # Security audit (when package.json exists)
+
 npm audit
 
 # Refuctor comprehensive scan
-refuctor scan --verbose
-```
 
+refuctor scan --verbose
+```text
 ### Real-time Monitoring
 
 - **IDE Warning Count**: Monitor status bar indicators

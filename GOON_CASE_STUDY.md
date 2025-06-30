@@ -30,8 +30,7 @@ src/goons/
 ├── import-cleaner.js     # 🎯 PLANNED - Unused import elimination
 ├── comment-killer.js     # 🎯 PLANNED - Outdated comment removal
 └── dead-code-hunter.js   # 🎯 PLANNED - Unused function detection
-```
-
+```text
 ### **CLI Integration**
 
 ```bash
@@ -39,8 +38,7 @@ refuctor goon fix-markdown <file> [--preview]  # ✅ WORKING
 refuctor goon clean-imports <file>             # 🎯 PLANNED
 refuctor goon comment-killer <file>            # 🎯 PLANNED
 refuctor goon dead-code-hunter <file>          # 🎯 PLANNED
-```
-
+```text
 ### **Core Capabilities**
 
 - **Specialized Focus**: Each goon handles specific debt types
@@ -56,11 +54,13 @@ refuctor goon dead-code-hunter <file>          # 🎯 PLANNED
 ### **REFUCTOR_ROADMAP.md - Primary Target**
 
 **Before Goon Deployment:**
+
 - **Total Violations**: 81
 - **File Size**: 368 lines
 - **Rule Types**: MD022, MD032, MD031, MD040, MD009, MD047, MD013
 
 **After Goon Deployment:**
+
 - **Total Violations**: 4 (95.1% reduction)
 - **File Size**: 406 lines (proper formatting)
 - **Fixes Applied**: 53 automated corrections
@@ -81,12 +81,14 @@ refuctor goon dead-code-hunter <file>          # 🎯 PLANNED
 ### **Secondary Targets Performance**
 
 **README.md:**
+
 - **Fixes Applied**: 44
 - **Lines**: 262 → 289 (proper formatting)
 - **Status**: Aggressive debt elimination successful
 
 **IMPLEMENTATION_LOG.md:**
-- **Fixes Applied**: 20  
+
+- **Fixes Applied**: 20
 - **Lines**: 420 → 426 (proper formatting)
 - **Status**: Debt restructuring complete
 
@@ -97,19 +99,23 @@ refuctor goon dead-code-hunter <file>          # 🎯 PLANNED
 ### **Snarky Debt-Cleansing Messages**
 
 ```bash
+
 # Zero violations detected
+
 "Your markdown is already cleaner than a loan shark's books. Impressive."
 
 # Minor fixes (1-9)
+
 "Fixed 8 violations. Your document was only slightly embarrassing."
 
-# Moderate fixes (10-49)  
+# Moderate fixes (10-49)
+
 "Eliminated 44 violations. Your markdown was in serious foreclosure."
 
 # Major fixes (50+)
-"Obliterated 53 violations. Your document was so broken it filed for bankruptcy."
-```
 
+"Obliterated 53 violations. Your document was so broken it filed for bankruptcy."
+```text
 ### **CLI Output Examples**
 
 ```bash
@@ -125,8 +131,7 @@ Initiating aggressive document restructuring...
 
 ✅ DEBT ELIMINATED!
 Your markdown is now cleaner than a loan shark's books.
-```
-
+```text
 ---
 
 ## 🏗️ Architecture Validation
@@ -195,4 +200,4 @@ The goon tool framework is now ready for expansion into additional debt categori
 
 **Built with Refuctor - The Debt Cleansing Syndicate**
 
-*"Because your code deserves better than being held hostage by technical debt"* 
+*"Because your code deserves better than being held hostage by technical debt"*
