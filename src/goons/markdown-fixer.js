@@ -1,5 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
+const { DebtIgnoreParser } = require('../debt-ignore-parser');
 
 /**
  * Markdown Fixer Goon - Aggressive markdown debt elimination
@@ -13,6 +14,7 @@ class MarkdownFixerGoon {
     this.personality = 'Aggressive document restructuring specialist';
     this.fixCount = 0;
     this.snarkLevel = 11; // Out of 10, naturally
+    this.ignoreParser = new DebtIgnoreParser();
   }
 
   /**
@@ -24,6 +26,19 @@ class MarkdownFixerGoon {
   async eliminateDebt(filePath, dryRun = false) {
     if (!fs.existsSync(filePath)) {
       throw new Error(`File not found: ${filePath}. Even I can't fix what doesn't exist.`);
+    }
+
+    // Check if file is debt-ignored
+    const projectRoot = process.cwd();
+    await this.ignoreParser.loadIgnorePatterns(projectRoot);
+    const relativePath = path.relative(projectRoot, filePath);
+    
+    if (this.ignoreParser.shouldIgnore(relativePath)) {
+      return {
+        filePath,
+        ignored: true,
+        message: `🚫 File is debt-ignored: ${relativePath}. The Debt Collection Agency respects your boundaries... this time.`
+      };
     }
 
     const originalContent = await fs.readFile(filePath, 'utf8');

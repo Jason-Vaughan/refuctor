@@ -357,6 +357,15 @@ goonCommand
         ? await markdownFixerGoon.previewFixes(file)
         : await markdownFixerGoon.eliminateDebt(file);
       
+      // Handle debt-ignored files
+      if (report.ignored) {
+        console.log(colors.bold(colors.gray('🚫 FILE DEBT-IGNORED')));
+        console.log(colors.gray(`📄 File: ${report.filePath}`));
+        console.log(colors.yellow(`💬 Status: ${report.message}`));
+        console.log(colors.gray('\nFile excluded from debt tracking per .debtignore patterns.'));
+        return;
+      }
+      
       console.log(colors.bold(colors.green('📊 DEBT ELIMINATION REPORT:')));
       console.log(colors.blue(`📄 File: ${report.filePath}`));
       console.log(colors.blue(`📏 Lines: ${report.originalLines} → ${report.fixedLines}`));
@@ -463,7 +472,9 @@ program
         }
         
         const report = await markdownFixerGoon.eliminateDebt(file, options.dryRun);
-        if (report.fixesApplied > 0) {
+        if (report.ignored) {
+          console.log(gray(`   🚫 ${file}: debt-ignored`));
+        } else if (report.fixesApplied > 0) {
           console.log(green(`   ✅ ${file}: ${report.fixesApplied} violations eliminated`));
           totalFixes += report.fixesApplied;
         }
