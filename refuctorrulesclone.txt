@@ -1,0 +1,228 @@
+---
+description: Refuctor development guidelines and workflow standards - apply to all Refuctor development tasks and conversations
+globs: 
+alwaysApply: true
+---
+
+# Refuctor Cursor Rules
+# "No Bloat. No Debt. No Bullshit."
+
+## 📋 CURSOR RULES CLONE WORKFLOW
+**This file (`refuctorrulesclone.txt`) is a staging/backup file for cursor rules management.**
+
+**Why this exists:**
+- Cursor rules are now managed through Cursor's interface (not as a file)
+- Interface-managed rules can't be edited programmatically
+- This clone file serves as the editable source of truth
+
+**Workflow:**
+1. AI makes changes to this clone file when cursor rules need updates
+2. AI will ALWAYS prompt you to copy the entire contents to Cursor's interface
+3. You manually copy/paste the full content to update the live rules
+4. This ensures cursor rules stay synchronized with our development needs
+
+**When to update the live rules:**
+- Any time this file is modified during a session
+- When you see a prompt: "🚨 CURSOR RULES UPDATED - Please copy refuctorrulesclone.txt to Cursor interface"
+
+---
+
+<!-- cSpell:words refuctor Refuctor cursorrules techdebt puberty bailmeout -->
+<!-- cSpell:words markdownlint cspell eslint foreclosure repossession -->
+<!-- cSpell:words snarkified goons fluffer accountant bindstormer -->
+
+## 🎯 Core Philosophy
+- **MINIMUM BLOAT**: Every line of code must justify its existence
+- **IMMEDIATE TECH DEBT**: Address technical debt the moment it's identified
+- **SINGLE SOURCE OF TRUTH**: All documentation lives in README.md and REFUCTOR_ROADMAP.md
+- **SNARKY BUT FUNCTIONAL**: Maintain Refuctor's debt-cleansing personality without sacrificing performance
+
+## 🚫 Anti-Bloat Enforcement
+- NO unused imports, variables, or functions
+- NO commented-out code blocks (delete it)
+- NO duplicate logic (DRY principle, but don't over-abstract)
+- NO "TODO" comments (fix it now or create an issue)
+- NO dependencies without clear justification
+- NO config files for config files
+- NO premature optimization, but NO obvious performance sins
+
+## 📁 File Management
+- Keep file count minimal - prefer larger cohesive files over micro-files
+- Delete temp files, test artifacts, and debug outputs immediately
+- Use .gitignore aggressively for build artifacts
+- One source of truth: if it's in README.md or ROADMAP.md, don't duplicate it elsewhere
+
+## 🎨 Refuctor Brand Guidelines
+- Maintain snarky debt-cleansing personality in CLI output, error messages, and logs
+- Use Refuctor terminology: "Debt Collector", "Goons", "Foreclosure", "Repossession"
+- Color scheme: debt-red warnings, clean-green success, dark theme
+- Financial metaphors: "refinance", "bankruptcy", "collection agency", "interest accruing"
+
+## 🧹 Session Wrap Protocol (Enhanced)
+When user says "session wrap" or "let's wrap", execute this comprehensive 9-step procedure:
+
+### 1. Session Summary 📋
+- **Accomplishments**: What we built, fixed, or improved
+- **Technical breakthroughs**: Solutions to blockers or architecture decisions
+- **Testing results**: What works, what broke, validation outcomes
+- **Code quality improvements**: Refactoring, optimization, cleanup performed
+- **Performance metrics**: Build times, bundle sizes, runtime improvements
+
+### 2. Next Session Priorities 🎯
+- **Critical path items**: Must-do tasks for next session
+- **Specific success criteria**: Measurable goals to achieve
+- **Roadmap milestone progress**: Which milestones advanced/completed
+- **Technical blockers**: Known issues requiring resolution
+- **Risk assessments**: Potential obstacles and mitigation strategies
+
+### 3. Documentation Maintenance 📚
+- **Update README.md**: Add new features, modify installation instructions, update status
+- **Update REFUCTOR_ROADMAP.md**: Mark milestones complete, adjust timeline, add discoveries
+- **Update cursor rules**: Reflect any new patterns, rules, or architecture changes through Cursor interface
+- **Brand guidelines compliance**: Ensure snarky debt-cleansing personality maintained
+- **Documentation drift detection**: Find outdated guides, stale instructions
+- **Cross-reference validation**: Check internal links and file references
+
+### 4. Technical Debt Cleanup 🧹
+- **AUTOMATED DEBT SCANNING**: Run comprehensive tech debt detection
+- **Update TECHDEBT.md**: Log new issues found, mark resolved items complete
+- **Cursor Error Analysis**: Count and categorize all IDE warning indicators
+- **Linting Issues**: `npx markdownlint-cli *.md` and other applicable linters
+- **Spell Check Issues**: `npx cspell "**/*.{md,js,json,ts}" "*.mdc"` across all relevant files  
+- **Unused Dependencies**: Analyze package.json vs actual imports
+- **Dead Code Detection**: Functions, variables, imports no longer referenced
+- **TODO Comment Audit**: Find orphaned TODOs without corresponding issues
+- **Security Vulnerabilities**: `npm audit` and dependency analysis
+- **Performance Bottlenecks**: Bundle size, load time, memory usage analysis
+- **Configuration Drift**: Validate all config files align with project standards
+- **Broken Reference Cleanup**: Fix invalid file paths, missing dependencies
+- **Recommend specific files for removal** with justification
+- **DEBT ACCOUNTABILITY**: Every new debt item gets session timestamp and priority
+
+### 5. Configuration Validation ⚙️
+- **Verify .gitignore**: Add new patterns for build artifacts, temp files
+- **Check package.json**: Version consistency, dependency alignment, script validity
+- **Validate cursor configurations**: Interface-managed rules, workspace settings
+- **Environment setup verification**: Development tools, paths, permissions
+- **Cross-platform compatibility**: Ensure setup works on different systems
+
+### 6. Git Management Strategy 🔀
+**Local Development Commits (Full Project):**
+- **Commit ALL files locally**: ROADMAP.md, cursor rules clone file, internal docs, dev files
+- **Full project history**: Maintain complete development context
+- **Descriptive commit messages** (under 200 chars, explain the "why")
+- **Include session wrap context** in commit description
+
+**Distribution Preparation:**
+- **Review .gitignore carefully**: Only core files for public distribution
+- **Exclude internal docs**: REFUCTOR_ROADMAP.md, refuctorrulesclone.txt, dev notes, session wraps
+- **Core files only**: CLI, src/, configs, essential documentation, package.json
+- **Validate distribution**: Ensure only intended files will be published/shared
+- **Version bump if features added** following semantic versioning
+
+### 7. Handoff Notes 🚀
+- **Clear starting points**: Exactly where to begin next session
+- **Development environment status**: What's running, what's configured
+- **Known issues with context**: Debugging solutions that worked
+- **Immediate action items**: Ordered by priority with time estimates
+- **Architecture state**: Current working patterns and decisions
+
+### 8. Project Health Report 📊
+- **Repository cleanliness**: File count, organization, bloat assessment
+- **Documentation currency**: How up-to-date is everything (0-100%)
+- **Feature completion**: Progress toward MVP and Phase 2 milestones
+- **System stability**: What's working reliably vs. what's experimental
+- **Technical debt score**: Overall codebase health assessment
+
+### 9. AI Self-Reflection & Process Improvement 🤔
+- **Session learnings**: What worked well vs. what caused friction
+- **Process bottlenecks**: Identify inefficient patterns or repeated issues
+- **Rule enhancement opportunities**: Suggest specific cursor rules improvements
+- **Workflow optimizations**: Better approaches discovered during session
+- **Knowledge gaps**: Areas where better documentation or automation needed
+- **Update recommendations**: Propose specific rule changes for next session
+
+## 🛠️ Code Quality Standards
+- Functions should do one thing well
+- Variable names should be descriptive (no single letters except loop counters)
+- Error messages should be helpful AND snarky (debt-cleansing personality)
+- Comments explain WHY, not WHAT
+- No magic numbers - use named constants
+- Async/await over Promises over callbacks
+
+## 🎯 Refuctor-Specific Rules
+- CLI commands should have debt-cleansing personality: "refuctor scan", "refuctor shame", "refuctor fix"
+- Error messages should use financial metaphors: "Your code is in foreclosure", "Debt levels critical"
+- Success messages should be celebratory: "Debt eliminated! You magnificent debt-slayer!"
+- All debt priorities use P1-P4 system with snarky descriptions
+- Follow established Puberty Labs humor patterns
+
+## 🚨 Automatic Actions
+- Run linter after every code change
+- Clean up imports on save
+- Validate JSON configs on modification
+- Check for dead code after refactoring
+- Verify all external links in documentation
+
+## 💡 Decision Framework
+Before adding anything, ask:
+1. Does this solve a real problem?
+2. Is there a simpler way?
+3. Will this create maintenance burden?
+4. Does it align with Refuctor's debt-cleansing mission?
+5. Can we delete something else instead?
+
+## 📋 Session Context Continuity
+- **Always update cursor rules** through Cursor interface with current working state during session wraps
+- **Document architecture changes** immediately when they occur
+- **Track TODO items** with priority and context in REFUCTOR_ROADMAP.md
+- **Note debugging solutions** that work for future reference
+- **Maintain clean development state** between sessions
+
+## 📁 File Organization Standards
+- **Naming conventions**: Use refuctor- prefixes for core modules
+- **File lifecycle management**: Clean up temp files, test artifacts, debug outputs
+- **Directory structure**: Organize by function (src/, cli/, templates/)
+- **Reference documentation**: Update README.md when adding significant files
+- **Deletion protocol**: Justify removals, check for dependencies before deleting
+
+## 🛠️ Development Workflow
+- **Manual testing**: Test all CLI commands during development
+- **Cross-platform validation**: Ensure compatibility across macOS, Linux, Windows
+- **Version management**: Use semantic versioning with clear release notes
+- **Backwards compatibility**: Maintain where possible, document breaking changes
+- **Migration guides**: Provide clear upgrade paths for users
+
+## 🔧 Technical Standards
+- **Error handling**: Create helpful AND snarky error messages with debt metaphors
+- **Configuration management**: Support multiple config sources with validation
+- **File system operations**: Use proper permission checking and backup strategies
+- **CLI design**: Intuitive commands with memorable aliases and good help text
+- **Performance**: Monitor build times, startup speed, memory usage
+
+## 🔀 Git & Distribution Strategy
+**Local Development Philosophy:**
+- **Commit everything locally**: Full development context, internal docs, roadmaps
+- **Rich development history**: Track all decisions, changes, and iterations
+- **No file exclusions locally**: Complete project state for development continuity
+
+**Distribution Philosophy:**
+- **Minimal public footprint**: Only essential files for end users
+- **Strategic .gitignore**: Hide internal development artifacts
+- **Core functionality focus**: CLI tools, configs, user documentation only
+- **Clean public repo**: No development notes, roadmaps, or internal planning docs
+
+**Files for Local Development Only:**
+- REFUCTOR_ROADMAP.md (internal planning)
+- refuctorrulesclone.txt (development guidelines backup)
+- Session wrap files and development notes
+- Internal planning and architecture documents
+- Development-specific assets and configurations
+
+**Files for Public Distribution:**
+- CLI executables and core code (src/, cli/)
+- package.json and essential configs
+- User-facing README and documentation
+- License and templates/ directory
+
+Remember: "Refactor or Be Repossessed" - eliminate debt with snarky efficiency! 

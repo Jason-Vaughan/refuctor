@@ -1,0 +1,92 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "refuctor",
+    "Refuctor",
+    "cursorrules",
+    "techdebt",
+    "TECHDEBT",
+    "markdownlint",
+    "cspell",
+    "puberty",
+    "snarkified",
+    "bailmeout",
+    "webpack",
+    "gitignore",
+    "npmjs",
+    "mermaid",
+    "dhcp",
+    "mdns",
+    "zeroconf",
+    "ipc",
+    "websocket",
+    "json",
+    "rpc",
+    "api",
+    "cli",
+    "daemon",
+    "ttl",
+    "pid",
+    "pids",
+    "async",
+    "await",
+    "refactoring",
+    "microservice",
+    "microservices",
+    "multiuser",
+    "crossplatform",
+    "semver",
+    "versioning",
+    "nmap",
+    "triggerable",
+    "snarkiness",
+    "ehthumbs",
+    "stormers",
+    "SCTP",
+    "tulpn",
+    "eslint",
+    "typescript",
+    "dockerfile",
+    "kubernetes",
+    "devops",
+    "cicd"
+  ],
+  "ignoreWords": [
+    "refuctor",
+    "cursorrules",
+    "techdebt"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".git/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.gif",
+    "*.svg",
+    "*.ico"
+  ],
+  "caseSensitive": false,
+  "allowCompoundWords": true,
+  "languageSettings": [
+    {
+      "languageId": "markdown",
+      "allowCompoundWords": true,
+      "caseSensitive": false
+    },
+    {
+      "languageId": "javascript",
+      "allowCompoundWords": true,
+      "caseSensitive": true
+    },
+    {
+      "languageId": "typescript",
+      "allowCompoundWords": true,
+      "caseSensitive": true
+    }
+  ]
+} 
