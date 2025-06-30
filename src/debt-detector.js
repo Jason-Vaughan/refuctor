@@ -35,6 +35,8 @@ class DebtDetector {
       p3: [], // Medium - liens filed
       p4: [], // Low - interest accruing
       summary: {},
+      ignoredFiles: verbose ? [] : null,
+      ignoredDebt: verbose ? { total: 0, files: [] } : null,
       details: verbose ? {} : null
     };
 
@@ -42,11 +44,25 @@ class DebtDetector {
       // Load debt ignore patterns first
       await this.ignoreParser.loadIgnorePatterns(projectPath);
       
+      if (verbose) {
+        console.log(`\n📋 Ignore patterns loaded: ${this.ignoreParser.getPatterns().length}`);
+        const customPatterns = this.ignoreParser.getPatterns().slice(6); // Skip default patterns
+        if (customPatterns.length > 0) {
+          console.log(`🚫 Custom ignore patterns: ${customPatterns.join(', ')}`);
+        }
+      }
+      
       // Run all debt detection methods
-      const markdownDebt = await this.detectMarkdownDebt(projectPath);
+      const markdownDebt = await this.detectMarkdownDebt(projectPath, verbose);
       const spellDebt = await this.detectSpellingDebt(projectPath);
       const securityDebt = await this.detectSecurityDebt(projectPath);
       const dependencyDebt = await this.detectDependencyDebt(projectPath);
+
+      // Store ignored file information if verbose
+      if (verbose) {
+        debtReport.ignoredFiles = markdownDebt.ignoredFiles || [];
+        debtReport.ignoredDebt = markdownDebt.ignoredDebt || { total: 0, files: [] };
+      }
 
       // Categorize and merge results
       this.categorizeDebt(debtReport, 'markdown', markdownDebt);
@@ -66,6 +82,15 @@ class DebtDetector {
         dependencies: dependencyDebt.total,
         debtLevel: this.calculateDebtLevel(debtReport)
       };
+
+      // Show ignored debt summary if verbose
+      if (verbose && debtReport.ignoredDebt && debtReport.ignoredDebt.total > 0) {
+        console.log(`\n🚫 IGNORED DEBT DETECTED:`);
+        console.log(`   Files with ignored issues: ${debtReport.ignoredDebt.files.length}`);
+        console.log(`   Total ignored debt items: ${debtReport.ignoredDebt.total}`);
+        console.log(`   Ignored files: ${debtReport.ignoredFiles.join(', ')}`);
+        console.log(`   💡 These files have issues but are excluded from debt tracking`);
+      }
 
       if (verbose) {
         debtReport.details = {
@@ -98,8 +123,8 @@ class DebtDetector {
   /**
    * Detect markdown linting issues
    */
-  async detectMarkdownDebt(projectPath) {
-    const debt = { total: 0, issues: [], files: [] };
+  async detectMarkdownDebt(projectPath, verbose = false) {
+    const debt = { total: 0, issues: [], files: [], ignoredFiles: [], ignoredDebt: { total: 0, files: [] } };
     
     try {
       const allMarkdownFiles = glob.sync('**/*.{md,mdc}', { 
@@ -107,14 +132,61 @@ class DebtDetector {
         ignore: ['node_modules/**', '.git/**']  // Basic ignore only
       });
       
-      // Filter using debt ignore patterns
-      const markdownFiles = this.ignoreParser.filterIgnored(allMarkdownFiles);
+      // Separate ignored and non-ignored files
+      const markdownFiles = [];
+      const ignoredFiles = [];
+      
+      for (const file of allMarkdownFiles) {
+        if (this.ignoreParser.shouldIgnore(file)) {
+          ignoredFiles.push(file);
+        } else {
+          markdownFiles.push(file);
+        }
+      }
+      
+      debt.ignoredFiles = ignoredFiles;
+      
+      if (verbose && ignoredFiles.length > 0) {
+        console.log(`\n🚫 Ignoring ${ignoredFiles.length} markdown files: ${ignoredFiles.join(', ')}`);
+      }
+      
+      if (verbose && markdownFiles.length > 0) {
+        console.log(`📝 Scanning ${markdownFiles.length} markdown files: ${markdownFiles.join(', ')}`);
+      }
+
+      // Check ignored files for debt (for reporting purposes)
+      if (verbose && ignoredFiles.length > 0) {
+        console.log(`\n🔍 Checking ignored files for debt issues...`);
+        for (const file of ignoredFiles) {
+          try {
+            const cmd = `npx --yes markdownlint-cli "${file}"`;
+            execSync(cmd, { 
+              cwd: projectPath, 
+              encoding: 'utf8',
+              stdio: 'pipe'
+            });
+            // No issues found in this ignored file
+            console.log(`   ✅ ${file} - no issues`);
+          } catch (error) {
+            if (error.status === 1 && (error.stdout || error.stderr)) {
+              // markdownlint sends output to stderr, not stdout
+              const output = error.stderr || error.stdout;
+              const lines = output.trim().split('\n');
+              debt.ignoredDebt.total += lines.length;
+              if (!debt.ignoredDebt.files.includes(file)) {
+                debt.ignoredDebt.files.push(file);
+              }
+              console.log(`   🚫 ${file} - ${lines.length} issues (ignored)`);
+            }
+          }
+        }
+      }
 
       if (markdownFiles.length === 0) {
         return debt;
       }
 
-      // Run markdownlint
+      // Run markdownlint on non-ignored files
       const cmd = `npx --yes markdownlint-cli "${markdownFiles.join('" "')}"`;
       try {
         const result = execSync(cmd, { 
@@ -126,8 +198,10 @@ class DebtDetector {
         debt.total = 0;
       } catch (error) {
         // markdownlint exits with code 1 when issues found
-        if (error.status === 1 && error.stdout) {
-          const lines = error.stdout.trim().split('\n');
+        if (error.status === 1 && (error.stdout || error.stderr)) {
+          // markdownlint sends output to stderr, not stdout
+          const output = error.stderr || error.stdout;
+          const lines = output.trim().split('\n');
           debt.total = lines.length;
           debt.issues = lines.map(line => {
             const match = line.match(/^(.+):(\d+):?\d*\s+(.+)\s+(.+)$/);
