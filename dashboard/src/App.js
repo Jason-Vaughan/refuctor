@@ -293,6 +293,11 @@ const App = () => {
           </div>
         </div>
 
+        <div className="middle-panel">
+          <h2 className="panel-title">New Panel</h2>
+          {/* Add content for the new panel here */}
+        </div>
+
         <div className="interest-clock">
           <div className="clock-display">
             <div className="time-wasted">

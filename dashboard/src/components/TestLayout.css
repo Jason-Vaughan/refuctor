@@ -1,0 +1,79 @@
+.test-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  box-sizing: border-box;
+  background: #1a1a1a; /* Background for the main test container */
+  border-radius: 16px;
+}
+
+.test-top-panels {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.test-panel {
+  flex: 1; /* Distribute space evenly in flex containers */
+  min-width: 0; /* Ensures proper shrinking in flex/grid */
+  background: #333; /* Default panel background */
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: #fff;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.top-left-panel,
+.top-right-panel {
+  /* These will share space in the test-top-panels flex container */
+  min-width: 300px; /* Ensure they don't get too small */
+}
+
+.bottom-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Responsive buttons */
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(33, 33, 33, 0.8));
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.test-button {
+  padding: 1rem;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.test-button:hover {
+  background: #0056b3;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .test-top-panels {
+    flex-direction: column; /* Stack top panels vertically */
+  }
+
+  .test-panel {
+    margin-bottom: 1rem; /* Add some space when stacked */
+  }
+
+  .bottom-panel {
+    grid-template-columns: 1fr; /* Stack buttons vertically on small screens */
+  }
+} 

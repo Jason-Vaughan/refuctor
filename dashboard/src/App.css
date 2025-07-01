@@ -756,7 +756,7 @@ body {
 /* Phase 2 Enhancement: Financial Metrics */
 .financial-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   margin-bottom: 2rem;
   padding: 2rem;
@@ -1029,4 +1029,13 @@ body {
       0 0 30px rgba(244, 67, 54, 0.8),
       inset 0 0 30px rgba(244, 67, 54, 0.3);
   }
+}
+
+/* New Middle Panel */
+.middle-panel {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 } 
