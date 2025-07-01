@@ -66,6 +66,13 @@ alwaysApply: true
 ## 🧹 Session Wrap Protocol (Enhanced)
 When user says "session wrap" or "let's wrap", execute this comprehensive 9-step procedure:
 
+### 0. Git Snapshot Prompt 🐙
+- Before proceeding, prompt the user to choose the git snapshot strategy:
+  - 📦 Full workspace commit (`git add -A && git commit -m "<message>"`)
+  - 🛠 Selective commit
+  - 🚫 Skip commit
+- Wait for user selection before performing the rest of the session wrap.
+
 ### 1. Session Summary 📋
 - **Accomplishments**: What we built, fixed, or improved
 - **Technical breakthroughs**: Solutions to blockers or architecture decisions
