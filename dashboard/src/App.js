@@ -170,8 +170,8 @@ const App = () => {
               <h1 className="dashboard-title fallback-title" style={{display: 'none'}}>
                 🏦 REFUCTOR DASHBOARD
               </h1>
+              <p className="dashboard-subtitle">The Debt Collector Interface</p>
             </div>
-            <p className="dashboard-subtitle">The Debt Collector Interface</p>
           </div>
           
           <div className="connection-status">

@@ -16,11 +16,19 @@ No critical debt items - ready for development!
 
 ### P2 - High (Fix This Session)
 
-No high priority debt items - pending P1 resolution
+- **REFUCTOR_MYTHOS.md Formatting**: 7 markdown violations (blanks around lists, line length >164 chars, trailing newline)
+  - **Status**: Active debt blocking documentation quality
+  - **Priority**: P2 (documentation critical for project presentation)
+  - **Added**: 2025-01-03 Session Wrap - Dashboard completion milestone
+  - **Strategy**: Fix MD032, MD013, MD047 violations for professional presentation
 
 ### P3 - Medium (Fix Next Session)
 
-No medium priority debt items - pending P1 resolution
+- **Build Artifacts in Spell Check**: 44 false positives from dashboard/build/ directory contaminating debt scans
+  - **Status**: Noise affecting debt detection accuracy
+  - **Priority**: P3 (process improvement, not functional blocker)
+  - **Added**: 2025-01-03 Session Wrap - Dashboard operational review
+  - **Strategy**: Update cspell.json to exclude build artifacts permanently
 
 ### P4 - Low (Fix When Convenient)
 
@@ -29,6 +37,12 @@ No medium priority debt items - pending P1 resolution
   - **Priority**: P4 (content-sensitive, manual review needed)
   - **Added**: 2025-01-03 - Post-goon cleanup
   - **Strategy**: Manual review for URL shortening opportunities
+
+- **Minor Typo in DebtIgnoreParser**: "tais" unknown word in `src/debt-ignore-parser.js:112`
+  - **Status**: Minor spelling error in code comments or strings
+  - **Priority**: P4 (cosmetic issue, no functional impact)
+  - **Added**: 2025-01-03 Session Wrap - Code quality review
+  - **Strategy**: Review context and correct typo
 
 ## ✅ Resolved Debt (Session History)
 

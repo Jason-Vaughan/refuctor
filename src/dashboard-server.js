@@ -3,8 +3,8 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
-const debtDetector = require('./debt-detector');
-const techDebtManager = require('./techdebt-manager');
+const { debtDetector } = require('./debt-detector');
+const { techDebtManager } = require('./techdebt-manager');
 
 class DashboardServer {
     constructor(options = {}) {
@@ -88,22 +88,31 @@ class DashboardServer {
 
     async handleDebtStatus(req, res) {
         try {
-            const techDebt = await techDebtManager.loadTechDebt(this.projectPath);
+            const debtStatus = await techDebtManager.getDebtStatus(this.projectPath);
             const currentScan = await debtDetector.scanProject(this.projectPath);
             
             const status = {
                 summary: {
-                    p1: techDebt.activePriorities?.P1?.length || 0,
-                    p2: techDebt.activePriorities?.P2?.length || 0,
-                    p3: techDebt.activePriorities?.P3?.length || 0,
-                    p4: techDebt.activePriorities?.P4?.length || 0,
+                    p1: currentScan.p1?.length || 0,
+                    p2: currentScan.p2?.length || 0,
+                    p3: currentScan.p3?.length || 0,
+                    p4: currentScan.p4?.length || 0,
                     total: this.calculateTotalViolations(currentScan)
                 },
-                currentDebt: techDebt.activePriorities || {},
-                resolvedCount: techDebt.resolvedSessions?.length || 0,
+                currentDebt: {
+                    P1: currentScan.p1 || [],
+                    P2: currentScan.p2 || [],
+                    P3: currentScan.p3 || [],
+                    P4: currentScan.p4 || [],
+                    Mafia: currentScan.mafia || [],
+                    Guido: currentScan.guido || []
+                },
+                resolvedCount: debtStatus.sessionsTracked || 0,
                 lastScan: new Date().toISOString(),
-                debtTrend: this.calculateDebtTrend(techDebt),
-                shameLevel: this.calculateShameLevel(currentScan)
+                debtTrend: debtStatus.debtTrend || 'stable',
+                shameLevel: this.calculateShameLevel(currentScan),
+                mafiaStatus: currentScan.mafiaStatus,
+                guidoAppearance: currentScan.guidoAppearance
             };
 
             res.json({
@@ -122,14 +131,22 @@ class DashboardServer {
 
     async handleDebtHistory(req, res) {
         try {
-            const techDebt = await techDebtManager.loadTechDebt(this.projectPath);
+            const debtStatus = await techDebtManager.getDebtStatus(this.projectPath);
+            const currentScan = await debtDetector.scanProject(this.projectPath);
             
             res.json({
                 success: true,
                 data: {
-                    resolvedSessions: techDebt.resolvedSessions || [],
-                    totalResolved: techDebt.resolvedSessions?.length || 0,
-                    activePriorities: techDebt.activePriorities || {}
+                    resolvedSessions: [], // Will be implemented when session tracking is added
+                    totalResolved: debtStatus.sessionsTracked || 0,
+                    activePriorities: {
+                        P1: currentScan.p1 || [],
+                        P2: currentScan.p2 || [],
+                        P3: currentScan.p3 || [],
+                        P4: currentScan.p4 || [],
+                        Mafia: currentScan.mafia || [],
+                        Guido: currentScan.guido || []
+                    }
                 }
             });
         } catch (error) {
@@ -227,23 +244,20 @@ class DashboardServer {
     }
 
     calculateTotalViolations(scanResults) {
-        if (!scanResults || !scanResults.files) return 0;
-        return scanResults.files.reduce((total, file) => {
-            return total + (file.violations?.length || 0);
-        }, 0);
+        if (!scanResults) return 0;
+        // New debt detector returns totalDebt directly
+        return scanResults.totalDebt || 0;
     }
 
-    calculateDebtTrend(techDebt) {
-        // Simple trend calculation based on recent sessions
-        const sessions = techDebt.resolvedSessions || [];
-        if (sessions.length < 2) return 'stable';
+    calculateDebtTrend(debtStatus) {
+        // Simple trend calculation based on current debt level
+        if (!debtStatus || !debtStatus.currentDebtLevel) return 'stable';
         
-        const recent = sessions.slice(-3);
-        const totalResolved = recent.reduce((sum, session) => {
-            return sum + (session.resolved?.length || 0);
-        }, 0);
+        const level = debtStatus.currentDebtLevel;
+        if (level.includes('ZERO')) return 'improving';
+        if (level.includes('CRITICAL') || level.includes('MAFIA') || level.includes('GUIDO')) return 'worsening';
         
-        return totalResolved > 5 ? 'improving' : 'stable';
+        return 'stable';
     }
 
     calculateShameLevel(scanResults) {

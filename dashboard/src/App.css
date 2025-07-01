@@ -58,9 +58,9 @@ body {
 }
 
 .loading-logo-image {
-  height: 120px;
+  height: 216px; /* 50% larger than current 144px */
   width: auto;
-  max-width: 500px;
+  max-width: 900px; /* 50% larger than current 600px */
   filter: 
     drop-shadow(0 0 20px rgba(255, 255, 255, 0.8))
     drop-shadow(0 0 40px rgba(255, 255, 255, 0.4))
@@ -150,14 +150,18 @@ body {
 /* Logo Styles */
 .logo-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  gap: 2rem;
+  flex: 1;
 }
 
 .dashboard-logo {
-  height: 80px;
+  height: 96px; /* 20% larger than 80px */
   width: auto;
-  max-width: 400px;
+  max-width: 480px; /* 20% larger than 400px */
+  margin-right: 2rem;
+  flex-shrink: 0;
   filter: 
     drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
     drop-shadow(5px 5px 0px #000000)
@@ -182,16 +186,21 @@ body {
     3px 3px 0px #000000,
     6px 6px 0px rgba(0, 0, 0, 0.3),
     9px 9px 0px rgba(0, 0, 0, 0.1);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
+  margin-right: 2rem;
   letter-spacing: 0.15rem;
   font-family: 'Georgia', 'Times New Roman', serif;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .dashboard-subtitle {
-  font-size: 1.1rem;
+  font-size: 1.3rem; /* Slightly larger for better balance */
   color: #bbb;
   font-style: italic;
+  text-align: center;
+  flex: 1;
+  margin-left: 1rem;
 }
 
 .connection-status {
@@ -616,6 +625,24 @@ body {
     gap: 1rem;
   }
   
+  .logo-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .dashboard-logo {
+    margin-right: 0;
+  }
+  
+  .dashboard-title.fallback-title {
+    margin-right: 0;
+  }
+  
+  .dashboard-subtitle {
+    margin-left: 0;
+    text-align: center;
+  }
+  
   .project-details {
     justify-content: center;
   }
@@ -632,13 +659,13 @@ body {
 
 @media (max-width: 480px) {
   .dashboard-logo {
-    height: 60px;
-    max-width: 300px;
+    height: 72px; /* 20% larger than original 60px */
+    max-width: 360px; /* 20% larger than original 300px */
   }
   
   .loading-logo-image {
-    height: 80px;
-    max-width: 350px;
+    height: 144px; /* 50% larger than original 96px mobile size */
+    max-width: 630px; /* 50% larger than original 420px mobile size */
   }
   
   .dashboard-title.fallback-title {
