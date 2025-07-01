@@ -81,6 +81,16 @@ const App = () => {
 
   const triggerFix = async (fixType) => {
     try {
+      // Enhanced fix types for Phase 2 controls
+      const fixActions = {
+        'auto': 'Safe automated fixes',
+        'schedule': 'Debt payment scheduling',
+        'ai-help': 'AI-powered refactoring assistance',
+        'nuclear': 'Complete debt elimination'
+      };
+      
+      console.log(`🔧 ${fixActions[fixType]} initiated...`);
+      
       const response = await fetch('/api/debt/fix', {
         method: 'POST',
         headers: {
@@ -90,7 +100,16 @@ const App = () => {
       });
       
       const data = await response.json();
-      console.log('🔧 Fix triggered:', data.message);
+      console.log('🔧 Fix completed:', data.message);
+      
+      // Special handling for different fix types
+      if (fixType === 'ai-help') {
+        // TODO: Open AI assistance modal
+        console.log('🤖 AI Collection Agency dispatched');
+      } else if (fixType === 'schedule') {
+        // TODO: Open debt payment scheduler
+        console.log('💰 Debt refinancing options prepared');
+      }
       
       // Refresh data after fix
       setTimeout(() => triggerScan(), 2000);
@@ -125,6 +144,69 @@ const App = () => {
         return '⚰️ Your code is in foreclosure. Guido is on his way.';
       default:
         return '📊 Debt status unknown. Run a scan.';
+    }
+  };
+
+  // Phase 2 Enhancement: Credit Score & Financial Calculations
+  const calculateCreditScore = (debtData) => {
+    if (!debtData || !debtData.summary) return 300;
+    
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Credit score algorithm (simplified for preview)
+    let score = 850; // Start with perfect score
+    
+    // Deduct for debt levels
+    score -= (p1Count * 50); // P1 Critical: -50 points each
+    score -= (p2Count * 25); // P2 High: -25 points each  
+    score -= (total * 5);     // All debt: -5 points each
+    
+    // Ensure minimum score
+    return Math.max(300, Math.round(score));
+  };
+
+  const getCreditTier = (debtData) => {
+    const score = calculateCreditScore(debtData);
+    if (score >= 750) return 'prime';
+    if (score >= 650) return 'standard';
+    if (score >= 550) return 'subprime';
+    return 'vibe-coder';
+  };
+
+  const getCreditTierLabel = (debtData) => {
+    const tier = getCreditTier(debtData);
+    switch (tier) {
+      case 'prime': return '🌟 PRIME DEVELOPER';
+      case 'standard': return '💼 STANDARD DEVELOPER';
+      case 'subprime': return '⚠️ SUBPRIME DEVELOPER';
+      case 'vibe-coder': return '🚨 VIBE CODER';
+      default: return '📊 UNKNOWN';
+    }
+  };
+
+  const calculateTimeWasted = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const hours = Math.round(total * 0.5); // 30 minutes per debt item
+    return `${hours}h`;
+  };
+
+  const calculateDebtCost = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    return Math.round(total * 75); // $75 per debt item
+  };
+
+  const calculateAPR = (debtData) => {
+    const tier = getCreditTier(debtData);
+    switch (tier) {
+      case 'prime': return '2.5';
+      case 'standard': return '5.9';
+      case 'subprime': return '12.8';
+      case 'vibe-coder': return '24.9';
+      default: return '0.0';
     }
   };
 
@@ -194,32 +276,132 @@ const App = () => {
         </section>
       )}
 
+      {/* Phase 2 Enhancement: Credit Score & Financial Metrics */}
+      <section className="financial-metrics">
+        <div className="credit-score-widget">
+          <div className="credit-score-display">
+            <div className="score-value">
+              {debtData ? calculateCreditScore(debtData) : '---'}
+            </div>
+            <div className="score-label">DEVELOPER CREDIT SCORE</div>
+            <div className="score-range">300-850</div>
+          </div>
+          <div className="credit-classification">
+            <div className={`credit-tier ${getCreditTier(debtData)}`}>
+              {getCreditTierLabel(debtData)}
+            </div>
+          </div>
+        </div>
+
+        <div className="interest-clock">
+          <div className="clock-display">
+            <div className="time-wasted">
+              <div className="time-value">{debtData ? calculateTimeWasted(debtData) : '0h'}</div>
+              <div className="time-label">TIME WASTED</div>
+            </div>
+            <div className="cost-impact">
+              <div className="cost-value">${debtData ? calculateDebtCost(debtData) : '0'}</div>
+              <div className="cost-label">CLEANUP COST</div>
+            </div>
+          </div>
+          <div className="interest-rate">
+            <div className="apr-display">
+              {debtData ? calculateAPR(debtData) : '0.0'}% APR
+            </div>
+            <div className="rate-label">Current Interest Rate</div>
+          </div>
+        </div>
+      </section>
+
       {/* Main Dashboard */}
       <main className="dashboard-main">
-        {/* Control Panel */}
+        {/* Enhanced Control Panel - Phase 2 "Debt Collector View" */}
         <section className="control-panel">
-          <button 
-            className="scan-button primary-button"
-            onClick={triggerScan}
-            disabled={loading}
-          >
-            {loading ? '🔄 Scanning...' : '📊 SCAN DEBT'}
-          </button>
+          <div className="control-row primary-controls">
+            <button 
+              className="scan-button primary-button"
+              onClick={triggerScan}
+              disabled={loading}
+            >
+              {loading ? '🔄 Scanning...' : '📊 SCAN DEBT'}
+            </button>
+            
+            <button 
+              className="make-disappear-button success-button"
+              onClick={() => triggerFix('auto')}
+              title="One-click cleanup of safe fixes"
+            >
+              ✨ MAKE IT DISAPPEAR
+            </button>
+          </div>
           
-          <button 
-            className="fix-button secondary-button"
-            onClick={() => triggerFix('auto')}
-          >
-            🔧 FIX DEBT
-          </button>
+          <div className="control-row secondary-controls">
+            <button 
+              className="refinance-button warning-button"
+              onClick={() => triggerFix('schedule')}
+              title="Create a debt payment plan"
+            >
+              💰 REFINANCE DEBT
+            </button>
+            
+            <button 
+              className="collection-agency-button info-button"
+              onClick={() => triggerFix('ai-help')}
+              title="Get AI assistance for complex refactoring"
+            >
+              🤖 SELL TO COLLECTION AGENCY
+            </button>
+          </div>
           
-          <button 
-            className="nuclear-button danger-button"
-            onClick={() => triggerFix('nuclear')}
-          >
-            💥 NUCLEAR OPTION
-          </button>
+          <div className="control-row danger-controls">
+            <button 
+              className="bankruptcy-button danger-button"
+              onClick={() => triggerFix('nuclear')}
+              title="Complete project debt elimination (nuclear option)"
+            >
+              💥 FILE FOR BANKRUPTCY
+            </button>
+          </div>
         </section>
+
+        {/* Phase 2 Enhancement: Prominent Mafia/Guido Warnings */}
+        {debtData && debtData.guidoAppearance && debtData.guidoAppearance.triggered && (
+          <section className="guido-warning">
+            <div className="guido-header">
+              <h1>🤌 GUIDO THE THUMB CRUSHER HAS ARRIVED 🤌</h1>
+            </div>
+            <div className="guido-message">
+              {debtData.guidoAppearance.message}
+            </div>
+            {debtData.guidoAppearance.daysOverdue > 0 && (
+              <div className="guido-overdue">
+                ⏰ VIGorish overdue: {debtData.guidoAppearance.daysOverdue} days
+              </div>
+            )}
+            <div className="guido-recommendation">
+              {debtData.guidoAppearance.recommendation}
+            </div>
+          </section>
+        )}
+
+        {debtData && debtData.mafiaStatus && debtData.mafiaStatus.triggered && (
+          <section className="mafia-warning">
+            <div className="mafia-header">
+              <h2>🕴️ MAFIA TAKEOVER - DEBT SOLD TO THE FAMILY 🕴️</h2>
+            </div>
+            <div className="mafia-message">
+              {debtData.mafiaStatus.message}
+            </div>
+            <div className="mafia-vigorish">
+              💰 VIGorish Rate: {debtData.mafiaStatus.vigorishRate}% daily
+              <br />
+              💸 Daily Penalty: {debtData.mafiaStatus.dailyPenalty} debt units
+            </div>
+            <div className="mafia-recommendation">
+              {debtData.mafiaStatus.recommendation}
+            </div>
+          </section>
+        )}
 
         {/* Debt Status */}
         {debtData && (

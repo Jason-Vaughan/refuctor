@@ -4,5 +4,10 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cursorStats.refreshInterval": 30,
+		"cursorStats.showTotalRequests": true,
+		"cursorStats.enableLogging": true,
+		"cursorStats.enableStatusBarColors": true
+	}
 }

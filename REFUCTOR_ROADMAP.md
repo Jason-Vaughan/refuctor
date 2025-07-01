@@ -350,6 +350,74 @@ refuctor goon dependency-audit   # Package cleanup
 
 ---
 
+## 🔌 Phase 6: IDE Extensions (Weeks 21-24) - "The Integration"
+
+### 🎯 **Post-Phase 4 CLI Extraction & Extension Development**
+
+**Strategic Approach:** Extract proven, stable CLI tools after Phase 4 completion for maximum maintainability and clean architecture boundaries.
+
+#### **📦 Package Extraction Strategy**
+
+```bash
+# Clean separation after all features proven together
+@puberty-labs/refuctor-core     # Debt detection, credit rating engine
+@puberty-labs/refuctor-cli      # Stable command interface
+@puberty-labs/refuctor-goons    # Specialized cleanup tools
+@puberty-labs/refuctor-utils    # Shared utilities and debt ignore parser
+```
+
+#### **🔧 Cursor IDE Extension**
+
+**Extension Features:**
+- **Real-time Debt Detection**: Live warnings in editor gutters
+- **Command Palette Integration**: `Cmd+Shift+P` → "Refuctor: Scan Project"  
+- **Status Bar Widget**: Live debt count and credit score display
+- **Problems Panel Integration**: Debt issues alongside linting errors
+- **Quick Fix Actions**: Right-click → "Fix Debt" context menu
+- **Debt Ignore Management**: Visual `.debtignore` file editing
+
+**Cursor-Specific Features:**
+- **AI Chat Integration**: `/refuctor` slash command for debt queries
+- **Tab Bar Indicators**: Red dots on files with P1/P2 debt
+- **Sidebar Panel**: Mini debt dashboard with fix buttons
+- **Session Wrap Integration**: Automatic debt scanning during AI sessions
+
+#### **📝 VS Code Extension**
+
+**Core Extension Features:**
+- **Diagnostic Provider**: Debt issues in problems panel
+- **CodeLens**: Inline debt metrics above functions/classes
+- **Tree View**: Debt explorer sidebar with file breakdown
+- **Settings Integration**: Configure debt thresholds via VS Code settings
+- **Terminal Integration**: Run `refuctor` commands from integrated terminal
+
+**VS Code Marketplace Features:**
+- **Extension Themes**: Debt-focused syntax highlighting
+- **Snippets**: Quick `.debtignore` patterns
+- **Task Provider**: Debt cleanup tasks in task runner
+- **Webview Dashboard**: Embedded debt dashboard panel
+
+#### **🚀 Distribution Strategy**
+
+**Cursor Extension:**
+- **Private Alpha**: Internal testing with established workflows
+- **Beta Release**: Selected Cursor users who understand debt management
+- **Public Release**: Full Cursor marketplace publication
+
+**VS Code Extension:**
+- **Marketplace Publication**: Official VS Code marketplace
+- **GitHub Integration**: Seamless repo scanning and PR debt reports
+- **Enterprise Features**: Team debt metrics and compliance reporting
+
+#### **📊 Extension Success Metrics**
+
+- **Cursor Extension**: 10,000+ active installations within 6 months
+- **VS Code Extension**: 50,000+ marketplace downloads within year 1  
+- **User Engagement**: 70%+ weekly active usage among installed base
+- **Developer Feedback**: 4.5+ star ratings on both platforms
+
+---
+
 ## 🧪 Testing & Quality Assurance
 
 ### 🔍 **Automated Testing Strategy**
