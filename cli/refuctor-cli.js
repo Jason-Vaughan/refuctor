@@ -676,4 +676,60 @@ program
     }
   });
 
+// NEW: Web Dashboard Server
+program
+  .command('serve')
+  .description(colors.green('🌐 Launch web dashboard for debt monitoring'))
+  .option('-p, --port <port>', 'Port to run dashboard on', '1947')
+  .option('--no-browser', 'Don\'t automatically open browser')
+  .action(async (options) => {
+    console.log(colors.bold(colors.green('\n🌐 REFUCTOR WEB DASHBOARD STARTING...')));
+    console.log(colors.gray('Preparing debt monitoring interface...\n'));
+    
+    try {
+      const DashboardServer = require('../src/dashboard-server');
+      const server = new DashboardServer({
+        port: parseInt(options.port),
+        projectPath: process.cwd()
+      });
+      
+      // Start the server
+      await server.start();
+      
+      console.log(colors.bold(colors.cyan('🎉 DASHBOARD OPERATIONAL!')));
+      console.log(colors.green(`🌐 URL: http://localhost:${options.port}`));
+      console.log(colors.yellow('📊 Real-time debt monitoring active'));
+      console.log(colors.gray('Press Ctrl+C to stop the debt collector\n'));
+      
+      // Optionally open browser
+      if (options.browser !== false) {
+        const open = await import('open');
+        await open.default(`http://localhost:${options.port}`);
+        console.log(colors.blue('🚀 Opening dashboard in your browser...'));
+      }
+      
+      // Handle graceful shutdown
+      process.on('SIGINT', async () => {
+        console.log(colors.yellow('\n🛑 Shutting down debt collector...'));
+        await server.stop();
+        console.log(colors.gray('Dashboard stopped. Your debt is still there though.\n'));
+        process.exit(0);
+      });
+      
+      // Keep the process running
+      process.stdin.resume();
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 DASHBOARD STARTUP FAILED:')));
+      console.error(colors.red(`Server error: ${error.message}`));
+      
+      if (error.code === 'EADDRINUSE') {
+        console.error(colors.yellow(`Port ${options.port} is already in use.`));
+        console.error(colors.gray('Try a different port: refuctor serve --port 1948'));
+      }
+      
+      process.exit(1);
+    }
+  });
+
 program.parse(process.argv); 
