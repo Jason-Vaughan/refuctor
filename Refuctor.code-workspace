@@ -5,7 +5,7 @@
 		}
 	],
 	"settings": {
-		"cursorStats.refreshInterval": 30,
+		"cursorStats.refreshInterval": 10,
 		"cursorStats.showTotalRequests": true,
 		"cursorStats.enableLogging": true,
 		"cursorStats.enableStatusBarColors": true

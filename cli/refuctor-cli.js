@@ -9,6 +9,8 @@ const { DebtIgnoreParser } = require('../src/debt-ignore-parser');
 const packageJson = require('../package.json');
 const fs = require('fs-extra');
 const path = require('path');
+const { execSync } = require('child_process');
+const SnarkySpellHandler = require('../src/snarky-spell-handler');
 
 // Simple color functions (avoiding chalk v5 ES module issues)
 const colors = {
@@ -728,6 +730,173 @@ program
         console.error(colors.gray('Try a different port: refuctor serve --port 1948'));
       }
       
+      process.exit(1);
+    }
+  });
+
+// NEW SNARKY LANGUAGE COMMANDS
+program
+  .command('snarky-scan [path]')
+  .description('🎯 Intelligently analyze spelling issues and detect snarky language')
+  .option('--auto', 'Automatically handle obvious cases')
+  .option('--confidence <level>', 'Confidence threshold (0.1-0.9)', '0.7')
+  .action(async (projectPath = '.', options) => {
+    try {
+      console.log('🎯 SNARKY LANGUAGE DETECTIVE ACTIVATED');
+      console.log('Analyzing spelling issues for intentional snarky language...\n');
+
+      const detector = new DebtDetector();
+      const snarkyHandler = new SnarkySpellHandler();
+      
+      // Get spelling issues
+      const spellingDebt = await detector.detectSpellingDebt(projectPath);
+      
+      if (spellingDebt.total === 0) {
+        console.log('✅ No spelling issues detected. Your vocabulary is pristine!');
+        return;
+      }
+
+      // Analyze with snarky intelligence
+      const analysis = await snarkyHandler.analyzeSpellingIssues(projectPath, spellingDebt.issues);
+      
+      // Display analysis
+      console.log(`📊 ANALYSIS RESULTS:`);
+      console.log(`   Total spelling issues: ${spellingDebt.total}`);
+      console.log(`   Likely typos: ${analysis.definiteTypos.length}`);
+      console.log(`   Likely snarky terms: ${analysis.likelySnarky.length}`);
+      console.log(`   Uncertain: ${analysis.unsure.length}\n`);
+
+      // Show suggestions
+      if (analysis.suggestions.length > 0) {
+        console.log('💡 SMART SUGGESTIONS:');
+        analysis.suggestions.forEach(suggestion => {
+          console.log(`   ${suggestion.description}`);
+          if (suggestion.items.length <= 5) {
+            suggestion.items.forEach(item => {
+              if (typeof item === 'string') {
+                console.log(`      • ${item}`);
+              } else {
+                console.log(`      • ${item.word} (${Math.round(item.confidence * 100)}% confidence)`);
+              }
+            });
+          } else {
+            console.log(`      (${suggestion.items.length} items total)`);
+          }
+        });
+        console.log();
+      }
+
+      // Auto-handle if requested
+      if (options.auto) {
+        console.log('🤖 AUTO-HANDLING ENABLED...');
+        
+        // Auto-add likely snarky terms
+        if (analysis.likelySnarky.length > 0) {
+          const snarkyWords = analysis.likelySnarky.map(s => s.word);
+          const result = await snarkyHandler.updateProjectDictionary(projectPath, snarkyWords);
+          console.log(`✅ Added ${result.wordsAdded} snarky terms to project dictionary`);
+        }
+
+        // Report remaining issues
+        if (analysis.definiteTypos.length > 0) {
+          console.log(`🔧 ${analysis.definiteTypos.length} typos still need manual fixing`);
+        }
+        if (analysis.unsure.length > 0) {
+          console.log(`🤔 ${analysis.unsure.length} terms need manual review`);
+        }
+      } else {
+        console.log('💡 Run with --auto to automatically handle obvious cases');
+        console.log('💡 Use "refuctor snarky-add" to add specific terms to dictionary');
+        console.log('💡 Use "refuctor snarky-fix" to fix obvious typos');
+      }
+
+    } catch (error) {
+      console.error('💥 Snarky scan failed:', error.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('snarky-add <words...>')
+  .description('📝 Add snarky terms to project spelling dictionary')
+  .option('--global', 'Add to global Refuctor dictionary instead')
+  .action(async (words, options) => {
+    try {
+      const snarkyHandler = new SnarkySpellHandler();
+      const projectPath = process.cwd();
+
+      if (options.global) {
+        console.log('🌍 Adding to global Refuctor dictionary...');
+        // TODO: Implement global dictionary update
+        console.log('💡 Global dictionary update not yet implemented');
+        return;
+      }
+
+      console.log(`📝 Adding ${words.length} terms to project dictionary...`);
+      
+      const result = await snarkyHandler.updateProjectDictionary(projectPath, words);
+      
+      console.log(`✅ SUCCESS!`);
+      console.log(`   Config file: ${result.configPath}`);
+      console.log(`   Words added: ${result.wordsAdded}`);
+      console.log(`   Total project words: ${result.totalWords}`);
+      
+      if (result.newWords.length > 0) {
+        console.log(`\n📝 New words added:`);
+        result.newWords.forEach(word => console.log(`   • ${word}`));
+      }
+
+    } catch (error) {
+      console.error('💥 Failed to add snarky terms:', error.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('snarky-fix [path]')
+  .description('🔧 Fix obvious typos while preserving snarky language')
+  .option('--dry-run', 'Show what would be fixed without making changes')
+  .action(async (projectPath = '.', options) => {
+    try {
+      console.log('🔧 TYPO FIXER ACTIVATED');
+      console.log('Identifying and fixing obvious typos...\n');
+
+      const detector = new DebtDetector();
+      const snarkyHandler = new SnarkySpellHandler();
+      
+      // Get spelling issues
+      const spellingDebt = await detector.detectSpellingDebt(projectPath);
+      
+      if (spellingDebt.total === 0) {
+        console.log('✅ No spelling issues detected!');
+        return;
+      }
+
+      // Analyze for typos
+      const analysis = await snarkyHandler.analyzeSpellingIssues(projectPath, spellingDebt.issues);
+      
+      if (analysis.definiteTypos.length === 0) {
+        console.log('✅ No obvious typos detected!');
+        console.log('💡 All spelling issues appear to be intentional snarky language');
+        return;
+      }
+
+      console.log(`🔧 TYPOS TO FIX (${analysis.definiteTypos.length}):`);
+      analysis.definiteTypos.forEach(typo => {
+        console.log(`   ❌ ${typo.word} in ${typo.file}:${typo.line}`);
+      });
+
+      if (options.dryRun) {
+        console.log('\n🔍 DRY RUN - No changes made');
+        console.log('💡 Remove --dry-run to actually fix these typos');
+      } else {
+        console.log('\n💡 Manual typo fixing not yet implemented');
+        console.log('💡 Use your editor\'s spell check to fix these obvious typos');
+        console.log('💡 Then run "refuctor snarky-scan" to verify');
+      }
+
+    } catch (error) {
+      console.error('💥 Typo fixing failed:', error.message);
       process.exit(1);
     }
   });
