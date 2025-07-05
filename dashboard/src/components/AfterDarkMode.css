@@ -1,0 +1,397 @@
+/* After Dark Mode - Sultry Styling */
+
+.after-dark-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,
+    #16213e 25%,
+    #0f3460 50%,
+    #e94560 100%
+  );
+  color: #fff;
+  z-index: 9999;
+  overflow-y: auto;
+  animation: sultryFadeIn 2s ease-in-out;
+}
+
+@keyframes sultryFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Sultry Particles Background */
+.sultry-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, #e94560, #ff6b9d);
+  border-radius: 50%;
+  animation: float infinite;
+  opacity: 0.7;
+  box-shadow: 0 0 10px #e94560;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Header Styling */
+.after-dark-header {
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+}
+
+.sultry-title {
+  font-size: 3rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #e94560, #ff6b9d, #ffa726);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: glow 2s ease-in-out infinite alternate;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+}
+
+.sultry-subtitle {
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #ff9aa2;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+  }
+  to {
+    text-shadow: 0 0 30px rgba(233, 69, 96, 0.8), 0 0 40px rgba(255, 107, 157, 0.6);
+  }
+}
+
+.exit-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #e94560;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.exit-button:hover {
+  background: #e94560;
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.7);
+}
+
+/* Floating Quote */
+.floating-quote {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  animation: fadeInOut 4s ease-in-out;
+}
+
+.quote-bubble {
+  background: linear-gradient(135deg, rgba(233, 69, 96, 0.9), rgba(255, 107, 157, 0.9));
+  padding: 1.5rem 2rem;
+  border-radius: 25px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 2px solid #ff6b9d;
+  max-width: 400px;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes fadeInOut {
+  0%, 100% { 
+    opacity: 0; 
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  10%, 90% { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Sultry Stats */
+.sultry-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-card.sultry {
+  background: linear-gradient(135deg, rgba(233, 69, 96, 0.3), rgba(255, 107, 157, 0.3));
+  border: 2px solid #e94560;
+  border-radius: 20px;
+  padding: 1.5rem;
+  text-align: center;
+  min-width: 180px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 25px rgba(233, 69, 96, 0.3);
+}
+
+.stat-card.sultry:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(233, 69, 96, 0.5);
+  border-color: #ff6b9d;
+}
+
+.stat-card.sultry .stat-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+.stat-card.sultry .stat-label {
+  font-size: 0.9rem;
+  color: #ff9aa2;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-card.sultry .stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Sultry Action Buttons */
+.sultry-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  flex-wrap: wrap;
+}
+
+.sultry-button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sultry-button.primary {
+  background: linear-gradient(45deg, #e94560, #ff6b9d);
+  color: white;
+  box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+}
+
+.sultry-button.secondary {
+  background: linear-gradient(45deg, #ffa726, #ffcc02);
+  color: #1a1a2e;
+  box-shadow: 0 5px 20px rgba(255, 167, 38, 0.4);
+}
+
+.sultry-button.tertiary {
+  background: linear-gradient(45deg, #ab47bc, #e91e63);
+  color: white;
+  box-shadow: 0 5px 20px rgba(171, 71, 188, 0.4);
+}
+
+.sultry-button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(233, 69, 96, 0.6);
+}
+
+.sultry-button:active {
+  transform: translateY(-2px);
+}
+
+/* Professional Mode Toggle */
+.mode-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.professional-toggle {
+  background: linear-gradient(135deg, #333, #555);
+  color: white;
+  border: 2px solid #666;
+  padding: 1rem 2rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
+}
+
+.professional-toggle:hover {
+  background: linear-gradient(135deg, #555, #777);
+  border-color: #888;
+  transform: scale(1.05);
+}
+
+.mode-hint {
+  font-size: 0.9rem;
+  color: #ccc;
+  font-style: italic;
+}
+
+/* Music Controls */
+.music-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+.now-playing {
+  font-size: 1rem;
+  color: #ff9aa2;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.music-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.music-btn {
+  background: rgba(233, 69, 96, 0.3);
+  border: 1px solid #e94560;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.music-btn:hover {
+  background: rgba(233, 69, 96, 0.6);
+  transform: scale(1.1);
+}
+
+/* Sultry Footer */
+.sultry-footer {
+  text-align: center;
+  padding: 3rem 2rem 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid rgba(233, 69, 96, 0.3);
+}
+
+.sultry-footer p {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #ff9aa2;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.signature {
+  font-size: 0.9rem;
+  color: #ccc;
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sultry-title {
+    font-size: 2rem;
+  }
+  
+  .sultry-stats {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .sultry-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .sultry-button {
+    min-width: 250px;
+  }
+  
+  .quote-bubble {
+    font-size: 1.2rem;
+    padding: 1rem 1.5rem;
+    max-width: 300px;
+  }
+}
+
+/* Animation Classes */
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+} 

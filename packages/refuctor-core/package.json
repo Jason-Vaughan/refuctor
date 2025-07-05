@@ -1,0 +1,43 @@
+{
+  "name": "@puberty-labs/refuctor-core",
+  "version": "1.0.0",
+  "description": "Core debt detection and credit rating engine for Refuctor",
+  "main": "index.js",
+  "keywords": [
+    "refuctor",
+    "technical-debt",
+    "code-quality",
+    "debt-detection",
+    "credit-rating"
+  ],
+  "author": "Puberty Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/puberty-labs/refuctor.git",
+    "directory": "packages/refuctor-core"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.10",
+    "minimatch": "^9.0.3"
+  },
+  "peerDependencies": {
+    "markdownlint": "^0.31.1",
+    "cspell": "^7.3.8"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "index.js",
+    "src/",
+    "templates/",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/",
+    "build": "echo 'Core package ready'"
+  }
+} 

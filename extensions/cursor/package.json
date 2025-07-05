@@ -1,0 +1,318 @@
+{
+  "name": "refuctor-cursor",
+  "displayName": "Refuctor - The Debt Collector",
+  "description": "Real-time technical debt detection, credit scoring, and automated cleanup for Cursor IDE",
+  "version": "1.0.0",
+  "publisher": "puberty-labs",
+  "icon": "assets/refuctor-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/puberty-labs/refuctor-cursor-extension.git"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Linters",
+    "Other",
+    "Programming Languages",
+    "Debuggers"
+  ],
+  "keywords": [
+    "refuctor",
+    "technical debt",
+    "code quality",
+    "debt detection",
+    "gamification",
+    "credit rating",
+    "cleanup"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:refuctor.scanDebt",
+    "workspaceContains:**/*.{js,ts,jsx,tsx,md,json}",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:markdown"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "refuctor.scanDebt",
+        "title": "Scan Project Debt",
+        "category": "Refuctor",
+        "icon": "$(search)"
+      },
+      {
+        "command": "refuctor.fixDebt",
+        "title": "Auto-Fix Debt Issues",
+        "category": "Refuctor",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "refuctor.generateCreditScore",
+        "title": "Generate Credit Score",
+        "category": "Refuctor",
+        "icon": "$(graph-line)"
+      },
+      {
+        "command": "refuctor.showDashboard",
+        "title": "Open Debt Dashboard",
+        "category": "Refuctor",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "refuctor.deployGoon",
+        "title": "Deploy Specialized Goon",
+        "category": "Refuctor",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "refuctor.checkAchievements",
+        "title": "View Achievements",
+        "category": "Refuctor",
+        "icon": "$(trophy)"
+      },
+      {
+        "command": "refuctor.startMCPServer",
+        "title": "Start MCP Debt Broker",
+        "category": "Refuctor",
+        "icon": "$(server-process)"
+      },
+      {
+        "command": "refuctor.showAfterDarkMode",
+        "title": "Enter After Dark Mode",
+        "category": "Refuctor",
+        "icon": "$(moon)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "refuctor.scanDebt",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "command": "refuctor.fixDebt",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "command": "refuctor.generateCreditScore",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "command": "refuctor.showDashboard",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "command": "refuctor.deployGoon",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "command": "refuctor.checkAchievements",
+          "when": "workspaceFolderCount > 0"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "refuctor.context",
+          "group": "refuctor",
+          "when": "editorTextFocus"
+        }
+      ],
+      "refuctor.context": [
+        {
+          "command": "refuctor.scanDebt",
+          "when": "editorTextFocus",
+          "group": "scan"
+        },
+        {
+          "command": "refuctor.fixDebt",
+          "when": "editorTextFocus",
+          "group": "fix"
+        },
+        {
+          "command": "refuctor.deployGoon",
+          "when": "editorTextFocus",
+          "group": "goons"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "refuctor.scanDebt",
+          "when": "view == refuctorDebtExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "refuctor.showDashboard",
+          "when": "view == refuctorDebtExplorer",
+          "group": "navigation"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "refuctor.context",
+        "label": "Refuctor",
+        "icon": "$(debt)"
+      }
+    ],
+    "views": {
+      "refuctor": [
+        {
+          "id": "refuctorDebtExplorer",
+          "name": "Debt Explorer",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "id": "refuctorCreditScore",
+          "name": "Credit Score",
+          "when": "workspaceFolderCount > 0"
+        },
+        {
+          "id": "refuctorAchievements",
+          "name": "Achievements",
+          "when": "workspaceFolderCount > 0"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "refuctor",
+          "title": "Refuctor",
+          "icon": "$(debt-collection)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Refuctor",
+      "properties": {
+        "refuctor.enableRealTimeScanning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable real-time debt detection as you type"
+        },
+        "refuctor.debtThresholds.p1": {
+          "type": "number",
+          "default": 50,
+          "description": "Threshold for P1 critical debt issues"
+        },
+        "refuctor.debtThresholds.p2": {
+          "type": "number",
+          "default": 10,
+          "description": "Threshold for P2 high debt issues"
+        },
+        "refuctor.showDebtInStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show current debt count in status bar"
+        },
+        "refuctor.enableGamification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable achievement tracking and gamification"
+        },
+        "refuctor.showCreditScore": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show developer credit score in sidebar"
+        },
+        "refuctor.autoFixOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically fix simple debt issues on save"
+        },
+        "refuctor.snarkyMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable snarky comments and personality"
+        },
+        "refuctor.enableAfterDarkMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow After Dark Mode easter egg activation"
+        }
+      }
+    },
+    "statusBarItems": [
+      {
+        "id": "refuctor.debtCount",
+        "alignment": "left",
+        "priority": 100
+      },
+      {
+        "id": "refuctor.creditScore",
+        "alignment": "left",
+        "priority": 99
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "refuctor-debt",
+        "label": "Refuctor Debt Issues",
+        "owner": "refuctor",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(error|warning|info)\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "refuctor",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "The Refuctor action to run",
+            "enum": ["scan", "fix", "credit-score", "goon-deploy"]
+          },
+          "target": {
+            "type": "string",
+            "description": "Target file or directory"
+          }
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "javascript",
+        "path": "./snippets/refuctor-js.json"
+      },
+      {
+        "language": "typescript",
+        "path": "./snippets/refuctor-ts.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4",
+    "@vscode/test-electron": "^2.2.0",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "@puberty-labs/refuctor-core": "^1.0.0"
+  }
+} 

@@ -1578,4 +1578,407 @@ function generateCookedBooksMarkdown(report) {
   return content;
 }
 
+// NEW: MCP Debt Broker Server command
+program
+  .command('mcp-server')
+  .description(colors.magenta('📡 Start Refuctor MCP (Model Context Protocol) Debt Broker server'))
+  .option('--transport <type>', 'Transport type (stdio, sse)', 'stdio')
+  .option('--port <port>', 'Port for HTTP transport', '8080')
+  .action(async (options) => {
+    console.log(colors.bold(colors.magenta('\n📡 REFUCTOR MCP DEBT BROKER')));
+    console.log(colors.gray('Starting Model Context Protocol server...'));
+    console.log(colors.gray('Enabling cross-workspace debt communication...\n'));
+    
+    try {
+      const RefuctorMCPServer = require('../src/refuctor-mcp-server');
+      const server = new RefuctorMCPServer();
+      
+      console.log(colors.cyan('🏦 Debt Broker Server Configuration:'));
+      console.log(colors.blue(`   Transport: ${options.transport}`));
+      console.log(colors.blue(`   Capabilities: debt_detection, auto_fixing, session_management`));
+      console.log(colors.blue(`   Cross-workspace: enabled`));
+      console.log(colors.blue(`   Real-time monitoring: active`));
+      
+      if (options.transport === 'stdio') {
+        console.log(colors.yellow('\n⚡ Starting stdio transport...'));
+        console.log(colors.gray('Connect via MCP client using stdio transport'));
+      } else if (options.transport === 'sse') {
+        console.log(colors.yellow(`\n⚡ Starting SSE transport on port ${options.port}...`));
+        console.log(colors.gray(`Connect via: http://localhost:${options.port}/sse`));
+      }
+      
+      console.log(colors.bold(colors.green('\n✅ MCP DEBT BROKER READY!')));
+      console.log(colors.green('🔗 AI assistants can now access Refuctor capabilities'));
+      console.log(colors.green('💀 The Debt Collector is available via MCP'));
+      console.log(colors.green('📡 Broadcasting debt status for collective shame metrics'));
+      
+      // Start the server
+      await server.start();
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 MCP SERVER FAILED TO START:')));
+      console.error(colors.red(`Error: ${error.message}`));
+      console.error(colors.gray('\nThe debt broker couldn\'t establish communication.'));
+      console.error(colors.gray('Check that MCP dependencies are installed: npm install @modelcontextprotocol/sdk'));
+      process.exit(1);
+    }
+  });
+
+// NEW: Accountant command - Financial debt analysis and credit rating
+program
+  .command('accountant [action]')
+  .description(colors.yellow('💰 The Accountant - Developer credit rating and debt interest calculator'))
+  .option('--detailed', 'Show detailed credit score breakdown')
+  .option('--payment-plan', 'Generate debt payment plan recommendations')
+  .action(async (action = 'report', options) => {
+    console.log(colors.bold(colors.yellow('\n💰 THE ACCOUNTANT - FINANCIAL DEBT ANALYSIS')));
+    console.log(colors.gray('Calculating your developer credit score and debt interest...\n'));
+    
+    try {
+      const { Accountant } = require('../src/goons/accountant');
+      const accountant = new Accountant();
+      const projectPath = process.cwd();
+      
+      switch (action) {
+        case 'report':
+        case 'score':
+          console.log(colors.cyan('📊 Generating financial debt report...'));
+          const snarkyReport = await accountant.generateSnarkyFinancialReport(projectPath);
+          console.log(snarkyReport);
+          break;
+          
+        case 'credit-score':
+          console.log(colors.cyan('📈 Calculating developer credit score...'));
+          const creditData = await accountant.calculateCreditScore(projectPath);
+          
+          console.log(colors.bold(colors.green(`\n📊 DEVELOPER CREDIT SCORE: ${creditData.score}/850`)));
+          console.log(colors.blue(`🏷️  Classification: ${creditData.classification}`));
+          console.log(colors.magenta(`💸 Interest Rate: ${creditData.interestRate}% APR`));
+          
+          if (options.detailed) {
+            console.log(colors.cyan('\n📈 SCORE BREAKDOWN:'));
+            console.log(colors.blue(`   Code Quality: ${creditData.breakdown.codeQuality}/100`));
+            console.log(colors.blue(`   Payment History: ${creditData.breakdown.paymentHistory}/100`));
+            console.log(colors.blue(`   Debt Load: ${creditData.breakdown.debtLoad}/100`));
+            console.log(colors.blue(`   Patterns: ${creditData.breakdown.patterns}/100`));
+          }
+          break;
+          
+        case 'payment':
+          if (!options.paymentPlan) {
+            console.log(colors.yellow('💡 Use --payment-plan to see debt payment recommendations'));
+            return;
+          }
+          
+          const financialReport = await accountant.generateFinancialReport(projectPath);
+          console.log(colors.bold(colors.green('\n🎯 DEBT PAYMENT PLAN')));
+          console.log(colors.blue(`💰 Total debt cost: $${financialReport.debtAnalysis.estimatedCost}`));
+          console.log(colors.yellow(`📈 With interest: $${financialReport.debtAnalysis.compoundedCost}`));
+          console.log(colors.red(`🔥 Interest penalty: $${financialReport.debtAnalysis.interestAccrued}`));
+          
+          if (financialReport.recommendations.length > 0) {
+            console.log(colors.cyan('\n💡 PAYMENT RECOMMENDATIONS:'));
+            financialReport.recommendations.forEach(rec => {
+              console.log(colors.blue(`   • ${rec.category}: ${rec.message}`));
+              console.log(colors.gray(`     Impact: ${rec.estimatedImpact}`));
+            });
+          }
+          break;
+          
+        default:
+          console.log(colors.red(`Unknown accountant action: ${action}`));
+          console.log(colors.gray('Available actions: report, credit-score, payment'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 ACCOUNTANT ERROR:')));
+      console.error(colors.red(`The accountant's calculator broke: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// NEW: Comment Killer command - Aggressive comment cleanup
+program
+  .command('comment-killer [action]')
+  .description(colors.red('💀 Comment Killer - Eliminate dead comments and TODO debt'))
+  .option('--remove-todos', 'Remove low-severity TODO comments')
+  .option('--remove-debug', 'Remove debug comments', true)
+  .option('--remove-commented-code', 'Remove commented-out code blocks', true)
+  .option('--remove-empty', 'Remove empty comment lines', true)
+  .option('--aggressive', 'Enable all comment removal options')
+  .option('--dry-run', 'Preview changes without applying them')
+  .action(async (action = 'scan', options) => {
+    console.log(colors.bold(colors.red('\n💀 COMMENT KILLER - DEBT EXTERMINATION')));
+    console.log(colors.gray('Hunting for dead comments and TODO debt...\n'));
+    
+    try {
+      const { CommentKiller } = require('../src/goons/comment-killer');
+      const commentKiller = new CommentKiller();
+      const projectPath = process.cwd();
+      
+      // Set aggressive mode
+      if (options.aggressive) {
+        options.removeTodos = true;
+        options.removeDebug = true;
+        options.removeCommentedCode = true;
+        options.removeEmpty = true;
+      }
+      
+      switch (action) {
+        case 'scan':
+        case 'analyze':
+          console.log(colors.cyan('🔍 Scanning for comment debt...'));
+          const snarkyReport = await commentKiller.generateSnarkyReport(projectPath);
+          console.log(snarkyReport);
+          break;
+          
+        case 'eliminate':
+        case 'clean':
+          console.log(colors.red('💀 Initiating comment elimination protocol...'));
+          const eliminationResult = await commentKiller.eliminateCommentDebt(projectPath, {
+            removeTodos: options.removeTodos,
+            removeDebugComments: options.removeDebug,
+            removeCommentedCode: options.removeCommentedCode,
+            removeEmptyComments: options.removeEmpty,
+            dryRun: options.dryRun
+          });
+          
+          if (eliminationResult.dryRun) {
+            console.log(colors.bold(colors.yellow('\n🔍 DRY RUN RESULTS:')));
+            console.log(colors.blue(`Would eliminate ${eliminationResult.totalRemovals} comment debt items`));
+            console.log(colors.gray('Remove --dry-run flag to execute elimination'));
+          } else {
+            console.log(colors.bold(colors.green('\n✅ COMMENT ELIMINATION COMPLETE!')));
+            console.log(colors.green(`Eliminated ${eliminationResult.totalRemoved} comment debt items`));
+            console.log(colors.blue(`Files modified: ${eliminationResult.removalResults.filesModified}`));
+          }
+          
+          if (eliminationResult.removalResults?.errors?.length > 0) {
+            console.log(colors.yellow('\n⚠️  ELIMINATION ERRORS:'));
+            eliminationResult.removalResults.errors.forEach(error => {
+              console.log(colors.red(`   ${error.file}: ${error.error}`));
+            });
+          }
+          break;
+          
+        default:
+          console.log(colors.red(`Unknown comment killer action: ${action}`));
+          console.log(colors.gray('Available actions: scan, eliminate'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 COMMENT KILLER MALFUNCTION:')));
+      console.error(colors.red(`The killer's blade broke: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// NEW: Import Cleaner command - Unused import detection and cleanup
+program
+  .command('import-cleaner [action]')
+  .description(colors.blue('📦 Import Cleaner - Detect and eliminate unused imports'))
+  .option('--remove-unused', 'Remove unused imports', true)
+  .option('--consolidate-duplicates', 'Consolidate duplicate imports', true)
+  .option('--exclude-packages <packages>', 'Comma-separated list of packages to exclude from cleanup')
+  .option('--minimum-savings <bytes>', 'Minimum bytes saved to remove import', '1000')
+  .option('--dry-run', 'Preview changes without applying them')
+  .action(async (action = 'analyze', options) => {
+    console.log(colors.bold(colors.blue('\n📦 IMPORT CLEANER - DEPENDENCY OPTIMIZATION')));
+    console.log(colors.gray('Analyzing import usage and detecting waste...\n'));
+    
+    try {
+      const { ImportCleaner } = require('../src/goons/import-cleaner');
+      const importCleaner = new ImportCleaner();
+      const projectPath = process.cwd();
+      
+      const excludePackages = options.excludePackages ? 
+        options.excludePackages.split(',').map(pkg => pkg.trim()) : [];
+      
+      switch (action) {
+        case 'analyze':
+        case 'scan':
+          console.log(colors.cyan('🔍 Analyzing import patterns...'));
+          const snarkyReport = await importCleaner.generateSnarkyReport(projectPath);
+          console.log(snarkyReport);
+          break;
+          
+        case 'clean':
+        case 'optimize':
+          console.log(colors.blue('🧹 Initiating import cleanup...'));
+          const cleanupResult = await importCleaner.cleanUnusedImports(projectPath, {
+            removeUnused: options.removeUnused,
+            consolidateDuplicates: options.consolidateDuplicates,
+            excludePackages,
+            minimumSavings: parseInt(options.minimumSavings),
+            dryRun: options.dryRun
+          });
+          
+          if (cleanupResult.dryRun) {
+            console.log(colors.bold(colors.yellow('\n🔍 DRY RUN RESULTS:')));
+            console.log(colors.blue(`Would remove ${cleanupResult.totalRemovals} unused imports`));
+            console.log(colors.green(`Estimated savings: ~${Math.round(cleanupResult.estimatedSavings/1000)}KB`));
+            console.log(colors.gray('Remove --dry-run flag to execute cleanup'));
+          } else {
+            console.log(colors.bold(colors.green('\n✅ IMPORT CLEANUP COMPLETE!')));
+            console.log(colors.green(`Removed ${cleanupResult.totalRemoved} unused imports`));
+            console.log(colors.blue(`Files modified: ${cleanupResult.cleanupResults.filesModified}`));
+            console.log(colors.green(`Bundle savings: ~${Math.round(cleanupResult.actualSavings/1000)}KB`));
+          }
+          
+          if (cleanupResult.cleanupResults?.errors?.length > 0) {
+            console.log(colors.yellow('\n⚠️  CLEANUP ERRORS:'));
+            cleanupResult.cleanupResults.errors.forEach(error => {
+              console.log(colors.red(`   ${error.file}: ${error.error}`));
+            });
+          }
+          break;
+          
+        case 'circular':
+          console.log(colors.yellow('🔄 Analyzing circular dependencies...'));
+          const analysis = await importCleaner.analyzeImports(projectPath);
+          
+          if (analysis.circularDependencies.length === 0) {
+            console.log(colors.bold(colors.green('\n✅ NO CIRCULAR DEPENDENCIES FOUND!')));
+            console.log(colors.green('Your dependency graph is clean and acyclic.'));
+          } else {
+            console.log(colors.bold(colors.red(`\n🔄 FOUND ${analysis.circularDependencies.length} CIRCULAR DEPENDENCIES:`)));
+            analysis.circularDependencies.forEach((circular, index) => {
+              console.log(colors.red(`\n${index + 1}. Cycle length: ${circular.length} (${circular.severity} severity)`));
+              console.log(colors.gray('   Cycle: ' + circular.cycle.map(f => path.basename(f)).join(' → ')));
+            });
+            console.log(colors.yellow('\n💡 Circular dependencies require manual refactoring to resolve.'));
+          }
+          break;
+          
+        default:
+          console.log(colors.red(`Unknown import cleaner action: ${action}`));
+          console.log(colors.gray('Available actions: analyze, clean, circular'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 IMPORT CLEANER ERROR:')));
+      console.error(colors.red(`The import cleaner malfunctioned: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// NEW: Gamification command - Achievement tracking and developer engagement
+program
+  .command('gamification [action]')
+  .alias('game')
+  .description(colors.green('🎮 Gamification - Track achievements, streaks, and level progression'))
+  .option('--user <userId>', 'Specify user ID for multi-user tracking', 'default')
+  .option('--detailed', 'Show detailed achievement breakdown')
+  .option('--leaderboard', 'Show team leaderboard (if available)')
+  .action(async (action = 'dashboard', options) => {
+    console.log(colors.bold(colors.green('\n🎮 REFUCTOR GAMIFICATION SYSTEM')));
+    console.log(colors.gray('Track your debt-slaying progress and unlock achievements...\n'));
+    
+    try {
+      const { GamificationSystem } = require('../src/gamification-system');
+      const gamificationSystem = new GamificationSystem();
+      const projectPath = process.cwd();
+      
+      switch (action) {
+        case 'dashboard':
+        case 'profile':
+          console.log(colors.cyan('📊 Generating gamification dashboard...'));
+          const snarkyReport = await gamificationSystem.generateSnarkyGamificationReport(projectPath, options.user);
+          console.log(snarkyReport);
+          break;
+          
+        case 'achievements':
+          console.log(colors.yellow('🏆 Loading achievement collection...'));
+          const dashboard = await gamificationSystem.generateUserDashboard(projectPath, options.user);
+          
+          console.log(colors.bold(colors.green('\n🏆 ACHIEVEMENT COLLECTION')));
+          
+          if (dashboard.achievements.total === 0) {
+            console.log(colors.gray('No achievements unlocked yet. Start scanning for debt to earn your first achievement!'));
+          } else {
+            console.log(colors.blue(`Total achievements: ${dashboard.achievements.total}\n`));
+            
+            // Group by category
+            const byCategory = dashboard.achievements.recent.reduce((acc, achievement) => {
+              if (!acc[achievement.category]) acc[achievement.category] = [];
+              acc[achievement.category].push(achievement);
+              return acc;
+            }, {});
+            
+            Object.entries(byCategory).forEach(([category, achievements]) => {
+              console.log(colors.bold(colors.cyan(`${category.toUpperCase()}:`)));
+              achievements.forEach(achievement => {
+                const timeAgo = gamificationSystem.getTimeAgo(achievement.unlockedAt);
+                console.log(colors.green(`   ${achievement.icon} ${achievement.title} - ${achievement.description}`));
+                console.log(colors.gray(`      Unlocked ${timeAgo} | ${achievement.xp} XP | ${achievement.rarity}`));
+              });
+              console.log('');
+            });
+          }
+          
+          if (options.detailed) {
+            const nextAchievements = gamificationSystem.getSuggestedAchievements(
+              await gamificationSystem.loadUserProgress(projectPath, options.user)
+            );
+            
+            console.log(colors.bold(colors.yellow('\n🎯 NEXT ACHIEVEMENTS TO UNLOCK:')));
+            nextAchievements.slice(0, 5).forEach(achievement => {
+              console.log(colors.yellow(`   ${achievement.icon} ${achievement.title}`));
+              console.log(colors.gray(`      ${achievement.description} | ${achievement.xp} XP`));
+            });
+          }
+          break;
+          
+        case 'stats':
+          console.log(colors.blue('📈 Loading player statistics...'));
+          const userDashboard = await gamificationSystem.generateUserDashboard(projectPath, options.user);
+          
+          console.log(colors.bold(colors.blue('\n📈 DEBT SLAYING STATISTICS')));
+          console.log(colors.green(`🔍 Total scans: ${userDashboard.stats.totalScans}`));
+          console.log(colors.green(`🔧 Total fixes: ${userDashboard.stats.totalFixes}`));
+          console.log(colors.green(`💀 Debt eliminated: ${userDashboard.stats.debtEliminated} issues`));
+          console.log(colors.green(`🚨 Critical issues fixed: ${userDashboard.stats.criticalIssuesFixed}`));
+          console.log(colors.green(`🛠️  Tools mastered: ${userDashboard.stats.toolsUsed.length}`));
+          console.log(colors.green(`📝 Sessions completed: ${userDashboard.stats.sessionsCompleted}`));
+          
+          console.log(colors.bold(colors.yellow('\n🔥 STREAK INFORMATION')));
+          console.log(colors.yellow(`Current streak: ${userDashboard.streaks.current} days`));
+          console.log(colors.yellow(`Longest streak: ${userDashboard.streaks.longest} days`));
+          
+          if (userDashboard.streaks.current > 0) {
+            console.log(colors.green('Keep the momentum going! 🚀'));
+          } else {
+            console.log(colors.gray('Time to start a new streak! 💪'));
+          }
+          break;
+          
+        case 'level':
+          console.log(colors.magenta('⭐ Checking level progression...'));
+          const levelDashboard = await gamificationSystem.generateUserDashboard(projectPath, options.user);
+          
+          console.log(colors.bold(colors.magenta('\n⭐ LEVEL PROGRESSION')));
+          console.log(colors.magenta(`Current Level: ${levelDashboard.user.level}`));
+          console.log(colors.magenta(`Title: ${levelDashboard.user.title}`));
+          console.log(colors.magenta(`Experience: ${levelDashboard.user.xp} XP`));
+          console.log(colors.magenta(`Progress: ${levelDashboard.user.xpProgress.current}/${levelDashboard.user.xpProgress.needed} XP to next level`));
+          console.log(colors.magenta(`XP needed: ${levelDashboard.user.xpProgress.toNext} more to level up`));
+          
+          // Show level progression bar
+          const progressPercent = Math.round((levelDashboard.user.xpProgress.current / levelDashboard.user.xpProgress.needed) * 100);
+          const progressBar = '█'.repeat(Math.floor(progressPercent / 5)) + '░'.repeat(20 - Math.floor(progressPercent / 5));
+          console.log(colors.cyan(`\n[${progressBar}] ${progressPercent}%`));
+          break;
+          
+        default:
+          console.log(colors.red(`Unknown gamification action: ${action}`));
+          console.log(colors.gray('Available actions: dashboard, achievements, stats, level'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 GAMIFICATION ERROR:')));
+      console.error(colors.red(`The gamification system crashed: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
 program.parse(process.argv); 
