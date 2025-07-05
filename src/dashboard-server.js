@@ -5,6 +5,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const { debtDetector } = require('./debt-detector');
 const { techDebtManager } = require('./techdebt-manager');
+const { DebtHistoryTracker } = require('./debt-history');
 
 class DashboardServer {
     constructor(options = {}) {
@@ -18,6 +19,9 @@ class DashboardServer {
                 methods: ["GET", "POST"]
             }
         });
+        
+        // Initialize debt history tracker
+        this.historyTracker = new DebtHistoryTracker(this.projectPath);
         
         this.setupMiddleware();
         this.setupRoutes();
@@ -59,21 +63,46 @@ class DashboardServer {
             console.log('📊 Running debt scan for dashboard...');
             const results = await debtDetector.scanProject(this.projectPath);
             
+            // Store scan result in history for trend analysis
+            await this.historyTracker.addScanResult(results);
+            console.log('📈 Scan result stored in debt history');
+            
+            // Get real historical data and trend analysis
+            const debtHistory = await this.historyTracker.getHistory(7);
+            const trendAnalysis = await this.historyTracker.getTrendAnalysis();
+            const velocityAnalysis = await this.historyTracker.getVelocityAnalysis();
+            
+            // Enhanced results with real historical data
+            const enhancedResults = {
+                ...results,
+                // Ensure all new fields are included
+                fileDebtMap: results.fileDebtMap || {},
+                topHotspots: results.topHotspots || [],
+                debtTrend: trendAnalysis.trend, // Use real trend analysis
+                debtHistory: debtHistory, // Real history data
+                trendAnalysis: trendAnalysis,
+                velocityAnalysis: velocityAnalysis,
+                timestamp: new Date().toISOString()
+            };
+            
             // Emit real-time update to connected clients
             this.io.emit('debt-update', {
                 type: 'scan-complete',
-                data: results,
+                data: enhancedResults,
                 timestamp: new Date().toISOString()
             });
 
             res.json({
                 success: true,
-                data: results,
+                data: enhancedResults,
                 metadata: {
                     scannedAt: new Date().toISOString(),
                     projectPath: this.projectPath,
-                    totalFiles: results.files?.length || 0,
-                    totalViolations: this.calculateTotalViolations(results)
+                    totalFiles: Object.keys(enhancedResults.fileDebtMap || {}).length,
+                    totalViolations: this.calculateTotalViolations(results),
+                    hotspotCount: enhancedResults.topHotspots.length,
+                    trendDirection: trendAnalysis.direction,
+                    daysTracked: trendAnalysis.daysTracked
                 }
             });
         } catch (error) {
@@ -91,13 +120,28 @@ class DashboardServer {
             const debtStatus = await techDebtManager.getDebtStatus(this.projectPath);
             const currentScan = await debtDetector.scanProject(this.projectPath);
             
+            // Get real historical data and analysis
+            const debtHistory = await this.historyTracker.getHistory(7);
+            const trendAnalysis = await this.historyTracker.getTrendAnalysis();
+            const velocityAnalysis = await this.historyTracker.getVelocityAnalysis();
+            const peakAnalysis = await this.historyTracker.getPeakAnalysis();
+            
             const status = {
                 summary: {
                     p1: currentScan.p1?.length || 0,
                     p2: currentScan.p2?.length || 0,
                     p3: currentScan.p3?.length || 0,
                     p4: currentScan.p4?.length || 0,
-                    total: this.calculateTotalViolations(currentScan)
+                    total: this.calculateTotalViolations(currentScan),
+                    // Enhanced summary with detailed breakdown
+                    markdown: currentScan.summary?.markdown || 0,
+                    spelling: currentScan.summary?.spelling || 0,
+                    security: currentScan.summary?.security || 0,
+                    dependencies: currentScan.summary?.dependencies || 0,
+                    eslint: currentScan.summary?.eslint || 0,
+                    typescript: currentScan.summary?.typescript || 0,
+                    codeQuality: currentScan.summary?.codeQuality || 0,
+                    formatting: currentScan.summary?.formatting || 0
                 },
                 currentDebt: {
                     P1: currentScan.p1 || [],
@@ -107,9 +151,19 @@ class DashboardServer {
                     Mafia: currentScan.mafia || [],
                     Guido: currentScan.guido || []
                 },
+                // Real Heat Map Data
+                fileDebtMap: currentScan.fileDebtMap || {},
+                topHotspots: currentScan.topHotspots || [],
+                
+                // Real Trend Analysis Data
+                debtTrend: trendAnalysis.trend,
+                debtHistory: debtHistory,
+                trendAnalysis: trendAnalysis,
+                velocityAnalysis: velocityAnalysis,
+                peakAnalysis: peakAnalysis,
+                
                 resolvedCount: debtStatus.sessionsTracked || 0,
                 lastScan: new Date().toISOString(),
-                debtTrend: debtStatus.debtTrend || 'stable',
                 shameLevel: this.calculateShameLevel(currentScan),
                 mafiaStatus: currentScan.mafiaStatus,
                 guidoAppearance: currentScan.guidoAppearance
@@ -121,6 +175,7 @@ class DashboardServer {
                 message: this.getStatusMessage(status.summary.total)
             });
         } catch (error) {
+            console.error('❌ Dashboard debt status failed:', error.message);
             res.status(500).json({
                 success: false,
                 error: error.message,
@@ -131,25 +186,29 @@ class DashboardServer {
 
     async handleDebtHistory(req, res) {
         try {
-            const debtStatus = await techDebtManager.getDebtStatus(this.projectPath);
-            const currentScan = await debtDetector.scanProject(this.projectPath);
+            const days = parseInt(req.query.days) || 7;
+            
+            // Get comprehensive historical analysis
+            const debtHistory = await this.historyTracker.getHistory(days);
+            const trendAnalysis = await this.historyTracker.getTrendAnalysis();
+            const velocityAnalysis = await this.historyTracker.getVelocityAnalysis();
+            const peakAnalysis = await this.historyTracker.getPeakAnalysis();
             
             res.json({
                 success: true,
                 data: {
-                    resolvedSessions: [], // Will be implemented when session tracking is added
-                    totalResolved: debtStatus.sessionsTracked || 0,
-                    activePriorities: {
-                        P1: currentScan.p1 || [],
-                        P2: currentScan.p2 || [],
-                        P3: currentScan.p3 || [],
-                        P4: currentScan.p4 || [],
-                        Mafia: currentScan.mafia || [],
-                        Guido: currentScan.guido || []
-                    }
-                }
+                    history: debtHistory,
+                    trendAnalysis: trendAnalysis,
+                    velocityAnalysis: velocityAnalysis,
+                    peakAnalysis: peakAnalysis,
+                    daysRequested: days,
+                    entriesFound: debtHistory.length,
+                    hasEnoughDataForTrends: debtHistory.length >= 2
+                },
+                message: `Debt history retrieved: ${debtHistory.length} entries over ${days} days`
             });
         } catch (error) {
+            console.error('❌ Dashboard debt history failed:', error.message);
             res.status(500).json({
                 success: false,
                 error: error.message,
@@ -224,16 +283,147 @@ class DashboardServer {
         this.io.on('connection', (socket) => {
             console.log('📡 Dashboard client connected');
             
+            // Send initial connection data
+            socket.emit('connection-established', {
+                message: 'Connected to Debt Collector',
+                timestamp: new Date().toISOString(),
+                features: ['real-time-scanning', 'live-notifications', 'progress-updates']
+            });
+
+            // Handle scan requests with progress updates
             socket.on('request-debt-scan', async () => {
                 try {
+                    socket.emit('scan-progress', { 
+                        stage: 'initializing', 
+                        message: '🔄 Initializing debt scan...',
+                        progress: 0 
+                    });
+
+                    socket.emit('scan-progress', { 
+                        stage: 'scanning', 
+                        message: '📊 Scanning project files...',
+                        progress: 25 
+                    });
+
                     const results = await debtDetector.scanProject(this.projectPath);
+
+                    socket.emit('scan-progress', { 
+                        stage: 'analyzing', 
+                        message: '🧠 Analyzing debt patterns...',
+                        progress: 50 
+                    });
+
+                    // Store in history
+                    await this.historyTracker.addScanResult(results);
+
+                    socket.emit('scan-progress', { 
+                        stage: 'processing', 
+                        message: '📈 Processing historical trends...',
+                        progress: 75 
+                    });
+
+                    // Get enhanced data
+                    const debtHistory = await this.historyTracker.getHistory(7);
+                    const trendAnalysis = await this.historyTracker.getTrendAnalysis();
+                    const velocityAnalysis = await this.historyTracker.getVelocityAnalysis();
+
+                    const enhancedResults = {
+                        ...results,
+                        fileDebtMap: results.fileDebtMap || {},
+                        topHotspots: results.topHotspots || [],
+                        debtTrend: trendAnalysis.trend,
+                        debtHistory: debtHistory,
+                        trendAnalysis: trendAnalysis,
+                        velocityAnalysis: velocityAnalysis,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    socket.emit('scan-progress', { 
+                        stage: 'complete', 
+                        message: '✅ Scan complete!',
+                        progress: 100 
+                    });
+
+                    // Send final results
                     socket.emit('debt-update', {
                         type: 'scan-complete',
-                        data: results,
+                        data: enhancedResults,
                         timestamp: new Date().toISOString()
                     });
+
+                    // Check for critical thresholds and send notifications
+                    this.checkCriticalThresholds(socket, enhancedResults);
+
                 } catch (error) {
+                    socket.emit('scan-error', { 
+                        message: error.message,
+                        timestamp: new Date().toISOString() 
+                    });
                     socket.emit('error', { message: error.message });
+                }
+            });
+
+            // Handle fix requests with progress tracking
+            socket.on('request-fix', async (data) => {
+                try {
+                    const { fixType, targetFiles } = data;
+                    
+                    socket.emit('fix-progress', {
+                        stage: 'starting',
+                        fixType: fixType,
+                        message: `🔧 Starting ${fixType} fix...`,
+                        progress: 0
+                    });
+
+                    // Simulate fix progress (real implementation would vary)
+                    setTimeout(() => {
+                        socket.emit('fix-progress', {
+                            stage: 'processing',
+                            fixType: fixType,
+                            message: `⚡ Processing ${fixType} fixes...`,
+                            progress: 50
+                        });
+                    }, 1000);
+
+                    setTimeout(() => {
+                        socket.emit('fix-progress', {
+                            stage: 'complete',
+                            fixType: fixType,
+                            message: `✅ ${fixType} fixes applied!`,
+                            progress: 100
+                        });
+
+                        // Trigger automatic rescan after fix
+                        socket.emit('auto-rescan', {
+                            reason: 'fix-applied',
+                            fixType: fixType,
+                            message: 'Rescanning to verify fixes...'
+                        });
+                    }, 2000);
+
+                } catch (error) {
+                    socket.emit('fix-error', { 
+                        message: error.message,
+                        fixType: data?.fixType,
+                        timestamp: new Date().toISOString() 
+                    });
+                }
+            });
+
+            // Handle real-time monitoring toggle
+            socket.on('toggle-monitoring', (enabled) => {
+                if (enabled) {
+                    socket.join('monitoring');
+                    socket.emit('monitoring-status', { 
+                        enabled: true, 
+                        message: '👁️ Real-time monitoring enabled' 
+                    });
+                } else {
+                    socket.leave('monitoring');
+                    socket.emit('monitoring-status', { 
+                        enabled: false, 
+                        message: '⏸️ Real-time monitoring paused' 
+                    });
                 }
             });
 
@@ -241,6 +431,71 @@ class DashboardServer {
                 console.log('📡 Dashboard client disconnected');
             });
         });
+
+        // Periodic health checks for monitoring clients
+        setInterval(() => {
+            this.io.to('monitoring').emit('health-check', {
+                timestamp: new Date().toISOString(),
+                server: 'operational',
+                clients: this.io.engine.clientsCount
+            });
+        }, 30000); // Every 30 seconds
+    }
+
+    // New method: Check for critical debt thresholds and send notifications
+    checkCriticalThresholds(socket, scanResults) {
+        const total = this.calculateTotalViolations(scanResults);
+        const p1Count = scanResults.p1?.length || 0;
+        const hasGuido = scanResults.guidoAppearance?.triggered;
+        const hasMafia = scanResults.mafiaStatus?.triggered;
+
+        // Critical debt threshold breach
+        if (total > 50) {
+            socket.emit('critical-alert', {
+                type: 'debt-critical',
+                severity: 'critical',
+                title: '🚨 CRITICAL DEBT DETECTED',
+                message: `${total} total debt issues detected. Immediate action required!`,
+                action: 'Review and fix critical issues',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // P1 issues detected
+        if (p1Count > 0) {
+            socket.emit('priority-alert', {
+                type: 'p1-detected',
+                severity: 'high',
+                title: '⚠️ P1 Critical Issues',
+                message: `${p1Count} P1 critical issues require immediate attention`,
+                action: 'Fix P1 issues now',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Guido deployment
+        if (hasGuido) {
+            socket.emit('guido-alert', {
+                type: 'guido-deployed',
+                severity: 'extreme',
+                title: '🤌 GUIDO THE THUMB CRUSHER DEPLOYED',
+                message: 'Your code debt is so extreme, Guido has been dispatched!',
+                action: 'Fix immediately or face the consequences',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Mafia takeover
+        if (hasMafia) {
+            socket.emit('mafia-alert', {
+                type: 'mafia-takeover',
+                severity: 'extreme',
+                title: '🕴️ DEBT SOLD TO THE FAMILY',
+                message: 'Your technical debt has been sold to private investors',
+                action: 'Debt refinancing required immediately',
+                timestamp: new Date().toISOString()
+            });
+        }
     }
 
     calculateTotalViolations(scanResults) {

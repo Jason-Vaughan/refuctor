@@ -1,0 +1,29 @@
+[
+  {
+    "timestamp": "2025-07-05T18:39:51.171Z",
+    "date": "2025-07-05",
+    "summary": {
+      "total": 3,
+      "p1": 0,
+      "p2": 0,
+      "p3": 0,
+      "p4": 0,
+      "mafia": 0,
+      "guido": 3
+    },
+    "breakdown": {
+      "markdown": 149,
+      "spelling": 82,
+      "security": 0,
+      "dependencies": 0,
+      "eslint": 0,
+      "typescript": 0,
+      "codeQuality": 487,
+      "formatting": 0
+    },
+    "debtTrend": "worsening",
+    "shameLevel": "minor-issues",
+    "hotspotCount": 10,
+    "fileCount": 18
+  }
+]

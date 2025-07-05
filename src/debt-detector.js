@@ -86,7 +86,10 @@ class DebtDetector {
       ignoredDebt: verbose ? { total: 0, files: [] } : null,
       details: verbose ? {} : null,
       mafiaStatus: null, // Loan shark takeover status
-      guidoAppearance: null // Thumb crusher deployment
+      guidoAppearance: null, // Thumb crusher deployment
+      fileDebtMap: {},
+      topHotspots: [],
+      debtTrend: null
     };
 
     try {
@@ -149,8 +152,28 @@ class DebtDetector {
         formatting: formattingDebt.total,
         snarkyProcessed: spellDebt.snarkyProcessed || false,
         snarkyAdded: spellDebt.snarkyAdded || 0,
-        debtLevel: this.calculateDebtLevel(debtReport)
+        debtLevel: this.calculateDebtLevel(debtReport),
+        p1: debtReport.p1.length,
+        p2: debtReport.p2.length,
+        p3: debtReport.p3.length,
+        p4: debtReport.p4.length,
+        total: debtReport.totalDebt
       };
+
+      // Generate heat map data for dashboard visualization
+      debtReport.fileDebtMap = this.generateFileDebtMap(debtReport, {
+        markdown: markdownDebt,
+        spelling: spellDebt,
+        security: securityDebt,
+        dependencies: dependencyDebt,
+        eslint: eslintDebt,
+        typescript: typescriptDebt,
+        codeQuality: codeQualityDebt,
+        formatting: formattingDebt
+      });
+
+      debtReport.topHotspots = this.generateDebtHotspots(debtReport.fileDebtMap);
+      debtReport.debtTrend = this.calculateDebtTrend(debtReport);
 
       // Show ignored debt summary if verbose
       if (verbose && debtReport.ignoredDebt && debtReport.ignoredDebt.total > 0) {
@@ -1015,6 +1038,188 @@ class DebtDetector {
    */
   getGuidoMessage() {
     return this.guidoMessages[Math.floor(Math.random() * this.guidoMessages.length)];
+  }
+
+  /**
+   * Generate file-level debt mapping for heat map visualization
+   */
+  generateFileDebtMap(debtReport, debtData) {
+    const fileMap = {};
+    
+    // Helper function to add debt to file map
+    const addDebtToFile = (file, category, severity, count = 1) => {
+      if (!fileMap[file]) {
+        fileMap[file] = {
+          count: 0,
+          categories: {},
+          severity: 'p4',
+          issues: []
+        };
+      }
+      
+      fileMap[file].count += count;
+      fileMap[file].categories[category] = (fileMap[file].categories[category] || 0) + count;
+      
+      // Update severity to highest priority found
+      if (severity === 'p1' || severity === 'critical') {
+        fileMap[file].severity = 'p1';
+      } else if (severity === 'p2' && fileMap[file].severity !== 'p1') {
+        fileMap[file].severity = 'p2';
+      } else if (severity === 'p3' && !['p1', 'p2'].includes(fileMap[file].severity)) {
+        fileMap[file].severity = 'p3';
+      }
+    };
+
+    // Process markdown debt
+    if (debtData.markdown && debtData.markdown.files) {
+      debtData.markdown.files.forEach(file => {
+        const fileIssues = debtData.markdown.issues.filter(issue => issue.file === file);
+        const severity = fileIssues.length >= 10 ? 'p1' : fileIssues.length >= 5 ? 'p2' : 'p3';
+        addDebtToFile(file, 'markdown', severity, fileIssues.length);
+      });
+    }
+
+    // Process spelling debt
+    if (debtData.spelling && debtData.spelling.files) {
+      debtData.spelling.files.forEach(file => {
+        const fileIssues = debtData.spelling.issues.filter(issue => issue.file === file);
+        const severity = fileIssues.length >= 8 ? 'p1' : fileIssues.length >= 3 ? 'p2' : 'p3';
+        addDebtToFile(file, 'spelling', severity, fileIssues.length);
+      });
+    }
+
+    // Process ESLint debt
+    if (debtData.eslint && debtData.eslint.files) {
+      debtData.eslint.files.forEach(file => {
+        const fileIssues = debtData.eslint.issues.filter(issue => issue.file === file);
+        const errors = fileIssues.filter(issue => issue.severity === 2).length;
+        const warnings = fileIssues.filter(issue => issue.severity === 1).length;
+        
+        if (errors > 0) {
+          const severity = errors >= 5 ? 'p1' : errors >= 2 ? 'p2' : 'p3';
+          addDebtToFile(file, 'eslint-errors', severity, errors);
+        }
+        if (warnings > 0) {
+          addDebtToFile(file, 'eslint-warnings', 'p4', warnings);
+        }
+      });
+    }
+
+    // Process TypeScript debt
+    if (debtData.typescript && debtData.typescript.files) {
+      debtData.typescript.files.forEach(file => {
+        const fileIssues = debtData.typescript.errors.filter(error => error.file === file);
+        const severity = fileIssues.length >= 5 ? 'p1' : fileIssues.length >= 2 ? 'p2' : 'p3';
+        addDebtToFile(file, 'typescript', severity, fileIssues.length);
+      });
+    }
+
+    // Process code quality debt
+    if (debtData.codeQuality && debtData.codeQuality.files) {
+      debtData.codeQuality.files.forEach(file => {
+        const consoleLogs = debtData.codeQuality.consoleLogs.filter(log => log.file === file);
+        const todos = debtData.codeQuality.todos.filter(todo => todo.file === file);
+        
+        if (consoleLogs.length > 0) {
+          const severity = consoleLogs.length >= 10 ? 'p2' : 'p3';
+          addDebtToFile(file, 'console-logs', severity, consoleLogs.length);
+        }
+        if (todos.length > 0) {
+          const severity = todos.length >= 5 ? 'p2' : 'p3';
+          addDebtToFile(file, 'todos', severity, todos.length);
+        }
+      });
+    }
+
+    // Process formatting debt
+    if (debtData.formatting && debtData.formatting.files) {
+      debtData.formatting.files.forEach(file => {
+        addDebtToFile(file, 'formatting', 'p4', 1);
+      });
+    }
+
+    return fileMap;
+  }
+
+  /**
+   * Generate top debt hotspots with temperature calculations
+   */
+  generateDebtHotspots(fileDebtMap) {
+    const hotspots = [];
+    
+    Object.entries(fileDebtMap).forEach(([file, data]) => {
+      const temperature = this.calculateFileTemperature(data);
+      const priority = data.severity;
+      
+      hotspots.push({
+        file: file.replace(/^.*[\\\/]/, ''), // Get filename only
+        fullPath: file,
+        debtCount: data.count,
+        priority: priority,
+        temperature: temperature,
+        categories: data.categories,
+        severity: data.severity
+      });
+    });
+    
+    // Sort by temperature (highest first) and return top 10
+    return hotspots
+      .sort((a, b) => b.temperature - a.temperature)
+      .slice(0, 10);
+  }
+
+  /**
+   * Calculate temperature for a file based on debt concentration
+   */
+  calculateFileTemperature(fileData) {
+    let temperature = 0;
+    
+    // Base temperature from total debt count
+    temperature += fileData.count * 10;
+    
+    // Severity multipliers
+    switch (fileData.severity) {
+      case 'p1':
+        temperature *= 3;
+        break;
+      case 'p2':
+        temperature *= 2;
+        break;
+      case 'p3':
+        temperature *= 1.5;
+        break;
+      case 'p4':
+        temperature *= 1;
+        break;
+    }
+    
+    // Category bonuses
+    const categories = fileData.categories;
+    if (categories['eslint-errors']) temperature += categories['eslint-errors'] * 15;
+    if (categories['typescript']) temperature += categories['typescript'] * 12;
+    if (categories['security']) temperature += categories['security'] * 20;
+    if (categories['console-logs']) temperature += categories['console-logs'] * 5;
+    
+    return Math.round(temperature);
+  }
+
+  /**
+   * Calculate debt trend (simplified for now)
+   */
+  calculateDebtTrend(debtReport) {
+    const totalDebt = debtReport.totalDebt;
+    const criticalDebt = debtReport.p1.length + debtReport.mafia.length + debtReport.guido.length;
+    
+    // Simple heuristic based on debt levels
+    if (criticalDebt > 0) {
+      return 'worsening';
+    } else if (totalDebt === 0) {
+      return 'improving';
+    } else if (totalDebt < 10) {
+      return 'stable';
+    } else {
+      return 'stable';
+    }
   }
 }
 

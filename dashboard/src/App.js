@@ -210,6 +210,335 @@ const App = () => {
     }
   };
 
+  const getHeatMapColor = (severity, count) => {
+    // Color intensity based on debt count
+    const baseAlpha = Math.min(0.3 + (count * 0.1), 1.0);
+    
+    switch (severity) {
+      case 'p1':
+      case 'critical':
+        return `rgba(255, 71, 87, ${baseAlpha})`; // Red
+      case 'p2':
+      case 'high':
+        return `rgba(255, 165, 2, ${baseAlpha})`; // Orange
+      case 'p3':
+      case 'medium':
+        return `rgba(55, 66, 250, ${baseAlpha})`; // Blue
+      case 'p4':
+      case 'low':
+        return `rgba(127, 143, 166, ${baseAlpha})`; // Gray
+      default:
+        return `rgba(255, 255, 255, ${baseAlpha * 0.5})`; // White
+    }
+  };
+
+  const getTrendColor = (total) => {
+    if (total > 0) return '#4caf50'; // Green
+    if (total < 0) return '#f44336'; // Red
+    return '#9e9e9e'; // Gray
+  };
+
+  const calculateDebtVelocity = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const velocity = Math.round(total / 7); // Average daily debt
+    return velocity;
+  };
+
+  const calculateTimeToCrisis = (debtData) => {
+    if (!debtData || !debtData.summary) return Infinity;
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Calculate time to reach P1 threshold
+    const timeToP1 = (100 - (p1Count * 50)) / 50;
+    const timeToP2 = (100 - (p2Count * 25)) / 25;
+    
+    // Find the minimum time to reach any threshold
+    const timeToCrisis = Math.min(timeToP1, timeToP2);
+    
+    // Ensure minimum time
+    return Math.max(0, Math.round(timeToCrisis));
+  };
+
+  const calculateCleanupEffort = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const hours = Math.round(total * 0.5); // 30 minutes per debt item
+    return hours;
+  };
+
+  const calculateDebtEfficiency = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Calculate debt efficiency
+    const efficiency = ((p1Count * 50) + (p2Count * 25)) / total;
+    
+    // Ensure minimum efficiency
+    return Math.max(0, Math.round(efficiency * 100));
+  };
+
+  const calculateFixRate = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Calculate fix rate
+    const fixRate = (p1Count + p2Count) / total;
+    
+    // Ensure minimum fix rate
+    return Math.max(0, Math.round(fixRate * 100));
+  };
+
+  const generateSmartInsights = (debtData) => {
+    if (!debtData || !debtData.summary) return [];
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    const insights = [
+      {
+        priority: 'p1',
+        icon: '🔥',
+        title: 'Critical Debt',
+        message: `P1 Critical: ${p1Count} issues`,
+        action: 'Fix now'
+      },
+      {
+        priority: 'p2',
+        icon: '⚠️',
+        title: 'High Debt',
+        message: `P2 High: ${p2Count} issues`,
+        action: 'Refinance'
+      },
+      {
+        priority: 'p3',
+        icon: '💼',
+        title: 'Medium Debt',
+        message: `P3 Medium: ${debtData.summary.p3 || 0} issues`,
+        action: 'Monitor'
+      },
+      {
+        priority: 'p4',
+        icon: '📊',
+        title: 'Low Debt',
+        message: `P4 Low: ${debtData.summary.p4 || 0} issues`,
+        action: 'Plan'
+      },
+      {
+        priority: 'guido',
+        icon: '🤌',
+        title: 'Guido Appearance',
+        message: `Guido the Thumb Crusher has arrived`,
+        action: 'Handle'
+      },
+      {
+        priority: 'mafia',
+        icon: '🕴️',
+        title: 'Mafia Takeover',
+        message: `Debt sold to the family`,
+        action: 'Refinance'
+      }
+    ];
+
+    return insights.filter(insight => insight.priority === 'p1' || insight.priority === 'p2' || insight.priority === 'guido' || insight.priority === 'mafia');
+  };
+
+  // Phase 2 Enhancement: AI-Powered Fix Suggestions
+  const generatePriorityFixes = (debtData) => {
+    if (!debtData || !debtData.summary) return [];
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    const fixes = [
+      {
+        priority: 'p1',
+        icon: '🔥',
+        title: 'Critical Debt',
+        impact: 'High',
+        description: 'Address critical debt issues immediately',
+        command: 'Fix critical debt',
+        estimatedTime: '1-2 hours',
+        difficulty: 'Medium'
+      },
+      {
+        priority: 'p2',
+        icon: '⚠️',
+        title: 'High Debt',
+        impact: 'Medium',
+        description: 'Refinance or consolidate high-interest debt',
+        command: 'Refinance debt',
+        estimatedTime: '2-4 hours',
+        difficulty: 'Medium'
+      },
+      {
+        priority: 'p3',
+        icon: '💼',
+        title: 'Medium Debt',
+        impact: 'Low',
+        description: 'Monitor medium-level debt',
+        command: 'Monitor medium debt',
+        estimatedTime: '0.5-1 hour',
+        difficulty: 'Low'
+      },
+      {
+        priority: 'p4',
+        icon: '📊',
+        title: 'Low Debt',
+        impact: 'Low',
+        description: 'Plan for low-level debt',
+        command: 'Plan low debt',
+        estimatedTime: '0.25-0.5 hour',
+        difficulty: 'Low'
+      },
+      {
+        priority: 'guido',
+        icon: '🤌',
+        title: 'Guido Appearance',
+        impact: 'High',
+        description: 'Handle Guido the Thumb Crusher',
+        command: 'Handle Guido',
+        estimatedTime: '1-2 hours',
+        difficulty: 'Medium'
+      },
+      {
+        priority: 'mafia',
+        icon: '🕴️',
+        title: 'Mafia Takeover',
+        impact: 'High',
+        description: 'Refinance debt to avoid family takeover',
+        command: 'Refinance debt',
+        estimatedTime: '2-4 hours',
+        difficulty: 'Medium'
+      }
+    ];
+
+    return fixes.filter(fix => fix.priority === 'p1' || fix.priority === 'p2' || fix.priority === 'guido' || fix.priority === 'mafia');
+  };
+
+  const calculateQuickWins = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Calculate quick wins
+    const quickWins = Math.min(p1Count, p2Count);
+    
+    return quickWins;
+  };
+
+  const calculateSuccessRate = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Calculate success rate
+    const successRate = ((p1Count + p2Count) / total) * 100;
+    
+    return Math.round(successRate);
+  };
+
+  const generateSmartRecommendations = (debtData) => {
+    if (!debtData || !debtData.summary) return [];
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    const recommendations = [
+      {
+        type: 'p1',
+        icon: '🔥',
+        title: 'Critical Debt',
+        message: 'Address critical debt issues immediately',
+        score: 90
+      },
+      {
+        type: 'p2',
+        icon: '⚠️',
+        title: 'High Debt',
+        message: 'Refinance or consolidate high-interest debt',
+        score: 80
+      },
+      {
+        type: 'p3',
+        icon: '💼',
+        title: 'Medium Debt',
+        message: 'Monitor medium-level debt',
+        score: 70
+      },
+      {
+        type: 'p4',
+        icon: '📊',
+        title: 'Low Debt',
+        message: 'Plan for low-level debt',
+        score: 60
+      },
+      {
+        type: 'guido',
+        icon: '🤌',
+        title: 'Guido Appearance',
+        message: 'Handle Guido the Thumb Crusher',
+        score: 85
+      },
+      {
+        type: 'mafia',
+        icon: '🕴️',
+        title: 'Mafia Takeover',
+        message: 'Refinance debt to avoid family takeover',
+        score: 75
+      }
+    ];
+
+    return recommendations.filter(rec => rec.type === 'p1' || rec.type === 'p2' || rec.type === 'guido' || rec.type === 'mafia');
+  };
+
+  const getRecommendedStrategy = (debtData) => {
+    if (!debtData || !debtData.summary) return 'Analysis pending';
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    if (p1Count > 0) {
+      return 'Focus on critical debt';
+    } else if (p2Count > 0) {
+      return 'Refinance or consolidate high-interest debt';
+    } else {
+      return 'Monitor and plan debt';
+    }
+  };
+
+  const calculateTotalFixTime = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Calculate total fix time
+    const totalTime = Math.round(total * 0.5); // 30 minutes per debt item
+    
+    return totalTime;
+  };
+
+  const calculateROI = (debtData) => {
+    if (!debtData || !debtData.summary) return 0;
+    const total = debtData.summary.total || 0;
+    const p1Count = debtData.summary.p1 || 0;
+    const p2Count = debtData.summary.p2 || 0;
+    
+    // Calculate ROI
+    const roi = (total - (p1Count * 50 + p2Count * 25)) / (p1Count * 50 + p2Count * 25);
+    
+    return Math.round(roi * 100);
+  };
+
   if (loading && !debtData) {
     return (
       <div className="loading-container">
@@ -294,8 +623,33 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <h2 className="panel-title">New Panel</h2>
-          {/* Add content for the new panel here */}
+          <h3 className="panel-title">📊 DEBT ANALYTICS</h3>
+          <div className="analytics-display">
+            <div className="metric-row">
+              <div className="metric-item">
+                <div className="metric-number">
+                  {debtData ? Math.round((debtData.summary?.total || 0) / 7) : 0}
+                </div>
+                <div className="metric-desc">Days to Clean</div>
+              </div>
+              <div className="metric-item">
+                <div className="metric-number">
+                  {debtData ? Math.round(calculateCreditScore(debtData) / 10) : 0}%
+                </div>
+                <div className="metric-desc">Code Health</div>
+              </div>
+            </div>
+            <div className="analytics-trend">
+              <div className="trend-indicator">
+                {debtData?.debtTrend === 'improving' ? '📈' : 
+                 debtData?.debtTrend === 'worsening' ? '📉' : '📊'}
+              </div>
+              <div className="trend-text">
+                {debtData?.debtTrend === 'improving' ? 'Improving' : 
+                 debtData?.debtTrend === 'worsening' ? 'Worsening' : 'Stable'}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="interest-clock">
@@ -314,6 +668,386 @@ const App = () => {
               {debtData ? calculateAPR(debtData) : '0.0'}% APR
             </div>
             <div className="rate-label">Current Interest Rate</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 2 Enhancement: Advanced Debt Heat Maps */}
+      <section className="debt-heat-maps">
+        <div className="heat-map-header">
+          <h2>🔥 DEBT HEAT MAPS</h2>
+          <p className="heat-map-subtitle">File-level debt concentration and hotspots</p>
+        </div>
+        
+        <div className="heat-map-grid">
+          <div className="heat-map-visualization">
+            <h3>📊 File Debt Concentration</h3>
+            <div className="heat-map-canvas">
+              {debtData?.fileDebtMap ? (
+                <div className="heat-blocks">
+                  {Object.entries(debtData.fileDebtMap).slice(0, 20).map(([file, debtInfo], index) => (
+                    <div 
+                      key={index}
+                      className={`heat-block heat-${debtInfo.severity}`}
+                      title={`${file}: ${debtInfo.count} issues (${debtInfo.severity})`}
+                      style={{
+                        width: `${Math.min(Math.max(debtInfo.count * 2, 8), 40)}px`,
+                        height: `${Math.min(Math.max(debtInfo.count * 2, 8), 40)}px`,
+                        backgroundColor: getHeatMapColor(debtInfo.severity, debtInfo.count)
+                      }}
+                    >
+                      <div className="heat-block-info">
+                        <span className="file-name">{file.split('/').pop()}</span>
+                        <span className="debt-count">{debtInfo.count}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="heat-map-placeholder">
+                  <div className="placeholder-content">
+                    <span className="placeholder-icon">🔥</span>
+                    <p>Run a debt scan to generate heat maps</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="heat-map-hotspots">
+            <h3>🚨 Top Debt Hotspots</h3>
+            <div className="hotspot-list">
+              {debtData?.topHotspots ? (
+                debtData.topHotspots.slice(0, 8).map((hotspot, index) => (
+                  <div key={index} className={`hotspot-item priority-${hotspot.priority}`}>
+                    <div className="hotspot-rank">#{index + 1}</div>
+                    <div className="hotspot-details">
+                      <div className="hotspot-file">{hotspot.file}</div>
+                      <div className="hotspot-stats">
+                        <span className="debt-count">{hotspot.debtCount} issues</span>
+                        <span className="severity-badge">{hotspot.priority.toUpperCase()}</span>
+                      </div>
+                    </div>
+                    <div className="hotspot-temperature">
+                      <span className="temp-value">{hotspot.temperature}°</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="hotspot-placeholder">
+                  <p>🔍 No hotspots detected yet</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div className="heat-map-legend">
+          <h4>🎨 Heat Map Legend</h4>
+          <div className="legend-items">
+            <div className="legend-item">
+              <span className="legend-color heat-p1"></span>
+              <span className="legend-label">Critical (P1)</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color heat-p2"></span>
+              <span className="legend-label">High (P2)</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color heat-p3"></span>
+              <span className="legend-label">Medium (P3)</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color heat-p4"></span>
+              <span className="legend-label">Low (P4)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 2 Enhancement: Trend Analysis & Predictive Insights */}
+      <section className="trend-analysis">
+        <div className="trend-header">
+          <h2>📈 DEBT TREND ANALYSIS</h2>
+          <p className="trend-subtitle">Historical tracking and predictive insights</p>
+        </div>
+        
+        <div className="trend-grid">
+          <div className="trend-charts">
+            <div className="trend-chart-container">
+              <h3>🏗️ Debt History</h3>
+              <div className="trend-chart">
+                {debtData?.debtHistory ? (
+                  <div className="chart-visualization">
+                    <div className="chart-bars">
+                      {debtData.debtHistory.slice(-7).map((entry, index) => (
+                        <div key={index} className="chart-bar">
+                          <div 
+                            className="bar-fill"
+                            style={{
+                              height: `${Math.min((entry.total / Math.max(...debtData.debtHistory.map(e => e.total))) * 100, 100)}%`,
+                              backgroundColor: getTrendColor(entry.total)
+                            }}
+                          ></div>
+                          <div className="bar-label">{entry.date}</div>
+                          <div className="bar-value">{entry.total}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="chart-placeholder">
+                    <div className="placeholder-content">
+                      <span className="placeholder-icon">📊</span>
+                      <p>Building debt history...</p>
+                      <p className="placeholder-note">Run multiple scans to see trends</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="trend-predictions">
+              <h3>🔮 Predictive Analysis</h3>
+              <div className="prediction-cards">
+                <div className="prediction-card">
+                  <div className="prediction-icon">🎯</div>
+                  <div className="prediction-content">
+                    <div className="prediction-title">Debt Velocity</div>
+                    <div className="prediction-value">
+                      {debtData ? calculateDebtVelocity(debtData) : '0'} issues/day
+                    </div>
+                    <div className="prediction-desc">Current accumulation rate</div>
+                  </div>
+                </div>
+                
+                <div className="prediction-card">
+                  <div className="prediction-icon">⏰</div>
+                  <div className="prediction-content">
+                    <div className="prediction-title">Time to Crisis</div>
+                    <div className="prediction-value">
+                      {debtData ? calculateTimeToCrisis(debtData) : '∞'} days
+                    </div>
+                    <div className="prediction-desc">Until P1 threshold</div>
+                  </div>
+                </div>
+                
+                <div className="prediction-card">
+                  <div className="prediction-icon">🎪</div>
+                  <div className="prediction-content">
+                    <div className="prediction-title">Cleanup Effort</div>
+                    <div className="prediction-value">
+                      {debtData ? calculateCleanupEffort(debtData) : '0'} hrs
+                    </div>
+                    <div className="prediction-desc">Estimated fix time</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="trend-insights">
+            <h3>💡 Smart Insights</h3>
+            <div className="insights-list">
+              {debtData ? generateSmartInsights(debtData).map((insight, index) => (
+                <div key={index} className={`insight-item ${insight.priority}`}>
+                  <div className="insight-icon">{insight.icon}</div>
+                  <div className="insight-content">
+                    <div className="insight-title">{insight.title}</div>
+                    <div className="insight-message">{insight.message}</div>
+                    <div className="insight-action">{insight.action}</div>
+                  </div>
+                </div>
+              )) : (
+                <div className="insights-placeholder">
+                  <p>🔍 Run a debt scan to generate insights</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div className="trend-summary">
+          <h3>📊 Trend Summary</h3>
+          <div className="trend-metrics">
+            <div className="trend-metric">
+              <div className="metric-icon">📈</div>
+              <div className="metric-info">
+                <div className="metric-label">Overall Trend</div>
+                <div className={`metric-value trend-${debtData?.debtTrend || 'stable'}`}>
+                  {debtData?.debtTrend === 'improving' ? '📈 IMPROVING' : 
+                   debtData?.debtTrend === 'worsening' ? '📉 WORSENING' : '📊 STABLE'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="trend-metric">
+              <div className="metric-icon">🎯</div>
+              <div className="metric-info">
+                <div className="metric-label">Debt Efficiency</div>
+                <div className="metric-value">
+                  {debtData ? calculateDebtEfficiency(debtData) : '0'}%
+                </div>
+              </div>
+            </div>
+            
+            <div className="trend-metric">
+              <div className="metric-icon">⚡</div>
+              <div className="metric-info">
+                <div className="metric-label">Fix Rate</div>
+                <div className="metric-value">
+                  {debtData ? calculateFixRate(debtData) : '0'} issues/scan
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 2 Enhancement: AI-Powered Fix Suggestions */}
+      <section className="ai-suggestions">
+        <div className="ai-header">
+          <h2>🤖 AI-POWERED FIX SUGGESTIONS</h2>
+          <p className="ai-subtitle">Smart refactoring recommendations powered by debt analysis</p>
+        </div>
+        
+        <div className="ai-grid">
+          <div className="priority-fixes">
+            <h3>🎯 Priority Fixes</h3>
+            <div className="fixes-list">
+              {debtData ? generatePriorityFixes(debtData).map((fix, index) => (
+                <div key={index} className={`fix-item priority-${fix.priority}`}>
+                  <div className="fix-header">
+                    <div className="fix-icon">{fix.icon}</div>
+                    <div className="fix-title">{fix.title}</div>
+                    <div className="fix-impact">{fix.impact} Impact</div>
+                  </div>
+                  <div className="fix-description">{fix.description}</div>
+                  <div className="fix-actions">
+                    <div className="fix-command">
+                      <code>{fix.command}</code>
+                    </div>
+                    <div className="fix-buttons">
+                      <button 
+                        className="action-button primary"
+                        onClick={() => triggerFix('ai-help')}
+                        title="Apply AI suggestion"
+                      >
+                        🚀 Apply Fix
+                      </button>
+                      <button 
+                        className="action-button secondary"
+                        onClick={() => console.log('Manual fix guide:', fix)}
+                        title="Show manual steps"
+                      >
+                        📋 Manual Steps
+                      </button>
+                    </div>
+                  </div>
+                  <div className="fix-estimate">
+                    <span className="estimate-time">⏱️ {fix.estimatedTime}</span>
+                    <span className="estimate-difficulty">🎯 {fix.difficulty}</span>
+                  </div>
+                </div>
+              )) : (
+                <div className="fixes-placeholder">
+                  <p>🔍 Run a debt scan to generate AI suggestions</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="ai-insights">
+            <h3>🧠 AI Analysis</h3>
+            <div className="analysis-cards">
+              <div className="analysis-card">
+                <div className="card-icon">🔥</div>
+                <div className="card-content">
+                  <div className="card-title">Debt Hotspots</div>
+                  <div className="card-value">
+                    {debtData?.topHotspots ? debtData.topHotspots.length : 0} files
+                  </div>
+                  <div className="card-desc">Need immediate attention</div>
+                </div>
+              </div>
+              
+              <div className="analysis-card">
+                <div className="card-icon">⚡</div>
+                <div className="card-content">
+                  <div className="card-title">Quick Wins</div>
+                  <div className="card-value">
+                    {debtData ? calculateQuickWins(debtData) : 0}
+                  </div>
+                  <div className="card-desc">Easy fixes available</div>
+                </div>
+              </div>
+              
+              <div className="analysis-card">
+                <div className="card-icon">🎯</div>
+                <div className="card-content">
+                  <div className="card-title">Success Rate</div>
+                  <div className="card-value">
+                    {debtData ? calculateSuccessRate(debtData) : 0}%
+                  </div>
+                  <div className="card-desc">Fix success probability</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="ai-recommendations">
+              <h4>💡 Smart Recommendations</h4>
+              <div className="recommendations-list">
+                {debtData ? generateSmartRecommendations(debtData).map((rec, index) => (
+                  <div key={index} className={`recommendation-item ${rec.type}`}>
+                    <div className="rec-icon">{rec.icon}</div>
+                    <div className="rec-content">
+                      <div className="rec-title">{rec.title}</div>
+                      <div className="rec-message">{rec.message}</div>
+                    </div>
+                    <div className="rec-score">{rec.score}%</div>
+                  </div>
+                )) : (
+                  <div className="recommendations-placeholder">
+                    <p>🤖 AI analysis pending...</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="ai-summary">
+          <h3>📊 Fix Strategy Summary</h3>
+          <div className="strategy-metrics">
+            <div className="strategy-item">
+              <div className="strategy-icon">🎯</div>
+              <div className="strategy-info">
+                <div className="strategy-label">Recommended Strategy</div>
+                <div className="strategy-value">
+                  {debtData ? getRecommendedStrategy(debtData) : 'Analysis pending'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="strategy-item">
+              <div className="strategy-icon">⏰</div>
+              <div className="strategy-info">
+                <div className="strategy-label">Total Fix Time</div>
+                <div className="strategy-value">
+                  {debtData ? calculateTotalFixTime(debtData) : '0'} hours
+                </div>
+              </div>
+            </div>
+            
+            <div className="strategy-item">
+              <div className="strategy-icon">💰</div>
+              <div className="strategy-info">
+                <div className="strategy-label">ROI Estimate</div>
+                <div className="strategy-value">
+                  {debtData ? calculateROI(debtData) : '0'}x return
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -407,6 +1141,13 @@ const App = () => {
             </div>
           </section>
         )}
+
+        {/* Shame Level */}
+        <div className="shame-level">
+          <div className={`shame-indicator ${debtData.shameLevel}`}>
+            {getShameMessage(debtData.shameLevel)}
+          </div>
+        </div>
 
         {/* Debt Status */}
         {debtData && (
@@ -519,4 +1260,4 @@ const App = () => {
   );
 };
 
-export default App; 
+export default App;
