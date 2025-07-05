@@ -33,6 +33,7 @@ actually works.
 
 ### ✅ **Currently Working (MVP Foundation)**
 
+- **🚀 Comprehensive Setup Wizard**: Enhanced `refuctor init` with 6-step automated project setup
 - **🌐 Live Web Dashboard**: Real-time debt monitoring at `http://localhost:1947` with professional UI
 - **📊 Debt Detection Engine**: Markdown linting, spell checking, security audits with MAFIA/Guido escalation levels
 - **🎯 Interactive Controls**: SCAN DEBT, FIX DEBT, and NUCLEAR OPTION buttons with real-time updates
@@ -44,6 +45,8 @@ actually works.
 - **🔍 Session Wrap Integration**: 9-step comprehensive debt scanning protocol
 - **📝 Spell Check Management**: Extensible dictionary for project-specific terms
 - **🍳 Cook the Books**: Export VS Code problems to markdown when Refuctor scan misses issues
+- **🧠 Project Intelligence**: Automatic framework detection (React, Vue, Angular, Node.js)
+- **⚙️ Smart Configuration**: Context-aware cspell.json and .debtignore generation
 
 ### 🎯 **Next Phase Features (Near-term)**
 
@@ -86,40 +89,37 @@ actually works.
 
 ## 🛠️ Quick Start
 
-### **1. Project Detection & Setup**
+### **1. Automated Setup Wizard**
 
 ```bash
+# Navigate to your project directory
+cd /path/to/your/project
 
-# Install dependencies for testing the foundation
+# Run the comprehensive setup wizard
+node /path/to/refuctor/cli/refuctor-cli.js init
 
-npm install -g markdownlint-cli
-npm install -g cspell
-
-# Copy TECHDEBT_TEMPLATE.md to your project as TECHDEBT.md
-
-# Customize cspell.json with your project-specific terms
-
+# The setup wizard will:
+# 🔍 Analyze your project (detect React, Vue, Angular, Node.js)
+# 📝 Generate project-specific cspell.json dictionary
+# 🚫 Create .debtignore file with framework-specific patterns
+# 📊 Set up context-aware TECHDEBT.md with monitoring recommendations
+# 💻 Configure IDE integration (Cursor workspace optimization)
+# 🎯 Provide actionable next steps for debt management
 ```text
 
-### **2. Manual Debt Detection (MVP Commands)**
+### **2. Debt Detection & Dashboard**
 
 ```bash
+# Comprehensive debt scan (Enhanced Detection)
+node /path/to/refuctor/cli/refuctor-cli.js scan
 
-# Markdown linting
+# Launch real-time dashboard
+node /path/to/refuctor/cli/refuctor-cli.js serve
 
-npx markdownlint-cli "*.md"
+# Open http://localhost:1947 for live debt monitoring
 
-# Spell checking
-
-npx cspell "**/*.{md,js,json,ts}"
-
-# Security audit (when package.json exists)
-
-npm audit
-
-# Comprehensive scan
-
-npx markdownlint-cli "*.md" && npx cspell "**/*"
+# Check project information
+node /path/to/refuctor/cli/refuctor-cli.js info
 ```text
 
 ### **3. Session Wrap Protocol**
@@ -173,17 +173,23 @@ refuctor cook --format csv
 
 ## 🎮 Roadmap Overview
 
-### **Phase 1: Foundation (Weeks 1-4) - NPM Package**
+### **Phase 1: Foundation (Weeks 1-4) - NPM Package** ✅ **COMPLETE**
 
-- Extract core logic into standalone `@puberty-labs/refuctor` package
-- Build CLI interface with commands: `init`, `scan`, `fix`, `status`, `wrap`
-- Automated setup wizard for new projects
+- ✅ Extract core logic into standalone `@puberty-labs/refuctor` package
+- ✅ Build CLI interface with commands: `init`, `scan`, `fix`, `status`, `wrap`
+- ✅ Automated setup wizard for new projects (Enhanced 6-step wizard)
+- ✅ Real-time dashboard with professional UI on port 1947
+- ✅ Project intelligence with framework detection
+- ✅ Smart configuration generation
 
-### **Phase 2: GUI Dashboard (Weeks 5-8) - "Debt Collector View"**
+### **Phase 2: GUI Dashboard (Weeks 5-8) - "Debt Collector View"** 🚧 **IN PROGRESS**
 
-- Electron-based desktop app with real-time warning visualization
-- Interactive controls: "Make It Disappear", "Refinance", "Sell to Collection Agency"
-- Debt heat maps and historical trend analysis
+- ✅ Web-based dashboard with real-time warning visualization (port 1947)
+- ✅ Interactive controls: "SCAN DEBT", "FIX DEBT", "NUCLEAR OPTION"
+- 🚧 Enhanced debt heat maps and historical trend analysis
+- 🚧 Advanced AI-powered fix suggestions and automation
+- 🚧 Mobile-responsive design improvements
+- 🚧 Electron desktop app conversion (optional)
 
 ### **Phase 3: MCP Integration (Weeks 9-12) - "Code Broker"**
 

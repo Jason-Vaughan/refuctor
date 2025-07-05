@@ -6,6 +6,7 @@ const { techDebtManager } = require('../src/techdebt-manager');
 const { markdownFixerGoon } = require('../src/goons/markdown-fixer');
 const { DebtDetector } = require('../src/debt-detector.js');
 const { DebtIgnoreParser } = require('../src/debt-ignore-parser');
+const SetupWizard = require('../src/setup-wizard');
 const packageJson = require('../package.json');
 const fs = require('fs-extra');
 const path = require('path');
@@ -457,29 +458,74 @@ program
     }
   });
 
-// Init command - set up debt tracking
+// Init command - automated setup wizard
 program
   .command('init')
-  .description(colors.green('🏗️  Initialize debt tracking in your project'))
-  .option('-f, --force', 'Overwrite existing TECHDEBT.md')
+  .description(colors.green('🏗️  Run automated setup wizard to initialize complete debt management infrastructure'))
+  .option('-f, --force', 'Overwrite existing configuration files')
+  .option('--basic', 'Run basic setup (TECHDEBT.md only)')
   .action(async (options) => {
-    console.log(colors.bold(colors.green('\n🏗️  REFUCTOR DEBT TRACKING SETUP')));
-    console.log(colors.gray('Establishing your debt management infrastructure...\n'));
+    console.log(colors.bold(colors.green('\n🏗️  REFUCTOR AUTOMATED SETUP WIZARD')));
+    console.log(colors.gray('Establishing comprehensive debt management infrastructure...\n'));
     
     try {
-      const result = await techDebtManager.initializeProject(process.cwd(), options.force);
-      
-      if (result.created) {
-        console.log(colors.bold(colors.green('✅ DEBT TRACKING ACTIVATED!')));
-        console.log(colors.green('TECHDEBT.md created - your debt has nowhere to hide now'));
-        console.log(colors.blue('Run `refuctor scan` to start detecting issues'));
-      } else if (result.exists && !options.force) {
-        console.log(colors.yellow('⚠️  TECHDEBT.md already exists'));
-        console.log(colors.gray('Use --force to overwrite, or you\'re already in debt management'));
+      if (options.basic) {
+        // Basic setup - just TECHDEBT.md (original functionality)
+        console.log(colors.yellow('Running basic setup (TECHDEBT.md only)...\n'));
+        const result = await techDebtManager.initializeProject(process.cwd(), options.force);
+        
+        if (result.created) {
+          console.log(colors.bold(colors.green('✅ BASIC DEBT TRACKING ACTIVATED!')));
+          console.log(colors.green('TECHDEBT.md created - your debt has nowhere to hide now'));
+          console.log(colors.blue('Run `refuctor scan` to start detecting issues'));
+          console.log(colors.gray('\n💡 For full setup wizard, run `refuctor init` without --basic flag'));
+        } else if (result.exists && !options.force) {
+          console.log(colors.yellow('⚠️  TECHDEBT.md already exists'));
+          console.log(colors.gray('Use --force to overwrite, or you\'re already in debt management'));
+        }
+      } else {
+        // Full automated setup wizard
+        console.log(colors.cyan('Running comprehensive automated setup wizard...\n'));
+        const wizard = new SetupWizard();
+        const setupResults = await wizard.runSetupWizard(process.cwd(), options);
+        
+        // Display setup summary
+        console.log(colors.bold(colors.green('\n🎉 SETUP WIZARD COMPLETE!')));
+        console.log(colors.bold(colors.cyan('📋 SETUP SUMMARY:')));
+        
+        if (setupResults.techDebtCreated) {
+          console.log(colors.green('   ✅ TECHDEBT.md created with project-specific context'));
+        }
+        if (setupResults.spellCheckSetup) {
+          console.log(colors.green('   ✅ Spell checking configured with project dictionary'));
+        }
+        if (setupResults.debtIgnoreCreated) {
+          console.log(colors.green('   ✅ Debt ignore patterns configured'));
+        }
+        if (setupResults.workspaceConfigured) {
+          console.log(colors.green('   ✅ IDE integration configured'));
+        }
+        
+        if (setupResults.configsGenerated.length > 0) {
+          console.log(colors.blue(`   📝 Generated configs: ${setupResults.configsGenerated.join(', ')}`));
+        }
+        
+        console.log(colors.bold(colors.green('\n🚀 READY FOR DEBT MANAGEMENT!')));
+        console.log(colors.blue('Next steps:'));
+        console.log(colors.blue('  1. Run `refuctor scan` to analyze current debt'));
+        console.log(colors.blue('  2. Review and customize generated configuration files'));
+        console.log(colors.blue('  3. Start your debt-free development journey!'));
+        
+        // Show project-specific recommendations
+        if (wizard.projectAnalysis) {
+          console.log(colors.gray(`\n💡 Optimized for ${wizard.projectAnalysis.projectType} development`));
+        }
       }
       
     } catch (error) {
-      console.error(colors.red(`Initialization failed: ${error.message}`));
+      console.error(colors.bold(colors.red('\n💥 SETUP WIZARD FAILED:')));
+      console.error(colors.red(`Setup error: ${error.message}`));
+      console.error(colors.gray('Try running with --basic flag for minimal setup'));
       process.exit(1);
     }
   });
