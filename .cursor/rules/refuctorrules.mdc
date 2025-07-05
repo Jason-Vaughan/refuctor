@@ -1,9 +1,4 @@
 ---
-description: 
-globs: 
-alwaysApply: true
----
----
 description: Refuctor development guidelines and workflow standards - apply to all Refuctor development tasks and conversations
 globs: 
 alwaysApply: true
@@ -97,6 +92,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 
 ### 4. Technical Debt Cleanup 🧹
 - **AUTOMATED DEBT SCANNING**: Run comprehensive tech debt detection
+- **🍳 COOK THE BOOKS**: When Refuctor scan misses issues, use `refuctor cook` to export VS Code problems
 - **Update TECHDEBT.md**: Log new issues found, mark resolved items complete
 - **Cursor Error Analysis**: Count and categorize all IDE warning indicators
 - **Linting Issues**: `npx markdownlint-cli *.md` and other applicable linters
@@ -163,11 +159,12 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - Async/await over Promises over callbacks
 
 ## 🎯 Refuctor-Specific Rules
-- CLI commands should have debt-cleansing personality: "refuctor scan", "refuctor shame", "refuctor fix"
+- CLI commands should have debt-cleansing personality: "refuctor scan", "refuctor shame", "refuctor fix", "refuctor cook"
 - Error messages should use financial metaphors: "Your code is in foreclosure", "Debt levels critical"
 - Success messages should be celebratory: "Debt eliminated! You magnificent debt-slayer!"
 - All debt priorities use P1-P4 system with snarky descriptions
 - Follow established Puberty Labs humor patterns
+- **🍳 Cook the Books**: Use when VS Code shows problems that Refuctor scan misses
 
 ## 🚨 Automatic Actions
 - Run linter after every code change

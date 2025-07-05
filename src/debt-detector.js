@@ -3,20 +3,41 @@ const fs = require('fs-extra');
 const path = require('path');
 const glob = require('glob');
 const { DebtIgnoreParser } = require('./debt-ignore-parser');
+const SnarkySpellHandler = require('./snarky-spell-handler');
 
 /**
  * Core debt detection engine for Refuctor
- * Integrates markdownlint, cspell, npm audit, and custom rules
+ * Integrates markdownlint, cspell, npm audit, ESLint, TypeScript, and custom rules
  */
 class DebtDetector {
   constructor() {
     this.debtThresholds = {
-      mafia: { markdownWarnings: 100, spellErrors: 50, securityCritical: 3, extremeDebt: 75, daysOverdue: 3 }, // Mafia Takeover
-      guido: { markdownWarnings: 200, spellErrors: 100, securityCritical: 5, extremeDebt: 150, vigorishDays: 2 }, // Guido Deployment
-      p1: { markdownWarnings: 50, spellErrors: 20, securityHigh: 1 },
-      p2: { markdownWarnings: 10, spellErrors: 5, securityMedium: 3 },
-      p3: { markdownWarnings: 3, spellErrors: 2, unused: 5 },
-      p4: { markdownWarnings: 1, spellErrors: 1, style: 10 }
+      mafia: { 
+        markdownWarnings: 50, spellErrors: 25, securityCritical: 3, 
+        eslintErrors: 75, tsErrors: 30, consoleLogs: 20, todos: 15,
+        extremeDebt: 100, daysOverdue: 3 
+      },
+      guido: { 
+        markdownWarnings: 100, spellErrors: 50, securityCritical: 5, 
+        eslintErrors: 150, tsErrors: 50, consoleLogs: 40, todos: 30,
+        extremeDebt: 200, vigorishDays: 2 
+      },
+      p1: { 
+        markdownWarnings: 20, spellErrors: 10, securityHigh: 1,
+        eslintErrors: 25, tsErrors: 10, consoleLogs: 8, todos: 8
+      },
+      p2: { 
+        markdownWarnings: 5, spellErrors: 3, securityMedium: 3,
+        eslintErrors: 10, tsErrors: 5, consoleLogs: 4, todos: 4
+      },
+      p3: { 
+        markdownWarnings: 2, spellErrors: 1, unused: 5,
+        eslintWarnings: 5, formatting: 10, deadCode: 3
+      },
+      p4: { 
+        markdownWarnings: 1, spellErrors: 1, style: 10,
+        eslintWarnings: 1, minorIssues: 5
+      }
     };
     this.ignoreParser = new DebtIgnoreParser();
     this.mafiaMessages = [
@@ -80,11 +101,17 @@ class DebtDetector {
         }
       }
       
-      // Run all debt detection methods
+      // Run all debt detection methods with graceful fallbacks
       const markdownDebt = await this.detectMarkdownDebt(projectPath, verbose);
       const spellDebt = await this.detectSpellingDebt(projectPath);
       const securityDebt = await this.detectSecurityDebt(projectPath);
       const dependencyDebt = await this.detectDependencyDebt(projectPath);
+      
+      // Enhanced detection methods (with fallbacks for older versions)
+      const eslintDebt = this.detectESLintDebt ? await this.detectESLintDebt(projectPath) : { total: 0, errors: 0, warnings: 0 };
+      const typescriptDebt = this.detectTypeScriptDebt ? await this.detectTypeScriptDebt(projectPath) : { total: 0, errors: [] };
+      const codeQualityDebt = this.detectCodeQualityDebt ? await this.detectCodeQualityDebt(projectPath) : { total: 0, consoleLogs: [], todos: [] };
+      const formattingDebt = this.detectFormattingDebt ? await this.detectFormattingDebt(projectPath) : { total: 0, issues: [] };
 
       // Store ignored file information if verbose
       if (verbose) {
@@ -97,6 +124,10 @@ class DebtDetector {
       this.categorizeDebt(debtReport, 'spelling', spellDebt);  
       this.categorizeDebt(debtReport, 'security', securityDebt);
       this.categorizeDebt(debtReport, 'dependencies', dependencyDebt);
+      this.categorizeDebt(debtReport, 'eslint', eslintDebt);
+      this.categorizeDebt(debtReport, 'typescript', typescriptDebt);
+      this.categorizeDebt(debtReport, 'code-quality', codeQualityDebt);
+      this.categorizeDebt(debtReport, 'formatting', formattingDebt);
 
       // Calculate totals
       debtReport.totalDebt = debtReport.guido.length + debtReport.mafia.length + debtReport.p1.length + 
@@ -112,6 +143,12 @@ class DebtDetector {
         spelling: spellDebt.total,
         security: securityDebt.total,
         dependencies: dependencyDebt.total,
+        eslint: eslintDebt.total,
+        typescript: typescriptDebt.total,
+        codeQuality: codeQualityDebt.total,
+        formatting: formattingDebt.total,
+        snarkyProcessed: spellDebt.snarkyProcessed || false,
+        snarkyAdded: spellDebt.snarkyAdded || 0,
         debtLevel: this.calculateDebtLevel(debtReport)
       };
 
@@ -129,7 +166,11 @@ class DebtDetector {
           markdown: markdownDebt,
           spelling: spellDebt,
           security: securityDebt,
-          dependencies: dependencyDebt
+          dependencies: dependencyDebt,
+          eslint: eslintDebt,
+          typescript: typescriptDebt,
+          codeQuality: codeQualityDebt,
+          formatting: formattingDebt
         };
       }
 
@@ -145,6 +186,12 @@ class DebtDetector {
         spelling: 0,
         security: 0,
         dependencies: 0,
+        eslint: 0,
+        typescript: 0,
+        codeQuality: 0,
+        formatting: 0,
+        snarkyProcessed: false,
+        snarkyAdded: 0,
         debtLevel: 'unknown'
       };
       
@@ -262,10 +309,10 @@ class DebtDetector {
   }
 
   /**
-   * Detect spelling issues
+   * Detect spelling issues with integrated snarky intelligence
    */
   async detectSpellingDebt(projectPath) {
-    const debt = { total: 0, issues: [], files: [] };
+    const debt = { total: 0, issues: [], files: [], snarkyProcessed: false, snarkyAdded: 0 };
     
     try {
       // Check if cspell config exists
@@ -287,8 +334,7 @@ class DebtDetector {
       // cspell exits with code 1 when issues found
       if (error.status === 1 && error.stdout) {
         const lines = error.stdout.trim().split('\n').filter(line => line.includes('Unknown word'));
-        debt.total = lines.length;
-        debt.issues = lines.map(line => {
+        const rawIssues = lines.map(line => {
           const match = line.match(/^(.+):(\d+):(\d+)\s+-\s+Unknown word \((.+)\)/);
           if (match) {
             return {
@@ -300,8 +346,45 @@ class DebtDetector {
           }
           return { raw: line };
         });
+
+        // 🎯 AUTOMATIC SNARKY INTELLIGENCE ACTIVATED!
+        if (rawIssues.length > 0) {
+          console.log(`🎯 Snarky Intelligence: Analyzing ${rawIssues.length} spelling issues...`);
+          
+          try {
+            const snarkyHandler = new SnarkySpellHandler();
+            const analysis = await snarkyHandler.analyzeSpellingIssues(projectPath, rawIssues);
+            
+            // Auto-add obvious snarky terms to dictionary
+            if (analysis.likelySnarky.length > 0) {
+              const dictResult = await snarkyHandler.updateProjectDictionary(
+                projectPath, 
+                analysis.likelySnarky.map(s => s.word)
+              );
+              console.log(`📝 Auto-added ${dictResult.wordsAdded} snarky terms to project dictionary`);
+              debt.snarkyAdded = dictResult.wordsAdded;
+              debt.snarkyProcessed = true;
+            }
+
+            // Only report definite typos and uncertain cases as actual debt
+            const actualProblems = [...analysis.definiteTypos, ...analysis.unsure];
+            debt.issues = actualProblems;
+            debt.total = actualProblems.length;
+            debt.files = [...new Set(actualProblems.map(i => i.file).filter(Boolean))];
+
+            if (debt.snarkyAdded > 0) {
+              console.log(`✅ Reduced spelling debt from ${rawIssues.length} to ${debt.total} (${debt.snarkyAdded} snarky terms whitelisted)`);
+            }
+
+          } catch (snarkyError) {
+            // Fallback to original behavior if snarky analysis fails
+            console.log(`⚠️ Snarky analysis failed, using basic spell check: ${snarkyError.message}`);
+            debt.issues = rawIssues;
+            debt.total = rawIssues.length;
+            debt.files = [...new Set(rawIssues.map(i => i.file).filter(Boolean))];
+          }
+        }
         
-        debt.files = [...new Set(debt.issues.map(i => i.file).filter(Boolean))];
       } else if (!error.stdout || error.stdout.trim() === '') {
         // No output usually means no issues
         debt.total = 0;
@@ -414,10 +497,282 @@ class DebtDetector {
   }
 
   /**
+   * Detect ESLint issues (JavaScript/TypeScript code quality)
+   */
+  async detectESLintDebt(projectPath) {
+    const debt = { total: 0, errors: 0, warnings: 0, issues: [], files: [] };
+    
+    try {
+      // Check if ESLint config exists
+      const configFiles = ['.eslintrc.js', '.eslintrc.json', '.eslintrc.yml', 'eslint.config.js'];
+      const hasConfig = configFiles.some(file => fs.existsSync(path.join(projectPath, file)));
+      
+      // Check for JS/TS files
+      const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { 
+        cwd: projectPath,
+        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+      });
+      
+      if (codeFiles.length === 0) {
+        return debt; // No code files to lint
+      }
+
+      // Run ESLint
+      const cmd = `npx --yes eslint ${codeFiles.join(' ')} --format json`;
+      const result = execSync(cmd, { 
+        cwd: projectPath, 
+        encoding: 'utf8',
+        stdio: 'pipe'
+      });
+
+      const eslintResults = JSON.parse(result);
+      
+      for (const fileResult of eslintResults) {
+        if (fileResult.messages.length > 0) {
+          debt.files.push(fileResult.filePath);
+          
+          for (const message of fileResult.messages) {
+            debt.issues.push({
+              file: fileResult.filePath,
+              line: message.line,
+              column: message.column,
+              severity: message.severity, // 1 = warning, 2 = error
+              rule: message.ruleId,
+              message: message.message
+            });
+            
+            if (message.severity === 2) {
+              debt.errors++;
+            } else {
+              debt.warnings++;
+            }
+          }
+        }
+      }
+      
+      debt.total = debt.errors + debt.warnings;
+
+    } catch (error) {
+      // ESLint not available or no config - try basic syntax check
+      if (error.status === 1 && error.stdout) {
+        try {
+          const eslintResults = JSON.parse(error.stdout);
+          
+          for (const fileResult of eslintResults) {
+            if (fileResult.messages.length > 0) {
+              debt.files.push(fileResult.filePath);
+              
+              for (const message of fileResult.messages) {
+                debt.issues.push({
+                  file: fileResult.filePath,
+                  line: message.line,
+                  column: message.column,
+                  severity: message.severity,
+                  rule: message.ruleId,
+                  message: message.message
+                });
+                
+                if (message.severity === 2) {
+                  debt.errors++;
+                } else {
+                  debt.warnings++;
+                }
+              }
+            }
+          }
+          
+          debt.total = debt.errors + debt.warnings;
+        } catch (parseError) {
+          // If we can't parse, skip ESLint analysis
+          debt.total = 0;
+        }
+      }
+    }
+
+    return debt;
+  }
+
+  /**
+   * Detect TypeScript compilation errors
+   */
+  async detectTypeScriptDebt(projectPath) {
+    const debt = { total: 0, errors: [], files: [] };
+    
+    try {
+      // Check if TypeScript config exists
+      if (!fs.existsSync(path.join(projectPath, 'tsconfig.json'))) {
+        return debt; // No TypeScript project
+      }
+
+      // Check for TS files
+      const tsFiles = glob.sync('**/*.{ts,tsx}', { 
+        cwd: projectPath,
+        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+      });
+      
+      if (tsFiles.length === 0) {
+        return debt; // No TypeScript files
+      }
+
+      // Run TypeScript compiler check
+      const cmd = 'npx --yes tsc --noEmit --skipLibCheck';
+      const result = execSync(cmd, { 
+        cwd: projectPath, 
+        encoding: 'utf8',
+        stdio: 'pipe'
+      });
+
+      // If we get here, no TS errors
+      debt.total = 0;
+
+    } catch (error) {
+      // TypeScript errors found
+      if (error.stdout) {
+        const lines = error.stdout.trim().split('\n').filter(line => line.includes('error TS'));
+        debt.total = lines.length;
+        
+        debt.errors = lines.map(line => {
+          const match = line.match(/^(.+)\((\d+),(\d+)\):\s+error\s+(TS\d+):\s+(.+)$/);
+          if (match) {
+            return {
+              file: match[1],
+              line: parseInt(match[2]),
+              column: parseInt(match[3]),
+              code: match[4],
+              message: match[5]
+            };
+          }
+          return { raw: line };
+        });
+        
+        debt.files = [...new Set(debt.errors.map(e => e.file).filter(Boolean))];
+      }
+    }
+
+    return debt;
+  }
+
+  /**
+   * Detect code quality issues (console.logs, TODOs, dead code)
+   */
+  async detectCodeQualityDebt(projectPath) {
+    const debt = { 
+      total: 0, 
+      consoleLogs: [], 
+      todos: [], 
+      deadCode: [],
+      files: [] 
+    };
+    
+    try {
+      // Find all code files
+      const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx,vue}', { 
+        cwd: projectPath,
+        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+      });
+
+      for (const file of codeFiles) {
+        const filePath = path.join(projectPath, file);
+        const content = await fs.readFile(filePath, 'utf8');
+        const lines = content.split('\n');
+        
+        let fileHasIssues = false;
+
+        // Check for console.log statements
+        lines.forEach((line, index) => {
+          if (line.includes('console.log') || line.includes('console.warn') || line.includes('console.error')) {
+            debt.consoleLogs.push({
+              file: file,
+              line: index + 1,
+              content: line.trim()
+            });
+            fileHasIssues = true;
+          }
+          
+          // Check for TODO/FIXME comments
+          if (line.includes('TODO') || line.includes('FIXME') || line.includes('HACK')) {
+            debt.todos.push({
+              file: file,
+              line: index + 1,
+              content: line.trim()
+            });
+            fileHasIssues = true;
+          }
+        });
+
+        if (fileHasIssues) {
+          debt.files.push(file);
+        }
+      }
+      
+      debt.total = debt.consoleLogs.length + debt.todos.length + debt.deadCode.length;
+
+    } catch (error) {
+      // Skip code quality analysis if it fails
+      debt.total = 0;
+    }
+
+    return debt;
+  }
+
+  /**
+   * Detect formatting and style issues
+   */
+  async detectFormattingDebt(projectPath) {
+    const debt = { total: 0, issues: [], files: [] };
+    
+    try {
+      // Check if Prettier config exists
+      const prettierConfigs = ['.prettierrc', '.prettierrc.json', '.prettierrc.js', 'prettier.config.js'];
+      const hasPrettierConfig = prettierConfigs.some(file => fs.existsSync(path.join(projectPath, file)));
+      
+      if (!hasPrettierConfig) {
+        return debt; // No Prettier config, skip formatting checks
+      }
+
+      // Find files to check
+      const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx,json,css,scss,md}', { 
+        cwd: projectPath,
+        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+      });
+
+      if (codeFiles.length === 0) {
+        return debt;
+      }
+
+      // Check formatting with Prettier
+      const cmd = `npx --yes prettier --check ${codeFiles.join(' ')}`;
+      const result = execSync(cmd, { 
+        cwd: projectPath, 
+        encoding: 'utf8',
+        stdio: 'pipe'
+      });
+
+      // If we get here, all files are properly formatted
+      debt.total = 0;
+
+    } catch (error) {
+      // Prettier found formatting issues
+      if (error.stdout) {
+        const lines = error.stdout.trim().split('\n').filter(line => line.trim());
+        debt.total = lines.length;
+        debt.files = lines;
+        debt.issues = lines.map(file => ({
+          file: file,
+          type: 'formatting',
+          message: 'File needs formatting'
+        }));
+      }
+    }
+
+    return debt;
+  }
+
+  /**
    * Categorize debt into Mafia/Guido/P1-P4 priorities
    */
   categorizeDebt(debtReport, category, debtData) {
-    const { total, issues = [], severity = {} } = debtData;
+    const { total, issues = [], severity = {}, errors = 0, warnings = 0, consoleLogs = [], todos = [] } = debtData;
     
     if (total === 0) return;
 
@@ -428,6 +783,14 @@ class DebtDetector {
       debtReport.guido.push(`${total} spelling errors - 🔨 Guido: "I've seen cleaner spelling in ransom notes."`);
     } else if (category === 'security' && severity.critical >= this.debtThresholds.guido.securityCritical) {
       debtReport.guido.push(`${severity.critical} critical security holes - 💀 Guido: "Your security is so bad, I'm embarrassed FOR you."`);
+    } else if (category === 'eslint' && errors >= this.debtThresholds.guido.eslintErrors) {
+      debtReport.guido.push(`${errors} ESLint errors - 🤌 Guido: "Your code is so broken, my compiler won't even LOOK at it."`);
+    } else if (category === 'typescript' && total >= this.debtThresholds.guido.tsErrors) {
+      debtReport.guido.push(`${total} TypeScript errors - 🔨 Guido: "TypeScript gave up on you. Even TYPES are embarrassed."`);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.guido.consoleLogs) {
+      debtReport.guido.push(`${consoleLogs.length} console.log statements - 💀 Guido: "Your debugging is PATHETIC. Clean it up!"`);
+    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.guido.todos) {
+      debtReport.guido.push(`${todos.length} TODO comments - 🤌 Guido: "TODO? More like TO-DON'T. Fix this shit!"`);
     }
     
     // Mafia Level (LOAN SHARK TAKEOVER)
@@ -437,6 +800,14 @@ class DebtDetector {
       debtReport.mafia.push(`${total} spelling errors - 💰 Tony's dictionary says you owe us. With interest.`);
     } else if (category === 'security' && severity.critical >= this.debtThresholds.mafia.securityCritical) {
       debtReport.mafia.push(`${severity.critical} critical security holes - 🚗 Nice firewall. Shame if it 'malfunctioned'.`);
+    } else if (category === 'eslint' && errors >= this.debtThresholds.mafia.eslintErrors) {
+      debtReport.mafia.push(`${errors} ESLint errors - 🕴️ Your linter quit. We bought the contract. Fix it OR ELSE.`);
+    } else if (category === 'typescript' && total >= this.debtThresholds.mafia.tsErrors) {
+      debtReport.mafia.push(`${total} TypeScript errors - 💰 Your types are so wrong, we're charging interest on EACH ONE.`);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.mafia.consoleLogs) {
+      debtReport.mafia.push(`${consoleLogs.length} console.log statements - 🚗 Nice debug logs. Shame if they... disappeared.`);
+    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.mafia.todos) {
+      debtReport.mafia.push(`${todos.length} TODOs - 💰 The Family doesn't do TODOs. We do DONE or DEAD.`);
     }
     
     // P1 Critical thresholds
@@ -446,6 +817,14 @@ class DebtDetector {
       debtReport.p1.push(`${total} spelling errors - Your spell checker filed for bankruptcy.`);
     } else if (category === 'security' && (severity.critical > 0 || severity.high >= this.debtThresholds.p1.securityHigh)) {
       debtReport.p1.push(`${severity.critical || 0} critical + ${severity.high || 0} high security vulnerabilities - Call the cyber police.`);
+    } else if (category === 'eslint' && errors >= this.debtThresholds.p1.eslintErrors) {
+      debtReport.p1.push(`${errors} ESLint errors - Your code is in FORECLOSURE. Fix it before we repossess your IDE.`);
+    } else if (category === 'typescript' && total >= this.debtThresholds.p1.tsErrors) {
+      debtReport.p1.push(`${total} TypeScript errors - Your types are so fucked, TypeScript is considering therapy.`);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.p1.consoleLogs) {
+      debtReport.p1.push(`${consoleLogs.length} console.log statements - This is NOT production debugging. Clean this shit up!`);
+    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.p1.todos) {
+      debtReport.p1.push(`${todos.length} TODO comments - If it's TODO, then FUCKING DO IT. Stop procrastinating.`);
     }
     
     // P2 High thresholds  
@@ -455,6 +834,14 @@ class DebtDetector {
       debtReport.p2.push(`${total} spelling errors - Dictionary.com is judging you.`);
     } else if (category === 'security' && severity.medium >= this.debtThresholds.p2.securityMedium) {
       debtReport.p2.push(`${severity.medium} medium security vulnerabilities - Not great, Bob.`);
+    } else if (category === 'eslint' && errors >= this.debtThresholds.p2.eslintErrors) {
+      debtReport.p2.push(`${errors} ESLint errors - Your code quality is declining rapidly. Fix before it gets worse.`);
+    } else if (category === 'typescript' && total >= this.debtThresholds.p2.tsErrors) {
+      debtReport.p2.push(`${total} TypeScript errors - Your types are having an identity crisis.`);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.p2.consoleLogs) {
+      debtReport.p2.push(`${consoleLogs.length} console.log statements - Please clean up your debug statements.`);
+    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.p2.todos) {
+      debtReport.p2.push(`${todos.length} TODO comments - Some actual TODOs that need doing.`);
     }
     
     // P3 Medium thresholds
@@ -464,11 +851,19 @@ class DebtDetector {
       debtReport.p3.push(`${total} spelling errors - Autocorrect is crying.`);
     } else if (category === 'dependencies' && total > 0) {
       debtReport.p3.push(`${total} dependency issues - Your package.json needs therapy.`);
+    } else if (category === 'eslint' && warnings >= this.debtThresholds.p3.eslintWarnings) {
+      debtReport.p3.push(`${warnings} ESLint warnings - Code style could be cleaner.`);
+    } else if (category === 'formatting' && total >= this.debtThresholds.p3.formatting) {
+      debtReport.p3.push(`${total} formatting issues - Your code formatting is inconsistent.`);
     }
     
     // P4 Low (everything else)
     else if (total > 0) {
-      debtReport.p4.push(`${total} ${category} issues - Minor blemish. But you'll pay later...`);
+      if (category === 'eslint' && warnings > 0) {
+        debtReport.p4.push(`${warnings} ESLint warnings - Minor style issues, but still matters.`);
+      } else {
+        debtReport.p4.push(`${total} ${category} issues - Minor blemish. But you'll pay later...`);
+      }
     }
   }
 

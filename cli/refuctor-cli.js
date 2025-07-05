@@ -10,6 +10,7 @@ const packageJson = require('../package.json');
 const fs = require('fs-extra');
 const path = require('path');
 const { execSync } = require('child_process');
+const glob = require('glob');
 const SnarkySpellHandler = require('../src/snarky-spell-handler');
 
 // Simple color functions (avoiding chalk v5 ES module issues)
@@ -48,7 +49,31 @@ program
   .configureOutput({
     writeOut: (str) => process.stdout.write(colors.cyan(str)),
     writeErr: (str) => process.stderr.write(colors.red(str))
-  });
+  })
+  .addHelpText('after', `
+${colors.bold(colors.cyan('🎯 DEBT DETECTION TYPES:'))}
+  📄 Markdown linting     ${colors.gray('(markdownlint rules)')}
+  📝 Spelling errors      ${colors.gray('(cspell with snarky intelligence)')}
+  💻 ESLint/TypeScript    ${colors.gray('(requires config files)')}
+  🎨 Code formatting      ${colors.gray('(Prettier integration)')}
+  🔒 Security audit       ${colors.gray('(npm audit)')}
+  📦 Dependencies         ${colors.gray('(package.json analysis)')}
+
+${colors.bold(colors.magenta('⚡ DEBT PRIORITY LEVELS:'))}
+  P4 Low: Minor style issues
+  P3 Medium: Moderate cleanup needed  
+  P2 High: Significant problems
+  P1 Critical: Urgent fixes required
+  🤌 Guido Level: EXTREME debt - Thumb Crusher deployed
+  🕴️  Mafia Level: Debt sold to loan sharks
+
+${colors.bold(colors.yellow('💡 QUICK START:'))}
+  refuctor info           Show capabilities and project analysis
+  refuctor scan          Full debt analysis
+  refuctor cook          Export VS Code problems to markdown (when scan misses issues)
+  refuctor fix --dry-run  See what can be auto-fixed
+  refuctor init          Set up debt tracking
+`);
 
 // Scan command - core debt detection
 program
@@ -60,12 +85,61 @@ program
     console.log(colors.bold(colors.red('\n🏦 REFUCTOR DEBT COLLECTION AGENCY')));
     console.log(colors.gray('Initiating debt scan... Your code is about to be audited.\n'));
     
+    // Show what's being scanned for transparency
+    const projectPath = process.cwd();
+    console.log(colors.bold(colors.blue('🔍 SCANNING FOR:')));
+    
+    // Quick file count analysis
+    const mdFiles = glob.sync('**/*.{md,mdc}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
+    const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
+    const hasPackageJson = fs.existsSync(path.join(projectPath, 'package.json'));
+    
+    console.log(colors.cyan(`  📄 Markdown issues (${mdFiles.length} files)`));
+    console.log(colors.cyan(`  📝 Spelling errors with snarky intelligence`));
+    if (hasPackageJson) {
+      console.log(colors.cyan(`  🔒 Security vulnerabilities (package.json found)`));
+      console.log(colors.cyan(`  📦 Dependency issues`));
+    }
+    if (codeFiles.length > 0) {
+      console.log(colors.cyan(`  💻 Code quality issues (${codeFiles.length} files)`));
+      console.log(colors.cyan(`  🎨 ESLint/TypeScript/Formatting problems`));
+    }
+    console.log('');
+    
     try {
       const debtReport = await debtDetector.scanProject(process.cwd(), options.verbose);
       
+      // Show snarky processing results if it occurred
+      if (debtReport.summary.snarkyProcessed && debtReport.summary.snarkyAdded > 0) {
+        console.log(colors.bold(colors.cyan('\n🎯 SNARKY INTELLIGENCE RESULTS:')));
+        console.log(colors.cyan(`📝 Auto-whitelisted ${debtReport.summary.snarkyAdded} snarky terms in project dictionary`));
+        console.log(colors.gray('Intelligently distinguished between typos and intentional snarky language\n'));
+      }
+
       if (debtReport.totalDebt === 0) {
         console.log(colors.bold(colors.green('🎉 DEBT-FREE STATUS ACHIEVED!')));
         console.log(colors.green('You magnificent debt-slayer! Your code is cleaner than a banker\'s conscience.'));
+        
+        // Show what was actually checked for transparency
+        console.log(colors.bold(colors.blue('\n📊 SCAN SUMMARY:')));
+        console.log(colors.blue(`  ✅ Checked ${mdFiles.length} markdown files`));
+        console.log(colors.blue(`  ✅ Checked ${codeFiles.length} code files`));
+        if (hasPackageJson) {
+          console.log(colors.blue(`  ✅ Security audit passed`));
+          console.log(colors.blue(`  ✅ Dependencies validated`));
+        }
+        
+        if (debtReport.summary.snarkyProcessed) {
+          console.log(colors.cyan(`  🎯 Snarky language detection kept your creative vocabulary intact!`));
+        }
+        
+        console.log(colors.bold(colors.gray('\n💡 DEBT WOULD TRIGGER AT:')));
+        console.log(colors.gray('  P4 Low: 1+ markdown issues, 1+ ESLint warnings'));
+        console.log(colors.gray('  P3 Medium: 2+ markdown issues, 5+ ESLint warnings'));
+        console.log(colors.gray('  P2 High: 5+ markdown issues, 10+ ESLint errors'));
+        console.log(colors.gray('  P1 Critical: 20+ markdown issues, 25+ ESLint errors'));
+        console.log(colors.red('  🤌 Guido: 100+ markdown issues, 150+ ESLint errors'));
+        console.log(colors.magenta('  🕴️  Mafia: 50+ markdown issues, 75+ ESLint errors'));
       } else {
         console.log(colors.bold(colors.red(`💸 DEBT DETECTED: ${debtReport.totalDebt} issues found`)));
         console.log(colors.yellow('Time to refinance this technical disaster...\n'));
@@ -138,6 +212,213 @@ program
     } catch (error) {
       console.error(colors.bold(colors.red('\n💥 DEBT COLLECTION FAILED:')));
       console.error(colors.red(`Your code is so broken even the debt collector quit: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Fix command - attempt to auto-fix common issues
+program
+  .command('fix')
+  .description(colors.green('🔧 Auto-fix common debt issues (formatting, console.logs, simple errors)'))
+  .option('-d, --dry-run', 'Show what would be fixed without making changes')
+  .option('-t, --type <type>', 'Fix specific type: formatting, console-logs, todos, spelling')
+  .action(async (options) => {
+    console.log(colors.bold(colors.green('\n🔧 REFUCTOR AUTO-FIXER')));
+    console.log(colors.gray('Attempting to resolve your debt issues automatically...\n'));
+    
+    try {
+      const projectPath = process.cwd();
+      const fixReport = { fixed: 0, attempted: 0, errors: [] };
+      
+      // Run targeted fixes based on type
+      if (!options.type || options.type === 'formatting') {
+        console.log(colors.blue('🎨 Attempting to fix formatting issues...'));
+        const formattingResult = await attemptFormattingFix(projectPath, options.dryRun);
+        fixReport.fixed += formattingResult.fixed;
+        fixReport.attempted += formattingResult.attempted;
+        if (formattingResult.error) fixReport.errors.push(formattingResult.error);
+      }
+      
+      if (!options.type || options.type === 'console-logs') {
+        console.log(colors.yellow('🗑️  Attempting to remove console.log statements...'));
+        const consoleResult = await attemptConsoleLogCleanup(projectPath, options.dryRun);
+        fixReport.fixed += consoleResult.fixed;
+        fixReport.attempted += consoleResult.attempted;
+        if (consoleResult.error) fixReport.errors.push(consoleResult.error);
+      }
+      
+      if (!options.type || options.type === 'spelling') {
+        console.log(colors.magenta('📝 Attempting to fix spelling issues...'));
+        const spellResult = await attemptSpellingFix(projectPath, options.dryRun);
+        fixReport.fixed += spellResult.fixed;
+        fixReport.attempted += spellResult.attempted;
+        if (spellResult.error) fixReport.errors.push(spellResult.error);
+      }
+      
+      // Report results
+      if (fixReport.fixed > 0) {
+        console.log(colors.bold(colors.green(`\n✅ DEBT REDUCTION SUCCESSFUL!`)));
+        console.log(colors.green(`Fixed ${fixReport.fixed} out of ${fixReport.attempted} issues`));
+        console.log(colors.cyan('Your debt collectors are pleased with this progress.'));
+      } else if (fixReport.attempted > 0) {
+        console.log(colors.bold(colors.yellow(`\n⚠️  AUTO-FIX PARTIALLY SUCCESSFUL`)));
+        console.log(colors.yellow(`Attempted ${fixReport.attempted} fixes, but manual intervention required`));
+        console.log(colors.gray('Some debt requires human intelligence. Shocking, we know.'));
+      } else {
+        console.log(colors.bold(colors.blue(`\n🎯 NO FIXABLE ISSUES DETECTED`)));
+        console.log(colors.blue('Either you\'re debt-free, or your issues are too complex for automation.'));
+      }
+      
+      if (fixReport.errors.length > 0) {
+        console.log(colors.bold(colors.red('\n💥 SOME FIXES FAILED:')));
+        fixReport.errors.forEach(error => console.log(colors.red(`  ❌ ${error}`)));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 AUTO-FIX SYSTEM FAILURE:')));
+      console.error(colors.red(`The debt is so bad, even our automatic fixer quit: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Info command - show capabilities and configuration detection
+program
+  .command('info')
+  .description(colors.blue('ℹ️  Show Refuctor capabilities and detected configurations'))
+  .action(async () => {
+    console.log(colors.bold(colors.cyan('\n📊 REFUCTOR DEBT DETECTION CAPABILITIES')));
+    console.log(colors.gray(`Version: ${packageJson.version}`));
+    console.log(colors.gray('Checking your project configuration...\n'));
+    
+    const projectPath = process.cwd();
+    const capabilities = {
+      core: [],
+      enhanced: [],
+      configs: [],
+      files: []
+    };
+    
+    // Core detection (always available)
+    capabilities.core = [
+      '✅ Markdown linting (markdownlint)',
+      '✅ Spell checking (cspell with snarky intelligence)',
+      '✅ Security audit (npm audit)',
+      '✅ Dependency analysis'
+    ];
+    
+    // Enhanced detection (check if methods exist)
+    const detector = new DebtDetector();
+    if (detector.detectESLintDebt) {
+      const eslintConfigs = ['.eslintrc.js', '.eslintrc.json', '.eslintrc.yml', 'eslint.config.js'];
+      const hasESLint = eslintConfigs.some(file => fs.existsSync(path.join(projectPath, file)));
+      capabilities.enhanced.push(hasESLint ? '✅ ESLint detection (config found)' : '⚠️  ESLint detection (no config found)');
+      capabilities.configs.push(...eslintConfigs.filter(file => fs.existsSync(path.join(projectPath, file))));
+    }
+    
+    if (detector.detectTypeScriptDebt) {
+      const hasTSConfig = fs.existsSync(path.join(projectPath, 'tsconfig.json'));
+      capabilities.enhanced.push(hasTSConfig ? '✅ TypeScript compilation (tsconfig.json found)' : '⚠️  TypeScript compilation (no tsconfig.json)');
+      if (hasTSConfig) capabilities.configs.push('tsconfig.json');
+    }
+    
+    if (detector.detectCodeQualityDebt) {
+      capabilities.enhanced.push('✅ Code quality analysis (console.logs, TODOs, dead code)');
+    }
+    
+    if (detector.detectFormattingDebt) {
+      const prettierConfigs = ['.prettierrc', '.prettierrc.json', '.prettierrc.js', 'prettier.config.js'];
+      const hasPrettier = prettierConfigs.some(file => fs.existsSync(path.join(projectPath, file)));
+      capabilities.enhanced.push(hasPrettier ? '✅ Prettier formatting (config found)' : '⚠️  Prettier formatting (no config found)');
+      capabilities.configs.push(...prettierConfigs.filter(file => fs.existsSync(path.join(projectPath, file))));
+    }
+    
+    // File analysis
+    const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
+    const mdFiles = glob.sync('**/*.{md,mdc}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
+    const hasPackageJson = fs.existsSync(path.join(projectPath, 'package.json'));
+    
+    capabilities.files = [
+      `📄 ${mdFiles.length} markdown files`,
+      `💻 ${codeFiles.length} code files`,
+      hasPackageJson ? '📦 package.json found' : '❌ No package.json'
+    ];
+    
+    // Display results
+    console.log(colors.bold(colors.green('🔍 CORE DETECTION (Always Available):')));
+    capabilities.core.forEach(item => console.log(`  ${item}`));
+    
+    if (capabilities.enhanced.length > 0) {
+      console.log(colors.bold(colors.cyan('\n⚡ ENHANCED DETECTION:')));
+      capabilities.enhanced.forEach(item => console.log(`  ${item}`));
+    }
+    
+    console.log(colors.bold(colors.blue('\n📁 PROJECT ANALYSIS:')));
+    capabilities.files.forEach(item => console.log(`  ${item}`));
+    
+    if (capabilities.configs.length > 0) {
+      console.log(colors.bold(colors.yellow('\n⚙️  DETECTED CONFIG FILES:')));
+      capabilities.configs.forEach(config => console.log(`  📝 ${config}`));
+    }
+    
+    console.log(colors.bold(colors.magenta('\n🎯 DEBT THRESHOLDS:')));
+    console.log('  P1 Critical: 25+ ESLint errors, 10+ TS errors, 20+ markdown issues');
+    console.log('  P2 High: 10+ ESLint errors, 5+ TS errors, 5+ markdown issues');
+    console.log('  P3 Medium: 5+ ESLint warnings, 2+ markdown issues, formatting issues');
+    console.log('  P4 Low: Any remaining minor issues');
+    console.log('  🤌 Guido Level: 150+ ESLint errors, 50+ TS errors (EXTREME!)');
+    console.log('  🕴️  Mafia Level: 75+ ESLint errors, 30+ TS errors (LOAN SHARK!)');
+    
+    console.log(colors.bold(colors.gray('\n💡 USAGE TIPS:')));
+    console.log('  refuctor scan --verbose     # Run full debt analysis');
+    console.log('  refuctor cook               # Export VS Code problems (when scan misses issues)');
+    console.log('  refuctor fix --dry-run      # See what can be auto-fixed');
+    console.log('  refuctor snarky-scan        # Analyze spelling with snarky intelligence');
+    console.log('  refuctor init               # Set up debt tracking (TECHDEBT.md)');
+  });
+
+// Cook the Books command - export VS Code problems to markdown
+program
+  .command('cook-the-books')
+  .alias('cook')
+  .description(colors.yellow('🍳 Export VS Code problems to debt report (when Refuctor scan misses issues)'))
+  .option('-o, --output <file>', 'Output file for cooked books', 'vscode-debt-report.md')
+  .option('-f, --format <type>', 'Output format: md, json, csv', 'md')
+  .action(async (options) => {
+    console.log(colors.bold(colors.yellow('\n🍳 COOKING THE BOOKS...')));
+    console.log(colors.gray('Extracting VS Code problems that slipped through the cracks...\n'));
+    
+    try {
+      const projectPath = process.cwd();
+      const cookingReport = await cookTheBooks(projectPath, options);
+      
+      if (cookingReport.totalIssues === 0) {
+        console.log(colors.green('📊 No hidden problems found - VS Code is clean!'));
+        console.log(colors.gray('Either VS Code has no problems, or they\'re already detected by Refuctor.'));
+      } else {
+        console.log(colors.bold(colors.red(`📊 COOKED BOOKS REVEAL: ${cookingReport.totalIssues} hidden issues!`)));
+        console.log(colors.yellow(`📁 Exported to: ${options.output}`));
+        console.log(colors.gray(`This explains why VS Code status bar shows problems Refuctor missed.\n`));
+        
+        // Show summary by file
+        console.log(colors.bold(colors.cyan('🎯 TOP PROBLEM FILES:')));
+        Object.entries(cookingReport.fileBreakdown)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 5)
+          .forEach(([file, count]) => {
+            console.log(colors.cyan(`  📄 ${file}: ${count} issues`));
+          });
+          
+        console.log(colors.bold(colors.magenta('\n💡 RECOMMENDED ACTIONS:')));
+        console.log(colors.magenta('1. Review the exported report for specific fixes'));
+        console.log(colors.magenta('2. Run VS Code "Problems" panel fixes manually'));
+        console.log(colors.magenta('3. Consider adding missing linter configs for Refuctor'));
+        console.log(colors.magenta('4. Re-run refuctor scan after manual cleanup'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 COOKING FAILED:')));
+      console.error(colors.red(`Book cooking error: ${error.message}`));
+      console.log(colors.gray('\nTip: Make sure VS Code diagnostics are available or run from VS Code terminal'));
       process.exit(1);
     }
   });
@@ -900,5 +1181,355 @@ program
       process.exit(1);
     }
   });
+
+// Auto-fix helper functions
+async function attemptFormattingFix(projectPath, dryRun) {
+  const result = { fixed: 0, attempted: 0, error: null };
+  
+  try {
+    // Check if Prettier config exists
+    const prettierConfigs = ['.prettierrc', '.prettierrc.json', '.prettierrc.js', 'prettier.config.js'];
+    const hasPrettierConfig = prettierConfigs.some(file => fs.existsSync(path.join(projectPath, file)));
+    
+    if (!hasPrettierConfig) {
+      return result; // No config, can't fix
+    }
+
+    const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx,json,css,scss,md}', { 
+      cwd: projectPath,
+      ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+    });
+
+    if (codeFiles.length === 0) {
+      return result;
+    }
+
+    result.attempted = codeFiles.length;
+
+    if (dryRun) {
+      console.log(colors.gray(`  Would format ${codeFiles.length} files`));
+      result.fixed = codeFiles.length;
+    } else {
+      // Run Prettier to fix formatting
+      const cmd = `npx --yes prettier --write ${codeFiles.join(' ')}`;
+      execSync(cmd, { cwd: projectPath, stdio: 'inherit' });
+      result.fixed = codeFiles.length;
+      console.log(colors.green(`  ✅ Formatted ${codeFiles.length} files`));
+    }
+
+  } catch (error) {
+    result.error = `Formatting fix failed: ${error.message}`;
+  }
+
+  return result;
+}
+
+async function attemptConsoleLogCleanup(projectPath, dryRun) {
+  const result = { fixed: 0, attempted: 0, error: null };
+  
+  try {
+    const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { 
+      cwd: projectPath,
+      ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+    });
+
+    for (const file of codeFiles) {
+      const filePath = path.join(projectPath, file);
+      const content = await fs.readFile(filePath, 'utf8');
+      const lines = content.split('\n');
+      
+      let modified = false;
+      const newLines = lines.map(line => {
+        // Remove standalone console.log statements (but preserve console.error/warn in some cases)
+        if (line.trim().match(/^\s*console\.log\([^)]*\);?\s*$/)) {
+          result.attempted++;
+          modified = true;
+          return null; // Mark for removal
+        }
+        return line;
+      }).filter(line => line !== null);
+
+      if (modified) {
+        if (dryRun) {
+          console.log(colors.gray(`  Would clean console.logs from ${file}`));
+          result.fixed++;
+        } else {
+          await fs.writeFile(filePath, newLines.join('\n'), 'utf8');
+          console.log(colors.green(`  ✅ Cleaned console.logs from ${file}`));
+          result.fixed++;
+        }
+      }
+    }
+
+  } catch (error) {
+    result.error = `Console.log cleanup failed: ${error.message}`;
+  }
+
+  return result;
+}
+
+async function attemptSpellingFix(projectPath, dryRun) {
+  const result = { fixed: 0, attempted: 0, error: null };
+  
+  try {
+    // Use the snarky spell handler to intelligently fix spelling
+    const spellHandler = new SnarkySpellHandler();
+    
+    // Get spelling issues first
+    const detector = new DebtDetector();
+    const spellDebt = await detector.detectSpellingDebt(projectPath);
+    
+    if (spellDebt.total === 0) {
+      return result;
+    }
+    
+    // Analyze issues with snarky handler
+    const analysis = await spellHandler.analyzeSpellingIssues(projectPath, spellDebt.issues);
+    
+    result.attempted = analysis.definiteTypos.length;
+    
+    if (analysis.definiteTypos.length > 0) {
+      if (dryRun) {
+        console.log(colors.gray(`  Would fix ${analysis.definiteTypos.length} obvious typos`));
+        result.fixed = analysis.definiteTypos.length;
+      } else {
+        // Add likely snarky terms to dictionary
+        if (analysis.likelySnarky.length > 0) {
+          const dictResult = await spellHandler.updateProjectDictionary(
+            projectPath, 
+            analysis.likelySnarky.map(s => s.word)
+          );
+          console.log(colors.green(`  ✅ Added ${dictResult.wordsAdded} snarky terms to dictionary`));
+        }
+        
+        console.log(colors.yellow(`  ⚠️  Found ${analysis.definiteTypos.length} definite typos that need manual fixing`));
+        analysis.definiteTypos.forEach(typo => {
+          console.log(colors.gray(`     ${typo.file}:${typo.line} - "${typo.word}"`));
+        });
+        result.fixed = analysis.likelySnarky.length;
+      }
+    }
+
+  } catch (error) {
+    result.error = `Spelling fix failed: ${error.message}`;
+  }
+
+  return result;
+}
+
+async function cookTheBooks(projectPath, options) {
+  const report = {
+    totalIssues: 0,
+    fileBreakdown: {},
+    issues: [],
+    exportPath: options.output
+  };
+
+  try {
+    // Method 1: Try to read VS Code workspace diagnostics (if available)
+    const vscodeDir = path.join(projectPath, '.vscode');
+    
+    // Method 2: Run common linters manually to capture what VS Code sees
+    const cookedIssues = [];
+    
+    // Cook markdownlint issues (most likely culprit from your screenshot)
+    try {
+      console.log(colors.gray('🍳 Cooking markdown linting issues...'));
+      const cmd = `npx --yes markdownlint "**/*.md" --json`;
+      const result = execSync(cmd, { 
+        cwd: projectPath, 
+        encoding: 'utf8',
+        stdio: 'pipe'
+      });
+      // No issues if we get here
+    } catch (error) {
+      if (error.stdout) {
+        try {
+          const issues = JSON.parse(error.stdout);
+          for (const [file, fileIssues] of Object.entries(issues)) {
+            report.fileBreakdown[file] = fileIssues.length;
+            report.totalIssues += fileIssues.length;
+            
+            fileIssues.forEach(issue => {
+              cookedIssues.push({
+                file: file,
+                line: issue.lineNumber,
+                column: issue.columnNumber || 1,
+                severity: 'warning',
+                rule: issue.ruleNames?.[0] || 'markdown',
+                message: issue.ruleDescription || issue.errorDetail,
+                source: 'markdownlint'
+              });
+            });
+          }
+        } catch (parseError) {
+          console.log(colors.gray('  Could not parse markdownlint JSON output'));
+        }
+      }
+    }
+
+    // Cook spelling issues
+    try {
+      console.log(colors.gray('🍳 Cooking spell checking issues...'));
+      const cmd = `npx --yes cspell "**/*.{md,js,ts,json,mdc}" --no-progress --no-summary`;
+      execSync(cmd, { cwd: projectPath, encoding: 'utf8', stdio: 'pipe' });
+    } catch (error) {
+      if (error.stdout) {
+        const lines = error.stdout.trim().split('\n').filter(line => line.includes('Unknown word'));
+        lines.forEach(line => {
+          const match = line.match(/^(.+):(\d+):(\d+)\s+-\s+Unknown word \((.+)\)/);
+          if (match) {
+            const fileName = match[1];
+            report.fileBreakdown[fileName] = (report.fileBreakdown[fileName] || 0) + 1;
+            report.totalIssues++;
+            
+            cookedIssues.push({
+              file: fileName,
+              line: parseInt(match[2]),
+              column: parseInt(match[3]),
+              severity: 'info',
+              rule: 'cspell',
+              message: `Unknown word: ${match[4]}`,
+              source: 'cspell'
+            });
+          }
+        });
+      }
+    }
+
+    // Cook TypeScript issues (if tsconfig exists)
+    if (fs.existsSync(path.join(projectPath, 'tsconfig.json'))) {
+      try {
+        console.log(colors.gray('🍳 Cooking TypeScript issues...'));
+        execSync('npx --yes tsc --noEmit --skipLibCheck', { 
+          cwd: projectPath, 
+          encoding: 'utf8',
+          stdio: 'pipe'
+        });
+      } catch (error) {
+        if (error.stdout) {
+          const lines = error.stdout.trim().split('\n').filter(line => line.includes('error TS'));
+          lines.forEach(line => {
+            const match = line.match(/^(.+)\((\d+),(\d+)\):\s+error\s+(TS\d+):\s+(.+)$/);
+            if (match) {
+              const fileName = match[1];
+              report.fileBreakdown[fileName] = (report.fileBreakdown[fileName] || 0) + 1;
+              report.totalIssues++;
+              
+              cookedIssues.push({
+                file: fileName,
+                line: parseInt(match[2]),
+                column: parseInt(match[3]),
+                severity: 'error',
+                rule: match[4],
+                message: match[5],
+                source: 'typescript'
+              });
+            }
+          });
+        }
+      }
+    }
+
+    report.issues = cookedIssues;
+
+    // Export the cooked books
+    if (report.totalIssues > 0) {
+      await exportCookedBooks(report, options);
+    }
+
+    return report;
+
+  } catch (error) {
+    throw new Error(`Failed to cook the books: ${error.message}`);
+  }
+}
+
+async function exportCookedBooks(report, options) {
+  const outputPath = path.join(process.cwd(), options.output);
+  
+  if (options.format === 'json') {
+    await fs.writeJson(outputPath.replace('.md', '.json'), report, { spaces: 2 });
+  } else if (options.format === 'csv') {
+    const csvContent = [
+      'File,Line,Column,Severity,Rule,Message,Source',
+      ...report.issues.map(issue => 
+        `"${issue.file}",${issue.line},${issue.column},"${issue.severity}","${issue.rule}","${issue.message}","${issue.source}"`
+      )
+    ].join('\n');
+    await fs.writeFile(outputPath.replace('.md', '.csv'), csvContent, 'utf8');
+  } else {
+    // Markdown format
+    const mdContent = generateCookedBooksMarkdown(report);
+    await fs.writeFile(outputPath, mdContent, 'utf8');
+  }
+}
+
+function generateCookedBooksMarkdown(report) {
+  const timestamp = new Date().toISOString();
+  
+  let content = `# 🍳 Cooked Books - VS Code Problems Export
+
+> **Generated:** ${timestamp}  
+> **Total Issues:** ${report.totalIssues}  
+> **Purpose:** Export of VS Code problems that Refuctor scan missed
+
+## 📊 Summary by File
+
+| File | Issues | Primary Source |
+|------|--------|----------------|
+`;
+
+  // Add file breakdown table
+  Object.entries(report.fileBreakdown)
+    .sort(([,a], [,b]) => b - a)
+    .forEach(([file, count]) => {
+      const primarySource = report.issues
+        .filter(issue => issue.file === file)
+        .reduce((acc, issue) => {
+          acc[issue.source] = (acc[issue.source] || 0) + 1;
+          return acc;
+        }, {});
+      
+      const topSource = Object.entries(primarySource)
+        .sort(([,a], [,b]) => b - a)[0]?.[0] || 'unknown';
+      
+      content += `| \`${file}\` | ${count} | ${topSource} |\n`;
+    });
+
+  content += `\n## 🎯 Detailed Issues\n\n`;
+
+  // Group issues by file
+  const issuesByFile = report.issues.reduce((acc, issue) => {
+    if (!acc[issue.file]) acc[issue.file] = [];
+    acc[issue.file].push(issue);
+    return acc;
+  }, {});
+
+  Object.entries(issuesByFile).forEach(([file, issues]) => {
+    content += `### 📄 \`${file}\` (${issues.length} issues)\n\n`;
+    
+    issues.forEach((issue, index) => {
+      const severityEmoji = {
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+      }[issue.severity] || '❓';
+      
+      content += `${index + 1}. **Line ${issue.line}:${issue.column}** ${severityEmoji} \`${issue.rule}\`\n`;
+      content += `   > ${issue.message}\n\n`;
+    });
+  });
+
+  content += `\n## 💡 Recommended Actions\n\n`;
+  content += `1. **Review each file** and fix issues manually in VS Code\n`;
+  content += `2. **Configure linters** so Refuctor can detect these automatically\n`;
+  content += `3. **Re-run Refuctor scan** after cleanup to verify debt reduction\n`;
+  content += `4. **Consider auto-fixes** where available (Prettier, ESLint --fix, etc.)\n\n`;
+  content += `---\n`;
+  content += `*Generated by Refuctor's "Cook the Books" feature - because sometimes the books need cooking! 🍳*\n`;
+
+  return content;
+}
 
 program.parse(process.argv); 

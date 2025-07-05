@@ -65,10 +65,17 @@ npm install -g @puberty-labs/refuctor
 
 refuctor init                     # Setup wizard
 refuctor scan                     # Debt detection
+refuctor cook                     # Export VS Code problems (when scan misses issues)
 refuctor fix                      # Auto-repair warnings
 refuctor status                   # Current debt dashboard
+refuctor info                     # Show capabilities and project analysis
 refuctor shame                    # Humorous debt report
 refuctor wrap                     # Session wrap protocol
+
+# Snarky language handling
+
+refuctor snarky-scan --auto      # Intelligent spelling analysis
+refuctor snarky-add <words...>   # Add snarky terms to dictionary
 
 # Easter eggs
 
@@ -96,8 +103,18 @@ const debtDetector = {
   security: require('./detectors/npm-audit'),
   imports: require('./detectors/unused-imports'),
   todos: require('./detectors/orphaned-todos'),
-  performance: require('./detectors/bundle-analyzer')
+  performance: require('./detectors/bundle-analyzer'),
+  eslint: require('./detectors/eslint-checker'),
+  typescript: require('./detectors/typescript-compiler'),
+  formatting: require('./detectors/prettier-checker')
 };
+
+// Enhanced detection with fallbacks
+const enhancedDetector = {
+  ...debtDetector,
+  cookTheBooks: require('./detectors/vscode-problems-exporter')  // Bridge VS Code gap
+};
+```
 
 // Priority classification
 const priorities = {

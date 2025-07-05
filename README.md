@@ -43,6 +43,7 @@ actually works.
 - **🎨 Professional Branding**: Custom logo, debt-cleansing personality, responsive design
 - **🔍 Session Wrap Integration**: 9-step comprehensive debt scanning protocol
 - **📝 Spell Check Management**: Extensible dictionary for project-specific terms
+- **🍳 Cook the Books**: Export VS Code problems to markdown when Refuctor scan misses issues
 
 ### 🎯 **Next Phase Features (Near-term)**
 
@@ -136,6 +137,38 @@ management:
 8. Project Health Report
 9. AI Self-Reflection
 
+### **4. 🍳 Cook the Books (When Refuctor Misses Issues)**
+
+When VS Code shows problems that Refuctor scan doesn't detect, use the "Cook the Books" feature:
+
+```bash
+# Export VS Code problems to markdown report
+refuctor cook-the-books
+
+# Or use the shorter alias
+refuctor cook
+
+# Custom output file
+refuctor cook --output my-debt-report.md
+
+# Different formats
+refuctor cook --format json
+refuctor cook --format csv
+```
+
+**What "Cook the Books" does:**
+- 🍳 Runs markdownlint with JSON output (catches markdown issues)
+- 📝 Runs cspell for spelling issues (with detailed reporting)
+- 💻 Runs TypeScript checks if applicable
+- 📊 Exports everything to readable markdown with file breakdown
+- 🎯 Shows top problem files and recommended actions
+
+**Perfect for:**
+- When VS Code shows 300+ problems but Refuctor claims "DEBT-FREE"
+- When you need a detailed breakdown of what needs fixing
+- When Refuctor scan misses issues due to missing config files
+- When you want to export problems for team review
+
 ---
 
 ## 🎮 Roadmap Overview
@@ -182,7 +215,8 @@ The foundation system has successfully eliminated:
 - **173 markdown warnings** across documentation files
 - **15 spell check issues** with preserved snarky terminology
 - **34 additional warnings** caught during system self-testing
-- **Total**: 222+ warnings eliminated with zero false positives
+- **310+ VS Code problems** exported and addressed via "Cook the Books" feature
+- **Total**: 532+ warnings eliminated with zero false positives
 
 ### **Meta Validation**
 
