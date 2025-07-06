@@ -1,5 +1,7 @@
 # Refuctor - The Debt Cleansing Syndicate
 
+![Refuctor Logo](https://github.com/Jason-Vaughan/puberty-labs-assets/blob/main/refuctor-logo.png?raw=true)
+
 > *"Because even your code deserves a fresh financial start."*
 
 **Tagline**: "Refactor or Be Repossessed."
@@ -29,12 +31,36 @@ actually works.
 
 ---
 
+## 📦 Installation
+
+### **Global Installation (Recommended)**
+
+```bash
+# Install globally for CLI access
+npm install -g @puberty-labs/refuctor
+
+# Verify installation
+refuctor --version
+```
+
+### **Local Installation**
+
+```bash
+# Install locally in your project
+npm install --save-dev @puberty-labs/refuctor
+
+# Use with npx
+npx refuctor scan
+```
+
+---
+
 ## 🚀 Features
 
-### ✅ **Currently Working (MVP Foundation)**
+### ✅ **Professional CLI Suite**
 
 - **🚀 Comprehensive Setup Wizard**: Enhanced `refuctor init` with 6-step automated project setup
-- **🌐 Advanced Web Dashboard**: Professional-grade debt monitoring at `http://localhost:1947` with comprehensive analytics
+- **🌐 Real-time Web Dashboard**: Professional-grade debt monitoring at `http://localhost:1947`
 - **📊 Debt Detection Engine**: Markdown linting, spell checking, security audits with MAFIA/Guido escalation levels
 - **🎯 Interactive Controls**: SCAN DEBT, FIX DEBT, and NUCLEAR OPTION buttons with real-time progress updates
 - **💰 Financial Metaphors**: P1-P4 debt levels with loan shark takeover warnings when debt reaches critical mass
@@ -52,94 +78,38 @@ actually works.
 - **🧠 Project Intelligence**: Automatic framework detection (React, Vue, Angular, Node.js)
 - **⚙️ Smart Configuration**: Context-aware cspell.json and .debtignore generation
 
-### 🎯 **Advanced Dashboard Features**
+### 🎯 **Dashboard Features (In Development)**
 
-**The Refuctor dashboard at `http://localhost:1947` now includes professional-grade analytics:**
+**The Refuctor dashboard at `http://localhost:1947` provides basic monitoring:**
 
-- **🔥 Debt Heat Maps**: Interactive file-level debt visualization with:
-  - Color-coded severity mapping (P1-P4 priority system)
-  - "Temperature" calculations showing debt concentration hotspots
-  - Top 10 hottest files with actionable drill-down details
-  - Hover tooltips showing debt counts and file paths
-  - Visual legend for interpreting heat map severity levels
+- **🔥 Debt Visualization**: Basic file-level debt display (heat maps in development)
+- **📈 Historical Tracking**: Simple debt tracking (advanced analytics in development)
+- **🧠 Fix Suggestions**: Basic recommendations (AI-powered features in development)
+- **⚡ Real-time Updates**: Live debt scanning with WebSocket communication
+- **📱 Basic Interface**: Functional UI (mobile optimization in development)
 
-- **📈 Historical Trend Analysis**: Real-time debt tracking with:
-  - 7-day debt history with automatic storage in `.refuctor/debt-history.json`
-  - Trend direction indicators (improving/worsening/stable)
-  - Velocity analysis showing debt accumulation rate
-  - Peak debt analysis with days-since-peak calculations
-  - Predictive insights for "Days to Clean" and "Code Health %" metrics
+**Note**: Dashboard is functional for monitoring but CLI commands are recommended for production use.
 
-- **🧠 AI-Powered Fix Suggestions**: Smart recommendations including:
-  - Priority-based fix categorization (P1/P2/Guido/Mafia priorities)
-  - Confidence-scored suggestions with success rate indicators
-  - ROI calculations and time estimates for fixes
-  - Quick wins identification for maximum impact fixes
-  - Interactive "Apply Fix" and "Manual Steps" buttons
+### 🎯 **Specialized Goons (Advanced Features)**
 
-- **⚡ Real-time Monitoring**: Live updates featuring:
-  - Progress bars during scanning with stage indicators
-  - Critical threshold alerts (P1 issues, debt >50 items)
-  - Guido deployment notifications for extreme debt levels
-  - Mafia takeover warnings when debt reaches critical mass
-  - Automatic health checks every 30 seconds for monitoring clients
-
-- **📱 Mobile-Responsive Design**: Touch-optimized interface with:
-  - 44px minimum touch targets on all interactive elements
-  - Comprehensive breakpoints (tablet, mobile, landscape)
-  - Touch-friendly active states replacing hover effects
-  - Print-friendly styles and high-DPI support
-  - Optimized layouts for very small screens (≤320px)
-
-### 🎯 **Next Phase Features (Near-term)**
-
-- **🤌 Enhanced MAFIA Warnings**: Prominent loan shark takeover alerts when debt reaches extreme levels  
-- **🔧 Automated Debt Fixing**: Connect FIX DEBT button to actual goon cleanup tools
-- **💥 NUCLEAR OPTION**: Comprehensive project cleanup and debt elimination
-- **🎭 Guido Integration**: Full Thumb Crusher deployment warnings for overdue debt
-
-### 🎯 **Planned Features (Full Roadmap)**
-
-- **GUI Dashboard**: "Debt Collector View" with real-time visualizations
-- **CLI Commands**: `refuctor scan`, `refuctor fix`, `refuctor shame`
-- **MCP Integration**: Model Context Protocol for cross-workspace debt sharing
-- **Specialized Goons**: Automated cleanup tools (fix-lint, clean-imports, comment-killer)
-- **AI-Powered Suggestions**: GPT integration for custom refactoring advice
-- **Team Collaboration**: Real-time debt sharing across development teams
-
----
-
-## 📦 Package Contents
-
-### **Core System Files**
-
-- **`REFUCTOR_ROADMAP.md`** - Complete 20-week development roadmap
-- **`TECHDEBT_TEMPLATE.md`** - Working debt tracker template with P1-P4 system
-- **`cspell.json`** - Base spell check configuration with extensible dictionary
-- **`cursorrules_template.mdc`** - Enhanced session wrap protocol template
-
-### **Project Setup**
-
-- **`package.json`** - NPM structure for `@puberty-labs/refuctor`
-- **`.gitignore`** - Professional Node.js project exclusion patterns
-- **`ORIGINAL_IDEAS.md`** - The original brilliant concepts that sparked Refuctor
-
-### **Documentation**
-
-- **`README.md`** - This file, comprehensive overview and getting started guide
+- **🔧 Markdown Fixer**: Automated markdown linting cleanup
+- **📦 Import Cleaner**: Unused import elimination  
+- **💀 Comment Killer**: Remove outdated comments and dead code
+- **💰 Accountant**: Credit rating system (300-850 score) with financial metaphors
+- **🔧 General Fixer**: Multi-purpose debt cleanup tool
 
 ---
 
 ## 🛠️ Quick Start
 
-### **1. Automated Setup Wizard**
+### **1. Initialize Your Project**
 
 ```bash
 # Navigate to your project directory
-cd /path/to/your/project
+cd your-project
 
 # Run the comprehensive setup wizard
-node /path/to/refuctor/cli/refuctor-cli.js init
+refuctor init
 
 # The setup wizard will:
 # 🔍 Analyze your project (detect React, Vue, Angular, Node.js)
@@ -148,47 +118,55 @@ node /path/to/refuctor/cli/refuctor-cli.js init
 # 📊 Set up context-aware TECHDEBT.md with monitoring recommendations
 # 💻 Configure IDE integration (Cursor workspace optimization)
 # 🎯 Provide actionable next steps for debt management
-```text
+```
 
-### **2. Debt Detection & Dashboard**
+### **2. Scan for Debt**
 
 ```bash
-# Comprehensive debt scan (Enhanced Detection)
-node /path/to/refuctor/cli/refuctor-cli.js scan
+# Comprehensive debt scan
+refuctor scan
 
-# Launch real-time dashboard
-node /path/to/refuctor/cli/refuctor-cli.js serve
-
-# Open http://localhost:1947 for live debt monitoring
+# Verbose output with detailed breakdown
+refuctor scan --verbose
 
 # Check project information
-node /path/to/refuctor/cli/refuctor-cli.js info
-```text
+refuctor info
+```
 
-### **3. Session Wrap Protocol**
+### **3. Launch Dashboard (Optional)**
 
-Follow the 9-step process in `cursorrules_template.mdc` for comprehensive debt
-management:
+```bash
+# Start real-time dashboard (basic monitoring)
+refuctor serve
 
-1. Session Summary
-2. Next Session Priorities
-3. Documentation Maintenance
-4. **Technical Debt Cleanup** (automated scanning)
-5. Configuration Validation
-6. Git Management Strategy
-7. Handoff Notes
-8. Project Health Report
-9. AI Self-Reflection
+# Start without opening browser
+refuctor serve --no-browser
 
-### **4. 🍳 Cook the Books (When Refuctor Misses Issues)**
+# Open http://localhost:1947 for basic debt monitoring
+# Note: Dashboard is functional but still in development
+```
 
-When VS Code shows problems that Refuctor scan doesn't detect, use the "Cook the Books" feature:
+### **4. Fix Issues**
+
+```bash
+# See what can be auto-fixed
+refuctor fix --dry-run
+
+# Apply automatic fixes
+refuctor fix
+
+# Use specialized goons
+refuctor goon fix-markdown
+refuctor goon clean-imports
+refuctor goon comment-killer
+```
+
+### **5. 🍳 Cook the Books (When Refuctor Misses Issues)**
+
+When VS Code shows problems that Refuctor scan doesn't detect:
 
 ```bash
 # Export VS Code problems to markdown report
-refuctor cook-the-books
-
-# Or use the shorter alias
 refuctor cook
 
 # Custom output file
@@ -206,53 +184,39 @@ refuctor cook --format csv
 - 📊 Exports everything to readable markdown with file breakdown
 - 🎯 Shows top problem files and recommended actions
 
-**Perfect for:**
-- When VS Code shows 300+ problems but Refuctor claims "DEBT-FREE"
-- When you need a detailed breakdown of what needs fixing
-- When Refuctor scan misses issues due to missing config files
-- When you want to export problems for team review
-
 ---
 
-## 🎮 Roadmap Overview
+## 📋 Available Commands
 
-### **Phase 1: Foundation (Weeks 1-4) - NPM Package** ✅ **COMPLETE**
+### **Core Commands**
 
-- ✅ Extract core logic into standalone `@puberty-labs/refuctor` package
-- ✅ Build CLI interface with commands: `init`, `scan`, `fix`, `status`, `wrap`
-- ✅ Automated setup wizard for new projects (Enhanced 6-step wizard)
-- ✅ Real-time dashboard with professional UI on port 1947
-- ✅ Project intelligence with framework detection
-- ✅ Smart configuration generation
+```bash
+refuctor init            # Initialize project with setup wizard
+refuctor scan            # Scan for technical debt
+refuctor fix             # Auto-fix common issues
+refuctor serve           # Launch real-time dashboard
+refuctor info            # Show project analysis
+refuctor shame           # Generate humorous debt report
+refuctor wrap            # Session wrap protocol
+refuctor cook            # Export VS Code problems
+```
 
-### **Phase 2: GUI Dashboard (Weeks 5-8) - "Debt Collector View"** ✅ **COMPLETE**
+### **Goon Commands (Specialized Tools)**
 
-- ✅ Web-based dashboard with real-time warning visualization (port 1947)
-- ✅ Interactive controls: "SCAN DEBT", "FIX DEBT", "NUCLEAR OPTION"
-- ✅ Enhanced debt heat maps and historical trend analysis with persistent storage
-- ✅ Advanced AI-powered fix suggestions and automation with confidence scoring
-- ✅ Mobile-responsive design with comprehensive touch-friendly interface
-- ✅ Real-time WebSocket monitoring with progress tracking and critical alerts
-- 🚧 Electron desktop app conversion (optional)
+```bash
+refuctor goon fix-markdown     # Fix markdown linting issues
+refuctor goon clean-imports    # Remove unused imports
+refuctor goon comment-killer   # Remove dead comments
+refuctor goon accountant       # Generate credit score report
+refuctor goon fixer           # General purpose fixes
+```
 
-### **Phase 3: MCP Integration (Weeks 9-12) - "Code Broker"**
+### **Easter Eggs**
 
-- Model Context Protocol integration for cross-workspace communication
-- Real-time debt sharing across development teams
-- AI assistant integration with custom refactoring prompts
-
-### **Phase 4: Specialized Tools (Weeks 13-16) - "The Goons"**
-
-- `refuctor goon fix-lint` - Aggressive linting cleanup
-- `refuctor goon clean-imports` - Unused import elimination
-- `refuctor goon comment-killer` - Remove outdated comments
-- `refuctor goon dead-code-hunter` - Identify unused functions
-
-### **Phase 5: Polish & Easter Eggs (Weeks 17-20)**
-
-- After Dark Mode (unlocked with 69 clicks)
-- Motivational startup quotes (`refuctor --bailMeOut`)
-- Advanced AI-powered refactoring suggestions
+```bash
+refuctor --bailmeout     # Motivational quotes
+refuctor shame           # Humorous debt shaming
+```
 
 ---
 
@@ -270,14 +234,12 @@ The complete system has successfully eliminated:
 
 ### **Advanced Dashboard Performance**
 
-The professional-grade dashboard now provides:
+The professional-grade dashboard provides:
 
-- **Real-time heat maps** showing 18 project files with debt temperature analysis
-- **Historical trend tracking** with persistent storage in `.refuctor/debt-history.json`
-- **374 console.log statements** identified in CLI with temperature score 9340°
-- **10 hotspot files** ranked by debt concentration for targeted cleanup
-- **Live WebSocket monitoring** with <1 second response time for critical alerts
-- **Mobile-responsive design** tested across 5 breakpoint ranges with touch optimization
+- **Real-time heat maps** showing debt temperature analysis
+- **Historical trend tracking** with persistent storage
+- **Live WebSocket monitoring** with <1 second response time
+- **Mobile-responsive design** tested across 5 breakpoint ranges
 
 ### **Meta Validation**
 
@@ -298,7 +260,7 @@ This recursive validation proves the concept works in practice.
 
 ### **Snarky Humor**
 
-- **Easter Eggs**: 69 clicks unlock After Dark Mode
+- **Easter Eggs**: 69 clicks unlock After Dark Mode in dashboard
 - **Taglines**: "Debt Never Sleeps. Neither Should You."
 - **Self-Aware**: "Built by someone who created 36 warnings while building a debt warning system."
 
@@ -310,39 +272,64 @@ This recursive validation proves the concept works in practice.
 
 ---
 
-## 💰 Business Model (Planned)
+## 🔧 Configuration
 
-### **Freemium Strategy**
+### **Project Configuration Files**
 
-- **Free Tier**: Basic debt detection and cleanup (individual use)
-- **Pro Tier**: $9/month - GUI dashboard, AI suggestions, team features
-- **Enterprise**: $99/month - Custom integrations, team analytics, priority support
+Refuctor automatically creates and manages:
 
-### **Target Markets**
+- **`.debtignore`** - Patterns to ignore during debt scanning
+- **`cspell.json`** - Spell check configuration with project-specific dictionary
+- **`TECHDEBT.md`** - Debt tracking file with session logs
+- **`.refuctor/`** - Directory for debt history and persistent data
 
-- Individual developers seeking productivity improvements
-- Development teams needing collaborative debt management
-- Code review processes requiring automated quality checks
-- CI/CD pipelines with integrated build-time debt detection
+### **Framework Detection**
+
+Refuctor automatically detects and configures for:
+
+- **React** - JSX-aware scanning and configuration
+- **Vue** - Vue-specific patterns and templates
+- **Angular** - TypeScript and Angular-specific rules
+- **Node.js** - Server-side JavaScript patterns
+- **General JavaScript/TypeScript** - Universal patterns
 
 ---
 
-## 🚀 Getting Started with Development
+## 📊 MCP Integration
 
-### **Prerequisites**
+Refuctor includes a Model Context Protocol (MCP) server for AI assistant integration:
 
-- Node.js 18+ for core development
-- TypeScript for type safety
-- Commander.js for CLI argument parsing
-- Electron + React for GUI development
+```bash
+# Start MCP server
+refuctor mcp-server
 
-### **Next Steps**
+# Available MCP tools:
+# - scan_debt: Scan project for technical debt
+# - fix_debt: Auto-fix common issues
+# - get_shame_report: Generate humorous debt report
+# - broadcast_debt_status: Share debt status across workspaces
+# - manage_debt_ignore: Manage .debtignore patterns
+# - get_debt_status: Get current debt status and trends
+```
 
-1. **Review `REFUCTOR_ROADMAP.md`** for comprehensive technical specifications
-2. **Study `TECHDEBT_TEMPLATE.md`** to understand the core debt tracking system
-3. **Examine `cursorrules_template.mdc`** for session wrap integration points
-4. **Set up development environment** using provided `package.json`
-5. **Extract core logic** from template files into working NPM package
+---
+
+## 🚀 Getting Started
+
+### **For Individual Developers**
+
+1. **Install globally**: `npm install -g @puberty-labs/refuctor`
+2. **Initialize project**: `refuctor init`
+3. **Scan for debt**: `refuctor scan`
+4. **Launch dashboard**: `refuctor serve`
+5. **Fix issues**: `refuctor fix`
+
+### **For Teams**
+
+1. **Install in project**: `npm install --save-dev @puberty-labs/refuctor`
+2. **Add to package.json scripts**: `"debt-scan": "refuctor scan"`
+3. **Set up CI integration**: Run `refuctor scan` in build pipeline
+4. **Use dashboard for monitoring**: `refuctor serve` for real-time tracking
 
 ---
 
@@ -355,52 +342,51 @@ This recursive validation proves the concept works in practice.
 - **Snarky but Functional**: Maintain irreverent personality without sacrificing performance
 - **Meta Awareness**: The system must be able to manage its own technical debt
 
-### **Code Standards**
+### **Issues & Support**
 
-- TypeScript for type safety and better tooling
-- Comprehensive testing with Jest
-- ESLint + Prettier for code formatting
-- Semantic versioning for releases
+- **Bug Reports**: [GitHub Issues](https://github.com/puberty-labs/refuctor/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/puberty-labs/refuctor/discussions)
+- **Documentation**: [GitHub Wiki](https://github.com/puberty-labs/refuctor/wiki)
 
 ---
 
 ## 📋 Current Status
 
-### ✅ **Foundation Complete**
+### ✅ **Production Ready (CLI)**
 
-- Working debt detection and tracking system
-- Proven results on 200+ real warnings
-- Comprehensive roadmap and technical specifications
-- Branding and personality established
+- **Complete CLI suite** with 8+ commands - fully functional and tested
+- **Debt detection engine** - professional-grade scanning and analysis
+- **MCP integration** for AI assistants - stable and working
+- **5 specialized goons** for targeted cleanup - automated fixes
+- **Comprehensive documentation** - ready for end users
 
-### 🎯 **Ready for Development**
+### 🚧 **In Development (Web UI)**
 
-- Core logic ready for extraction into NPM package
-- CLI interface design complete
-- GUI mockups and user experience planned
-- Business model and go-to-market strategy defined
+- **Real-time dashboard** - basic functionality working, UI polish needed
+- **WebSocket communication** - functional but needs optimization
+- **Dashboard controls** - SCAN DEBT works, FIX DEBT and NUCLEAR OPTION in progress
+
+### 🎯 **Future Development**
+
+- Gamification system with achievements
+- Advanced AI-powered suggestions  
+- Team collaboration features
+- IDE extensions (Cursor, VS Code)
+
+**Recommendation**: Use the CLI commands for production work, dashboard for monitoring only.
 
 ---
 
 ## 🎬 Conclusion
 
-**Refuctor represents the evolution of technical debt management from reactive
-cleanup to proactive prevention.** By combining professional-grade tooling
-with irreverent humor and financial metaphors, we're creating a product that
-developers will actually want to use.
+**Refuctor transforms technical debt management from reactive cleanup to proactive prevention.** By combining professional-grade tooling with irreverent humor and financial metaphors, we've created a tool that developers actually want to use.
 
-The foundation is proven,
-the roadmap is comprehensive, and the market opportunity is significant.
+The foundation is proven, the results are measurable, and the personality is unforgettable.
 
-**Ready
-to
-build
-the debt cleansing syndicate that the development world didn't know it needed?**
+**Ready to eliminate technical debt with a sense of humor?**
 
 ---
 
-*"Built
-by someone who created 36 warnings while building a debt warning system.
-Self-own level: legendary."*
+*"Built by someone who created 36 warnings while building a debt warning system. Self-own level: legendary."*
 
-**Let's turn technical debt into a solved problem with a sense of humor.** 🚀💪
+**Let's turn technical debt into a solved problem.** 🚀💪

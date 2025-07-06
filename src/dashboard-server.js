@@ -6,6 +6,8 @@ const socketIo = require('socket.io');
 const { debtDetector } = require('./debt-detector');
 const { techDebtManager } = require('./techdebt-manager');
 const { DebtHistoryTracker } = require('./debt-history');
+const { DebtIgnoreParser } = require('./debt-ignore-parser');
+const fs = require('fs-extra');
 
 class DashboardServer {
     constructor(options = {}) {
@@ -41,6 +43,12 @@ class DashboardServer {
         this.app.get('/api/debt/history', this.handleDebtHistory.bind(this));
         this.app.post('/api/debt/fix', this.handleDebtFix.bind(this));
         this.app.get('/api/project/info', this.handleProjectInfo.bind(this));
+        
+        // Debt Ignore Management APIs
+        this.app.get('/api/debt/ignore', this.handleGetIgnorePatterns.bind(this));
+        this.app.post('/api/debt/ignore', this.handleAddIgnorePattern.bind(this));
+        this.app.delete('/api/debt/ignore', this.handleRemoveIgnorePattern.bind(this));
+        this.app.post('/api/debt/ignore/init', this.handleInitIgnoreFile.bind(this));
         
         // Health check
         this.app.get('/api/health', (req, res) => {
@@ -530,6 +538,159 @@ class DashboardServer {
         if (totalViolations < 20) return '🚨 Debt levels rising. Time to call The Fixer.';
         if (totalViolations < 50) return '💀 This is fucking embarrassing. Fix it NOW.';
         return '⚰️ Your code is in foreclosure. Guido is on his way.';
+    }
+
+    // Debt Ignore Management API Handlers
+    async handleGetIgnorePatterns(req, res) {
+        try {
+            const ignoreParser = new DebtIgnoreParser();
+            await ignoreParser.loadIgnorePatterns(this.projectPath);
+            const patterns = ignoreParser.getPatterns();
+            
+            // Separate default and custom patterns
+            const defaultPatterns = patterns.slice(0, 6);
+            const customPatterns = patterns.slice(6);
+            
+            res.json({
+                success: true,
+                data: {
+                    default: defaultPatterns,
+                    custom: customPatterns,
+                    total: patterns.length
+                },
+                message: `Found ${patterns.length} ignore patterns`
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Failed to load ignore patterns'
+            });
+        }
+    }
+
+    async handleAddIgnorePattern(req, res) {
+        try {
+            const { pattern } = req.body;
+            if (!pattern) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Pattern is required',
+                    message: 'Please provide a pattern to add'
+                });
+            }
+
+            const ignoreParser = new DebtIgnoreParser();
+            await ignoreParser.loadIgnorePatterns(this.projectPath);
+            
+            // Check if pattern already exists
+            if (ignoreParser.getPatterns().includes(pattern)) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Pattern already exists',
+                    message: `Pattern "${pattern}" is already in ignore list`
+                });
+            }
+
+            // Add pattern to .debtignore file
+            const ignoreFilePath = path.join(this.projectPath, '.debtignore');
+            const content = await fs.pathExists(ignoreFilePath) 
+                ? await fs.readFile(ignoreFilePath, 'utf8') 
+                : DebtIgnoreParser.getSampleContent();
+            
+            const newContent = content + `\n# Added via dashboard\n${pattern}\n`;
+            await fs.writeFile(ignoreFilePath, newContent, 'utf8');
+
+            res.json({
+                success: true,
+                data: { pattern },
+                message: `🚫 Added ignore pattern: ${pattern}`
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Failed to add ignore pattern'
+            });
+        }
+    }
+
+    async handleRemoveIgnorePattern(req, res) {
+        try {
+            const { pattern } = req.body;
+            if (!pattern) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Pattern is required',
+                    message: 'Please provide a pattern to remove'
+                });
+            }
+
+            const ignoreFilePath = path.join(this.projectPath, '.debtignore');
+            if (!await fs.pathExists(ignoreFilePath)) {
+                return res.status(404).json({
+                    success: false,
+                    error: '.debtignore file not found',
+                    message: 'No ignore file exists to remove patterns from'
+                });
+            }
+
+            // Read and filter out the pattern
+            const content = await fs.readFile(ignoreFilePath, 'utf8');
+            const lines = content.split('\n');
+            const filteredLines = lines.filter(line => line.trim() !== pattern);
+
+            if (lines.length === filteredLines.length) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Pattern not found',
+                    message: `Pattern "${pattern}" not found in ignore list`
+                });
+            }
+
+            await fs.writeFile(ignoreFilePath, filteredLines.join('\n'), 'utf8');
+
+            res.json({
+                success: true,
+                data: { pattern },
+                message: `🗑️ Removed ignore pattern: ${pattern}`
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Failed to remove ignore pattern'
+            });
+        }
+    }
+
+    async handleInitIgnoreFile(req, res) {
+        try {
+            const ignoreFilePath = path.join(this.projectPath, '.debtignore');
+            
+            if (await fs.pathExists(ignoreFilePath)) {
+                return res.status(409).json({
+                    success: false,
+                    error: '.debtignore already exists',
+                    message: 'Ignore file already exists in this project'
+                });
+            }
+
+            const sampleContent = DebtIgnoreParser.getSampleContent();
+            await fs.writeFile(ignoreFilePath, sampleContent, 'utf8');
+
+            res.json({
+                success: true,
+                data: { path: ignoreFilePath },
+                message: '🏖️ Created .debtignore with sample patterns'
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Failed to create ignore file'
+            });
+        }
     }
 
     async start() {

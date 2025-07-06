@@ -9,6 +9,13 @@ const App = () => {
   const [lastScan, setLastScan] = useState(null);
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [tooltip, setTooltip] = useState({ show: false, content: '', x: 0, y: 0 });
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const [terminalHistory, setTerminalHistory] = useState([]);
+  const [terminalInput, setTerminalInput] = useState('');
+  const [ignorePatterns, setIgnorePatterns] = useState([]);
+  const [showDebtDetails, setShowDebtDetails] = useState(false);
+  const [showDebtModal, setShowDebtModal] = useState(false);
 
   useEffect(() => {
     // Initialize socket connection
@@ -539,23 +546,283 @@ const App = () => {
     return Math.round(roi * 100);
   };
 
-  if (loading && !debtData) {
+  // Tooltip Functions
+  const showTooltip = (e, content) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({
+      show: true,
+      content: content,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10
+    });
+  };
+
+  const hideTooltip = () => {
+    setTooltip({ show: false, content: '', x: 0, y: 0 });
+  };
+
+  // Terminal and Debt Ignore Management Functions
+  const loadIgnorePatterns = async () => {
+    try {
+      const response = await fetch('/api/debt/ignore');
+      const data = await response.json();
+      if (data.success) {
+        setIgnorePatterns([...data.data.default, ...data.data.custom]);
+      }
+    } catch (error) {
+      console.error('Failed to load ignore patterns:', error);
+    }
+  };
+
+  const executeTerminalCommand = async (command) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const prompt = `refuctor@dashboard:~$ ${command}`;
+    
+    setTerminalHistory(prev => [...prev, { type: 'command', content: prompt, timestamp }]);
+    
+    try {
+      // Parse command
+      const parts = command.trim().split(' ');
+      const cmd = parts[0];
+      const args = parts.slice(1);
+      
+      if (cmd === 'refuctor' && args[0] === 'ignore') {
+        await handleIgnoreCommand(args.slice(1));
+      } else if (cmd === 'help' || cmd === 'refuctor' && args[0] === 'help') {
+        addTerminalOutput('Available commands:', 'info');
+        addTerminalOutput('  refuctor ignore --list          List ignore patterns', 'info');
+        addTerminalOutput('  refuctor ignore --add <pattern> Add ignore pattern', 'info');
+        addTerminalOutput('  refuctor ignore --remove <pattern> Remove ignore pattern', 'info');
+        addTerminalOutput('  refuctor ignore --init          Create .debtignore file', 'info');
+        addTerminalOutput('  clear                          Clear terminal', 'info');
+      } else if (cmd === 'clear') {
+        setTerminalHistory([]);
+      } else {
+        addTerminalOutput(`Command not found: ${cmd}`, 'error');
+        addTerminalOutput('Type "help" for available commands', 'info');
+      }
+    } catch (error) {
+      addTerminalOutput(`Error: ${error.message}`, 'error');
+    }
+    
+    setTerminalInput('');
+  };
+
+  const handleIgnoreCommand = async (args) => {
+    if (args.length === 0 || args[0] === '--list') {
+      await loadIgnorePatterns();
+      addTerminalOutput('🚫 Current ignore patterns:', 'info');
+      ignorePatterns.forEach((pattern, index) => {
+        const isDefault = index < 6;
+        const prefix = isDefault ? '[default]' : '[custom]';
+        addTerminalOutput(`  ${prefix} ${pattern}`, 'info');
+      });
+    } else if (args[0] === '--add' && args[1]) {
+      const pattern = args.slice(1).join(' ');
+      try {
+        const response = await fetch('/api/debt/ignore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pattern })
+        });
+        const data = await response.json();
+        if (data.success) {
+          addTerminalOutput(`✅ Added ignore pattern: ${pattern}`, 'success');
+          await loadIgnorePatterns();
+        } else {
+          addTerminalOutput(`❌ Failed to add pattern: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        addTerminalOutput(`❌ Error adding pattern: ${error.message}`, 'error');
+      }
+    } else if (args[0] === '--remove' && args[1]) {
+      const pattern = args.slice(1).join(' ');
+      try {
+        const response = await fetch('/api/debt/ignore', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pattern })
+        });
+        const data = await response.json();
+        if (data.success) {
+          addTerminalOutput(`🗑️ Removed ignore pattern: ${pattern}`, 'success');
+          await loadIgnorePatterns();
+        } else {
+          addTerminalOutput(`❌ Failed to remove pattern: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        addTerminalOutput(`❌ Error removing pattern: ${error.message}`, 'error');
+      }
+    } else if (args[0] === '--init') {
+      try {
+        const response = await fetch('/api/debt/ignore/init', {
+          method: 'POST'
+        });
+        const data = await response.json();
+        if (data.success) {
+          addTerminalOutput('🏖️ Created .debtignore with sample patterns', 'success');
+          await loadIgnorePatterns();
+        } else {
+          addTerminalOutput(`❌ Failed to create .debtignore: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        addTerminalOutput(`❌ Error creating .debtignore: ${error.message}`, 'error');
+      }
+    } else {
+      addTerminalOutput('Usage: refuctor ignore [--list|--add <pattern>|--remove <pattern>|--init]', 'error');
+    }
+  };
+
+  const addTerminalOutput = (content, type = 'output') => {
+    const timestamp = new Date().toLocaleTimeString();
+    setTerminalHistory(prev => [...prev, { type, content, timestamp }]);
+  };
+
+  const handleTerminalKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      executeTerminalCommand(terminalInput);
+    }
+  };
+
+  const toggleTerminal = () => {
+    setTerminalOpen(!terminalOpen);
+    if (!terminalOpen) {
+      loadIgnorePatterns();
+      addTerminalOutput('🌐 Refuctor Web Terminal - Type "help" for commands', 'info');
+    }
+  };
+
+  const toggleDebtDetails = () => {
+    setShowDebtModal(!showDebtModal);
+  };
+
+  const closeDebtModal = () => {
+    setShowDebtModal(false);
+  };
+
+  // Get actual debt counts including Guido/Mafia levels
+  const getDebtCounts = (debtData) => {
+    if (!debtData) return { total: 0, p1: 0, p2: 0, p3: 0, p4: 0, guido: 0, mafia: 0 };
+    
+    const guidoCount = debtData.currentDebt?.Guido?.length || 0;
+    const mafiaCount = debtData.currentDebt?.Mafia?.length || 0;
+    const p1Count = debtData.summary?.p1 || 0;
+    const p2Count = debtData.summary?.p2 || 0;
+    const p3Count = debtData.summary?.p3 || 0;
+    const p4Count = debtData.summary?.p4 || 0;
+    
+    return {
+      total: debtData.summary?.total || 0,
+      p1: p1Count,
+      p2: p2Count,
+      p3: p3Count,
+      p4: p4Count,
+      guido: guidoCount,
+      mafia: mafiaCount
+    };
+  };
+
+  // Get detailed debt breakdown with file information
+  const getDetailedDebtBreakdown = (debtData) => {
+    if (!debtData?.summary) return [];
+    
+    const breakdown = [];
+    const summary = debtData.summary;
+    
+    if (summary.markdown > 0) breakdown.push({ 
+      category: 'Markdown Issues', 
+      count: summary.markdown, 
+      icon: '📝',
+      description: 'Documentation formatting and structure issues',
+      severity: 'high'
+    });
+    if (summary.spelling > 0) breakdown.push({ 
+      category: 'Spelling Errors', 
+      count: summary.spelling, 
+      icon: '📚',
+      description: 'Misspelled words and typos in documentation',
+      severity: 'medium'
+    });
+    if (summary.security > 0) breakdown.push({ 
+      category: 'Security Vulnerabilities', 
+      count: summary.security, 
+      icon: '🔒',
+      description: 'Known security issues in dependencies',
+      severity: 'critical'
+    });
+    if (summary.dependencies > 0) breakdown.push({ 
+      category: 'Dependency Issues', 
+      count: summary.dependencies, 
+      icon: '📦',
+      description: 'Outdated or problematic package dependencies',
+      severity: 'medium'
+    });
+    if (summary.eslint > 0) breakdown.push({ 
+      category: 'ESLint Issues', 
+      count: summary.eslint, 
+      icon: '🔧',
+      description: 'Code style and quality violations',
+      severity: 'medium'
+    });
+    if (summary.typescript > 0) breakdown.push({ 
+      category: 'TypeScript Errors', 
+      count: summary.typescript, 
+      icon: '📘',
+      description: 'Type checking and compilation errors',
+      severity: 'high'
+    });
+    if (summary.codeQuality > 0) breakdown.push({ 
+      category: 'Code Quality Issues', 
+      count: summary.codeQuality, 
+      icon: '💻',
+      description: 'Console.log statements, TODOs, and code smells',
+      severity: 'low'
+    });
+    if (summary.formatting > 0) breakdown.push({ 
+      category: 'Formatting Issues', 
+      count: summary.formatting, 
+      icon: '🎨',
+      description: 'Code formatting and style inconsistencies',
+      severity: 'low'
+    });
+    
+    return breakdown;
+  };
+
+  // Get top debt hotspots for modal
+  const getTopHotspots = (debtData) => {
+    if (!debtData?.topHotspots) return [];
+    return debtData.topHotspots.slice(0, 10);
+  };
+
+  // Tooltip Content for Each Button
+  const tooltipContent = {
+    scan: "Runs a comprehensive analysis of your codebase to identify technical debt across multiple categories including spelling errors, linting issues, security vulnerabilities, and code quality problems. This is your first step in the debt elimination process.",
+    fix: "Automatically fixes safe, low-risk technical debt items that can be resolved without human intervention. This includes spelling corrections, import organization, and basic formatting issues. Perfect for quick wins and instant debt reduction.",
+    refinance: "Restructures your technical debt by prioritizing fixes, creating payment schedules, and organizing debt into manageable chunks. This helps you tackle debt systematically rather than being overwhelmed by the total amount.",
+    collectors: "Deploys AI-powered assistance to help resolve complex technical debt that requires human judgment. The AI Collection Agency provides intelligent suggestions and automated refactoring for challenging debt items.",
+    bankruptcy: "The nuclear option - performs aggressive debt elimination including major refactoring, dependency updates, and structural changes. Use with caution as this can make significant changes to your codebase. Always backup first!"
+  };
+
+  if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-content">
           <div className="loading-logo-container">
             <img 
               src="/images/refuctor-logo.png" 
-              alt="Refuctor" 
+              alt="Refuctor Logo" 
               className="loading-logo-image"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'block';
               }}
             />
-            <div className="loading-logo fallback-loading" style={{display: 'none'}}>🏦 REFUCTOR</div>
+            <div className="loading-logo fallback-loading" style={{display: 'none'}}>
+              REFUCTOR
+            </div>
           </div>
-          <div className="loading-text">Loading Debt Collector Interface...</div>
+          <div className="loading-text">💀 The Debt Collector is awakening...</div>
           <div className="loading-spinner"></div>
         </div>
       </div>
@@ -567,27 +834,26 @@ const App = () => {
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-content">
-          <div className="logo-section">
-            <div className="logo-container">
-              <img 
-                src="/images/refuctor-logo.png" 
-                alt="Refuctor - The Debt Collector" 
-                className="dashboard-logo"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'block';
-                }}
-              />
-              <h1 className="dashboard-title fallback-title" style={{display: 'none'}}>
-                🏦 REFUCTOR DASHBOARD
-              </h1>
-              <p className="dashboard-subtitle">The Debt Collector Interface</p>
+          <div className="logo-container">
+            <img 
+              src="/images/refuctor-logo.png" 
+              alt="Refuctor Logo" 
+              className="dashboard-logo"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <h1 className="dashboard-title fallback-title" style={{display: 'none'}}>
+              REFUCTOR
+            </h1>
+            <div className="dashboard-subtitle">
+              "The Debt Collector" - Professional Technical Debt Management
             </div>
           </div>
-          
           <div className="connection-status">
             <div className={`status-indicator ${connected ? 'connected' : 'disconnected'}`}>
-              {connected ? '🟢 Connected' : '🔴 Disconnected'}
+              {connected ? '🟢 CONNECTED' : '🔴 DISCONNECTED'}
             </div>
           </div>
         </div>
@@ -595,667 +861,358 @@ const App = () => {
 
       {/* Project Info */}
       {projectInfo && (
-        <section className="project-info">
-          <h2>📋 Project: {projectInfo.name}</h2>
+        <div className="project-info">
+          <h2>{projectInfo.name}</h2>
           <div className="project-details">
+            <span>{projectInfo.path}</span>
             <span className="project-version">v{projectInfo.version}</span>
-            <span className="project-path">{projectInfo.path}</span>
-            <span className="refuctor-version">Refuctor {projectInfo.refuctorVersion}</span>
+            <span className="refuctor-version">Refuctor v{projectInfo.refuctorVersion}</span>
           </div>
-        </section>
+        </div>
       )}
 
-      {/* Phase 2 Enhancement: Credit Score & Financial Metrics */}
-      <section className="financial-metrics">
-        <div className="credit-score-widget">
-          <div className="credit-score-display">
-            <div className="score-value">
-              {debtData ? calculateCreditScore(debtData) : '---'}
-            </div>
-            <div className="score-label">DEVELOPER CREDIT SCORE</div>
-            <div className="score-range">300-850</div>
-          </div>
-          <div className="credit-classification">
-            <div className={`credit-tier ${getCreditTier(debtData)}`}>
-              {getCreditTierLabel(debtData)}
-            </div>
-          </div>
-        </div>
-
-        <div className="middle-panel">
-          <h3 className="panel-title">📊 DEBT ANALYTICS</h3>
-          <div className="analytics-display">
-            <div className="metric-row">
-              <div className="metric-item">
-                <div className="metric-number">
-                  {debtData ? Math.round((debtData.summary?.total || 0) / 7) : 0}
+      {/* Main Dashboard */}
+      <main className="dashboard-main">
+        {/* NEW LAYOUT: Two column upper section */}
+        <div className="dashboard-grid">
+          {/* Upper Left: Financial Metrics */}
+          <div className="upper-left-panel">
+            <div className="financial-metrics">
+              <h2>💰 Financial Impact</h2>
+              <div className="financial-grid">
+                <div className="financial-metric">
+                  <div className="metric-value">{calculateCreditScore(debtData)}</div>
+                  <div className="metric-label">Credit Score</div>
                 </div>
-                <div className="metric-desc">Days to Clean</div>
-              </div>
-              <div className="metric-item">
-                <div className="metric-number">
-                  {debtData ? Math.round(calculateCreditScore(debtData) / 10) : 0}%
+                <div className="financial-metric">
+                  <div className="metric-value">{getCreditTierLabel(debtData).split(' ')[1]}</div>
+                  <div className="metric-label">Credit Tier</div>
                 </div>
-                <div className="metric-desc">Code Health</div>
-              </div>
-            </div>
-            <div className="analytics-trend">
-              <div className="trend-indicator">
-                {debtData?.debtTrend === 'improving' ? '📈' : 
-                 debtData?.debtTrend === 'worsening' ? '📉' : '📊'}
-              </div>
-              <div className="trend-text">
-                {debtData?.debtTrend === 'improving' ? 'Improving' : 
-                 debtData?.debtTrend === 'worsening' ? 'Worsening' : 'Stable'}
+                <div className="financial-metric">
+                  <div className="metric-value">${calculateDebtCost(debtData)}</div>
+                  <div className="metric-label">Total Debt Cost</div>
+                </div>
+                <div className="financial-metric">
+                  <div className="metric-value">{calculateTimeWasted(debtData)}</div>
+                  <div className="metric-label">Time Wasted</div>
+                </div>
+                <div className="financial-metric">
+                  <div className="metric-value">{calculateAPR(debtData)}%</div>
+                  <div className="metric-label">Interest Rate (APR)</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="interest-clock">
-          <div className="clock-display">
-            <div className="time-wasted">
-              <div className="time-value">{debtData ? calculateTimeWasted(debtData) : '0h'}</div>
-              <div className="time-label">TIME WASTED</div>
-            </div>
-            <div className="cost-impact">
-              <div className="cost-value">${debtData ? calculateDebtCost(debtData) : '0'}</div>
-              <div className="cost-label">CLEANUP COST</div>
-            </div>
-          </div>
-          <div className="interest-rate">
-            <div className="apr-display">
-              {debtData ? calculateAPR(debtData) : '0.0'}% APR
-            </div>
-            <div className="rate-label">Current Interest Rate</div>
-          </div>
-        </div>
-      </section>
+          {/* Upper Right: Debt Status */}
+          <div className="upper-right-panel">
+            <div className="debt-status">
+              <div className="status-header">
+                <h2>📊 Debt Analysis</h2>
+                {lastScan && (
+                  <div className="last-scan">
+                    Last scan: {new Date(lastScan).toLocaleString()}
+                  </div>
+                )}
+              </div>
 
-      {/* Phase 2 Enhancement: Advanced Debt Heat Maps */}
-      <section className="debt-heat-maps">
-        <div className="heat-map-header">
-          <h2>🔥 DEBT HEAT MAPS</h2>
-          <p className="heat-map-subtitle">File-level debt concentration and hotspots</p>
-        </div>
-        
-        <div className="heat-map-grid">
-          <div className="heat-map-visualization">
-            <h3>📊 File Debt Concentration</h3>
-            <div className="heat-map-canvas">
-              {debtData?.fileDebtMap ? (
-                <div className="heat-blocks">
-                  {Object.entries(debtData.fileDebtMap).slice(0, 20).map(([file, debtInfo], index) => (
-                    <div 
-                      key={index}
-                      className={`heat-block heat-${debtInfo.severity}`}
-                      title={`${file}: ${debtInfo.count} issues (${debtInfo.severity})`}
-                      style={{
-                        width: `${Math.min(Math.max(debtInfo.count * 2, 8), 40)}px`,
-                        height: `${Math.min(Math.max(debtInfo.count * 2, 8), 40)}px`,
-                        backgroundColor: getHeatMapColor(debtInfo.severity, debtInfo.count)
-                      }}
-                    >
-                      <div className="heat-block-info">
-                        <span className="file-name">{file.split('/').pop()}</span>
-                        <span className="debt-count">{debtInfo.count}</span>
-                      </div>
+              {/* Shame Level */}
+              <div className="shame-level">
+                <div className={`shame-indicator ${debtData?.shameLevel || 'unknown'}`}>
+                  {getShameMessage(debtData?.shameLevel)}
+                </div>
+              </div>
+
+              {/* Debt Summary */}
+              <div className="debt-summary">
+                <div className="debt-metric total clickable" onClick={toggleDebtDetails}>
+                  <div className="metric-value">{getDebtCounts(debtData).total}</div>
+                  <div className="metric-label">Total Debt</div>
+                  <div className="metric-subtitle">Click for details</div>
+                </div>
+                <div className="debt-metrics-grid">
+                  {/* Show Guido/Mafia levels if present */}
+                  {getDebtCounts(debtData).guido > 0 && (
+                    <div className="debt-metric guido">
+                      <div className="metric-value">{getDebtCounts(debtData).guido}</div>
+                      <div className="metric-label">🤌 Guido</div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="heat-map-placeholder">
-                  <div className="placeholder-content">
-                    <span className="placeholder-icon">🔥</span>
-                    <p>Run a debt scan to generate heat maps</p>
+                  )}
+                  {getDebtCounts(debtData).mafia > 0 && (
+                    <div className="debt-metric mafia">
+                      <div className="metric-value">{getDebtCounts(debtData).mafia}</div>
+                      <div className="metric-label">🕴️ Mafia</div>
+                    </div>
+                  )}
+                  {/* Regular P1-P4 levels */}
+                  <div className="debt-metric p1">
+                    <div className="metric-value">{getDebtCounts(debtData).p1}</div>
+                    <div className="metric-label">P1 Critical</div>
+                  </div>
+                  <div className="debt-metric p2">
+                    <div className="metric-value">{getDebtCounts(debtData).p2}</div>
+                    <div className="metric-label">P2 High</div>
+                  </div>
+                  <div className="debt-metric p3">
+                    <div className="metric-value">{getDebtCounts(debtData).p3}</div>
+                    <div className="metric-label">P3 Medium</div>
+                  </div>
+                  <div className="debt-metric p4">
+                    <div className="metric-value">{getDebtCounts(debtData).p4}</div>
+                    <div className="metric-label">P4 Low</div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
-          
-          <div className="heat-map-hotspots">
-            <h3>🚨 Top Debt Hotspots</h3>
-            <div className="hotspot-list">
-              {debtData?.topHotspots ? (
-                debtData.topHotspots.slice(0, 8).map((hotspot, index) => (
-                  <div key={index} className={`hotspot-item priority-${hotspot.priority}`}>
-                    <div className="hotspot-rank">#{index + 1}</div>
-                    <div className="hotspot-details">
-                      <div className="hotspot-file">{hotspot.file}</div>
-                      <div className="hotspot-stats">
-                        <span className="debt-count">{hotspot.debtCount} issues</span>
-                        <span className="severity-badge">{hotspot.priority.toUpperCase()}</span>
-                      </div>
-                    </div>
-                    <div className="hotspot-temperature">
-                      <span className="temp-value">{hotspot.temperature}°</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="hotspot-placeholder">
-                  <p>🔍 No hotspots detected yet</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="heat-map-legend">
-          <h4>🎨 Heat Map Legend</h4>
-          <div className="legend-items">
-            <div className="legend-item">
-              <span className="legend-color heat-p1"></span>
-              <span className="legend-label">Critical (P1)</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color heat-p2"></span>
-              <span className="legend-label">High (P2)</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color heat-p3"></span>
-              <span className="legend-label">Medium (P3)</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color heat-p4"></span>
-              <span className="legend-label">Low (P4)</span>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Phase 2 Enhancement: Trend Analysis & Predictive Insights */}
-      <section className="trend-analysis">
-        <div className="trend-header">
-          <h2>📈 DEBT TREND ANALYSIS</h2>
-          <p className="trend-subtitle">Historical tracking and predictive insights</p>
+          {/* NEW LAYOUT: Full width control panel */}
+          <div className="full-width-control-panel">
+            <div className="control-panel-header">
+              <h2>🎯 Debt Management Operations</h2>
+              <div className="control-panel-subtitle">Professional debt elimination strategies</div>
+            </div>
+            
+            <div className="control-buttons-container">
+              <button 
+                className="control-button scan-button"
+                onClick={triggerScan}
+                disabled={loading}
+                onMouseEnter={(e) => showTooltip(e, tooltipContent.scan)}
+                onMouseLeave={hideTooltip}
+              >
+                <div className="button-icon">📊</div>
+                <div className="button-text">
+                  <div className="button-title">SCAN DEBT</div>
+                  <div className="button-subtitle">Comprehensive analysis</div>
+                </div>
+              </button>
+
+              <button 
+                className="control-button fix-button"
+                onClick={() => triggerFix('auto')}
+                disabled={loading}
+                onMouseEnter={(e) => showTooltip(e, tooltipContent.fix)}
+                onMouseLeave={hideTooltip}
+              >
+                <div className="button-icon">✨</div>
+                <div className="button-text">
+                  <div className="button-title">MAKE IT DISAPPEAR</div>
+                  <div className="button-subtitle">One-click cleanup of safe fixes</div>
+                </div>
+              </button>
+
+              <button 
+                className="control-button refinance-button"
+                onClick={() => triggerFix('schedule')}
+                disabled={loading}
+                onMouseEnter={(e) => showTooltip(e, tooltipContent.refinance)}
+                onMouseLeave={hideTooltip}
+              >
+                <div className="button-icon">💰</div>
+                <div className="button-text">
+                  <div className="button-title">REFINANCE DEBT</div>
+                  <div className="button-subtitle">Restructure payment plan</div>
+                </div>
+              </button>
+
+              <button 
+                className="control-button collectors-button"
+                onClick={() => triggerFix('ai-help')}
+                disabled={loading}
+                onMouseEnter={(e) => showTooltip(e, tooltipContent.collectors)}
+                onMouseLeave={hideTooltip}
+              >
+                <div className="button-icon">🤖</div>
+                <div className="button-text">
+                  <div className="button-title">SELL TO COLLECTORS</div>
+                  <div className="button-subtitle">AI-powered debt resolution</div>
+                </div>
+              </button>
+
+              <button 
+                className="control-button bankruptcy-button"
+                onClick={() => triggerFix('nuclear')}
+                disabled={loading}
+                onMouseEnter={(e) => showTooltip(e, tooltipContent.bankruptcy)}
+                onMouseLeave={hideTooltip}
+              >
+                <div className="button-icon">⚡</div>
+                <div className="button-text">
+                  <div className="button-title">FILE FOR BANKRUPTCY</div>
+                  <div className="button-subtitle">Nuclear option - complete reset</div>
+                </div>
+              </button>
+            </div>
+            
+            {/* Terminal Toggle Button */}
+            <div className="terminal-toggle-container">
+              <button 
+                className="terminal-toggle-button"
+                onClick={toggleTerminal}
+              >
+                <span className="terminal-icon">🖥️</span>
+                <span className="terminal-text">
+                  {terminalOpen ? 'Close Terminal' : 'Open Terminal'}
+                </span>
+                <span className="terminal-subtitle">Debt ignore management</span>
+              </button>
+            </div>
+          </div>
         </div>
-        
-        <div className="trend-grid">
-          <div className="trend-charts">
-            <div className="trend-chart-container">
-              <h3>🏗️ Debt History</h3>
-              <div className="trend-chart">
-                {debtData?.debtHistory ? (
-                  <div className="chart-visualization">
-                    <div className="chart-bars">
-                      {debtData.debtHistory.slice(-7).map((entry, index) => (
-                        <div key={index} className="chart-bar">
-                          <div 
-                            className="bar-fill"
-                            style={{
-                              height: `${Math.min((entry.total / Math.max(...debtData.debtHistory.map(e => e.total))) * 100, 100)}%`,
-                              backgroundColor: getTrendColor(entry.total)
-                            }}
-                          ></div>
-                          <div className="bar-label">{entry.date}</div>
-                          <div className="bar-value">{entry.total}</div>
+
+        {/* Terminal Interface */}
+        {terminalOpen && (
+          <div className="terminal-panel">
+            <div className="terminal-header">
+              <span className="terminal-title">🖥️ Refuctor Web Terminal</span>
+              <span className="terminal-subtitle">Debt ignore pattern management</span>
+              <button className="terminal-close" onClick={toggleTerminal}>✕</button>
+            </div>
+            <div className="terminal-content">
+              <div className="terminal-output">
+                {terminalHistory.map((item, index) => (
+                  <div key={index} className={`terminal-line ${item.type}`}>
+                    <span className="terminal-timestamp">[{item.timestamp}]</span>
+                    <span className="terminal-text">{item.content}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="terminal-input-container">
+                <span className="terminal-prompt">refuctor@dashboard:~$</span>
+                <input
+                  type="text"
+                  className="terminal-input"
+                  value={terminalInput}
+                  onChange={(e) => setTerminalInput(e.target.value)}
+                  onKeyPress={handleTerminalKeyPress}
+                  placeholder="Type 'help' for available commands"
+                  autoFocus
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Debt Details Modal */}
+        {showDebtModal && (
+          <div className="modal-overlay" onClick={closeDebtModal}>
+            <div className="debt-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>📊 Debt Analysis Details</h2>
+                <button className="modal-close" onClick={closeDebtModal}>✕</button>
+              </div>
+              
+              <div className="modal-content">
+                {/* Summary Stats */}
+                <div className="debt-summary-stats">
+                  <div className="summary-stat">
+                    <div className="stat-value">{getDebtCounts(debtData).total}</div>
+                    <div className="stat-label">Total Issues</div>
+                  </div>
+                  {getDebtCounts(debtData).guido > 0 && (
+                    <div className="summary-stat guido">
+                      <div className="stat-value">{getDebtCounts(debtData).guido}</div>
+                      <div className="stat-label">🤌 Guido Categories</div>
+                    </div>
+                  )}
+                  <div className="summary-stat">
+                    <div className="stat-value">{getTopHotspots(debtData).length}</div>
+                    <div className="stat-label">Hotspot Files</div>
+                  </div>
+                </div>
+
+                {/* Debt Breakdown by Category */}
+                <div className="debt-breakdown-section">
+                  <h3>📋 Issues by Category</h3>
+                  <div className="debt-categories">
+                    {getDetailedDebtBreakdown(debtData).map((item, index) => (
+                      <div key={index} className={`debt-category-card ${item.severity}`}>
+                        <div className="category-header">
+                          <span className="category-icon">{item.icon}</span>
+                          <div className="category-info">
+                            <h4>{item.category}</h4>
+                            <p>{item.description}</p>
+                          </div>
+                          <div className="category-count">{item.count}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Debt Hotspots */}
+                {getTopHotspots(debtData).length > 0 && (
+                  <div className="hotspots-section">
+                    <h3>🔥 Top Debt Hotspots</h3>
+                    <div className="hotspots-list">
+                      {getTopHotspots(debtData).map((hotspot, index) => (
+                        <div key={index} className="hotspot-card">
+                          <div className="hotspot-info">
+                            <div className="hotspot-file">{hotspot.file}</div>
+                            <div className="hotspot-stats">
+                              <span className="hotspot-count">{hotspot.debtCount} issues</span>
+                              <span className={`hotspot-priority ${hotspot.priority}`}>
+                                {hotspot.priority.toUpperCase()}
+                              </span>
+                              <span className="hotspot-temp">🌡️ {hotspot.temperature}°</span>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                ) : (
-                  <div className="chart-placeholder">
-                    <div className="placeholder-content">
-                      <span className="placeholder-icon">📊</span>
-                      <p>Building debt history...</p>
-                      <p className="placeholder-note">Run multiple scans to see trends</p>
+                )}
+
+                {/* Guido Messages if present */}
+                {debtData?.currentDebt?.Guido && debtData.currentDebt.Guido.length > 0 && (
+                  <div className="guido-messages-section">
+                    <h3>🤌 Guido's Collection Notices</h3>
+                    <div className="guido-messages">
+                      {debtData.currentDebt.Guido.map((message, index) => (
+                        <div key={index} className="guido-message">
+                          <div className="guido-text">{message}</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
             </div>
-            
-            <div className="trend-predictions">
-              <h3>🔮 Predictive Analysis</h3>
-              <div className="prediction-cards">
-                <div className="prediction-card">
-                  <div className="prediction-icon">🎯</div>
-                  <div className="prediction-content">
-                    <div className="prediction-title">Debt Velocity</div>
-                    <div className="prediction-value">
-                      {debtData ? calculateDebtVelocity(debtData) : '0'} issues/day
-                    </div>
-                    <div className="prediction-desc">Current accumulation rate</div>
-                  </div>
-                </div>
-                
-                <div className="prediction-card">
-                  <div className="prediction-icon">⏰</div>
-                  <div className="prediction-content">
-                    <div className="prediction-title">Time to Crisis</div>
-                    <div className="prediction-value">
-                      {debtData ? calculateTimeToCrisis(debtData) : '∞'} days
-                    </div>
-                    <div className="prediction-desc">Until P1 threshold</div>
-                  </div>
-                </div>
-                
-                <div className="prediction-card">
-                  <div className="prediction-icon">🎪</div>
-                  <div className="prediction-content">
-                    <div className="prediction-title">Cleanup Effort</div>
-                    <div className="prediction-value">
-                      {debtData ? calculateCleanupEffort(debtData) : '0'} hrs
-                    </div>
-                    <div className="prediction-desc">Estimated fix time</div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-          
-          <div className="trend-insights">
-            <h3>💡 Smart Insights</h3>
-            <div className="insights-list">
-              {debtData ? generateSmartInsights(debtData).map((insight, index) => (
-                <div key={index} className={`insight-item ${insight.priority}`}>
-                  <div className="insight-icon">{insight.icon}</div>
-                  <div className="insight-content">
-                    <div className="insight-title">{insight.title}</div>
-                    <div className="insight-message">{insight.message}</div>
-                    <div className="insight-action">{insight.action}</div>
-                  </div>
-                </div>
-              )) : (
-                <div className="insights-placeholder">
-                  <p>🔍 Run a debt scan to generate insights</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="trend-summary">
-          <h3>📊 Trend Summary</h3>
-          <div className="trend-metrics">
-            <div className="trend-metric">
-              <div className="metric-icon">📈</div>
-              <div className="metric-info">
-                <div className="metric-label">Overall Trend</div>
-                <div className={`metric-value trend-${debtData?.debtTrend || 'stable'}`}>
-                  {debtData?.debtTrend === 'improving' ? '📈 IMPROVING' : 
-                   debtData?.debtTrend === 'worsening' ? '📉 WORSENING' : '📊 STABLE'}
-                </div>
-              </div>
-            </div>
-            
-            <div className="trend-metric">
-              <div className="metric-icon">🎯</div>
-              <div className="metric-info">
-                <div className="metric-label">Debt Efficiency</div>
-                <div className="metric-value">
-                  {debtData ? calculateDebtEfficiency(debtData) : '0'}%
-                </div>
-              </div>
-            </div>
-            
-            <div className="trend-metric">
-              <div className="metric-icon">⚡</div>
-              <div className="metric-info">
-                <div className="metric-label">Fix Rate</div>
-                <div className="metric-value">
-                  {debtData ? calculateFixRate(debtData) : '0'} issues/scan
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Phase 2 Enhancement: AI-Powered Fix Suggestions */}
-      <section className="ai-suggestions">
-        <div className="ai-header">
-          <h2>🤖 AI-POWERED FIX SUGGESTIONS</h2>
-          <p className="ai-subtitle">Smart refactoring recommendations powered by debt analysis</p>
-        </div>
-        
-        <div className="ai-grid">
-          <div className="priority-fixes">
-            <h3>🎯 Priority Fixes</h3>
-            <div className="fixes-list">
-              {debtData ? generatePriorityFixes(debtData).map((fix, index) => (
-                <div key={index} className={`fix-item priority-${fix.priority}`}>
-                  <div className="fix-header">
-                    <div className="fix-icon">{fix.icon}</div>
-                    <div className="fix-title">{fix.title}</div>
-                    <div className="fix-impact">{fix.impact} Impact</div>
-                  </div>
-                  <div className="fix-description">{fix.description}</div>
-                  <div className="fix-actions">
-                    <div className="fix-command">
-                      <code>{fix.command}</code>
-                    </div>
-                    <div className="fix-buttons">
-                      <button 
-                        className="action-button primary"
-                        onClick={() => triggerFix('ai-help')}
-                        title="Apply AI suggestion"
-                      >
-                        🚀 Apply Fix
-                      </button>
-                      <button 
-                        className="action-button secondary"
-                        onClick={() => console.log('Manual fix guide:', fix)}
-                        title="Show manual steps"
-                      >
-                        📋 Manual Steps
-                      </button>
-                    </div>
-                  </div>
-                  <div className="fix-estimate">
-                    <span className="estimate-time">⏱️ {fix.estimatedTime}</span>
-                    <span className="estimate-difficulty">🎯 {fix.difficulty}</span>
-                  </div>
-                </div>
-              )) : (
-                <div className="fixes-placeholder">
-                  <p>🔍 Run a debt scan to generate AI suggestions</p>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="ai-insights">
-            <h3>🧠 AI Analysis</h3>
-            <div className="analysis-cards">
-              <div className="analysis-card">
-                <div className="card-icon">🔥</div>
-                <div className="card-content">
-                  <div className="card-title">Debt Hotspots</div>
-                  <div className="card-value">
-                    {debtData?.topHotspots ? debtData.topHotspots.length : 0} files
-                  </div>
-                  <div className="card-desc">Need immediate attention</div>
-                </div>
-              </div>
-              
-              <div className="analysis-card">
-                <div className="card-icon">⚡</div>
-                <div className="card-content">
-                  <div className="card-title">Quick Wins</div>
-                  <div className="card-value">
-                    {debtData ? calculateQuickWins(debtData) : 0}
-                  </div>
-                  <div className="card-desc">Easy fixes available</div>
-                </div>
-              </div>
-              
-              <div className="analysis-card">
-                <div className="card-icon">🎯</div>
-                <div className="card-content">
-                  <div className="card-title">Success Rate</div>
-                  <div className="card-value">
-                    {debtData ? calculateSuccessRate(debtData) : 0}%
-                  </div>
-                  <div className="card-desc">Fix success probability</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="ai-recommendations">
-              <h4>💡 Smart Recommendations</h4>
-              <div className="recommendations-list">
-                {debtData ? generateSmartRecommendations(debtData).map((rec, index) => (
-                  <div key={index} className={`recommendation-item ${rec.type}`}>
-                    <div className="rec-icon">{rec.icon}</div>
-                    <div className="rec-content">
-                      <div className="rec-title">{rec.title}</div>
-                      <div className="rec-message">{rec.message}</div>
-                    </div>
-                    <div className="rec-score">{rec.score}%</div>
-                  </div>
-                )) : (
-                  <div className="recommendations-placeholder">
-                    <p>🤖 AI analysis pending...</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="ai-summary">
-          <h3>📊 Fix Strategy Summary</h3>
-          <div className="strategy-metrics">
-            <div className="strategy-item">
-              <div className="strategy-icon">🎯</div>
-              <div className="strategy-info">
-                <div className="strategy-label">Recommended Strategy</div>
-                <div className="strategy-value">
-                  {debtData ? getRecommendedStrategy(debtData) : 'Analysis pending'}
-                </div>
-              </div>
-            </div>
-            
-            <div className="strategy-item">
-              <div className="strategy-icon">⏰</div>
-              <div className="strategy-info">
-                <div className="strategy-label">Total Fix Time</div>
-                <div className="strategy-value">
-                  {debtData ? calculateTotalFixTime(debtData) : '0'} hours
-                </div>
-              </div>
-            </div>
-            
-            <div className="strategy-item">
-              <div className="strategy-icon">💰</div>
-              <div className="strategy-info">
-                <div className="strategy-label">ROI Estimate</div>
-                <div className="strategy-value">
-                  {debtData ? calculateROI(debtData) : '0'}x return
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Dashboard */}
-      <main className="dashboard-main">
-        {/* Enhanced Control Panel - Phase 2 "Debt Collector View" */}
-        <section className="control-panel">
-          <div className="control-row primary-controls">
-            <button 
-              className="scan-button primary-button"
-              onClick={triggerScan}
-              disabled={loading}
-            >
-              {loading ? '🔄 Scanning...' : '📊 SCAN DEBT'}
-            </button>
-            
-            <button 
-              className="make-disappear-button success-button"
-              onClick={() => triggerFix('auto')}
-              title="One-click cleanup of safe fixes"
-            >
-              ✨ MAKE IT DISAPPEAR
-            </button>
-          </div>
-          
-          <div className="control-row secondary-controls">
-            <button 
-              className="refinance-button warning-button"
-              onClick={() => triggerFix('schedule')}
-              title="Create a debt payment plan"
-            >
-              💰 REFINANCE DEBT
-            </button>
-            
-            <button 
-              className="collection-agency-button info-button"
-              onClick={() => triggerFix('ai-help')}
-              title="Get AI assistance for complex refactoring"
-            >
-              🤖 SELL TO COLLECTION AGENCY
-            </button>
-          </div>
-          
-          <div className="control-row danger-controls">
-            <button 
-              className="bankruptcy-button danger-button"
-              onClick={() => triggerFix('nuclear')}
-              title="Complete project debt elimination (nuclear option)"
-            >
-              💥 FILE FOR BANKRUPTCY
-            </button>
-          </div>
-        </section>
-
-        {/* Phase 2 Enhancement: Prominent Mafia/Guido Warnings */}
-        {debtData && debtData.guidoAppearance && debtData.guidoAppearance.triggered && (
-          <section className="guido-warning">
-            <div className="guido-header">
-              <h1>🤌 GUIDO THE THUMB CRUSHER HAS ARRIVED 🤌</h1>
-            </div>
-            <div className="guido-message">
-              {debtData.guidoAppearance.message}
-            </div>
-            {debtData.guidoAppearance.daysOverdue > 0 && (
-              <div className="guido-overdue">
-                ⏰ VIGorish overdue: {debtData.guidoAppearance.daysOverdue} days
-              </div>
-            )}
-            <div className="guido-recommendation">
-              {debtData.guidoAppearance.recommendation}
-            </div>
-          </section>
-        )}
-
-        {debtData && debtData.mafiaStatus && debtData.mafiaStatus.triggered && (
-          <section className="mafia-warning">
-            <div className="mafia-header">
-              <h2>🕴️ MAFIA TAKEOVER - DEBT SOLD TO THE FAMILY 🕴️</h2>
-            </div>
-            <div className="mafia-message">
-              {debtData.mafiaStatus.message}
-            </div>
-            <div className="mafia-vigorish">
-              💰 VIGorish Rate: {debtData.mafiaStatus.vigorishRate}% daily
-              <br />
-              💸 Daily Penalty: {debtData.mafiaStatus.dailyPenalty} debt units
-            </div>
-            <div className="mafia-recommendation">
-              {debtData.mafiaStatus.recommendation}
-            </div>
-          </section>
-        )}
-
-        {/* Shame Level */}
-        <div className="shame-level">
-          <div className={`shame-indicator ${debtData.shameLevel}`}>
-            {getShameMessage(debtData.shameLevel)}
-          </div>
-        </div>
-
-        {/* Debt Status */}
-        {debtData && (
-          <section className="debt-status">
-            <div className="status-header">
-              <h2>💰 DEBT STATUS</h2>
-              {lastScan && (
-                <p className="last-scan">
-                  Last scan: {new Date(lastScan).toLocaleString()}
-                </p>
-              )}
-            </div>
-
-            {/* Shame Level */}
-            <div className="shame-level">
-              <div className={`shame-indicator ${debtData.shameLevel}`}>
-                {getShameMessage(debtData.shameLevel)}
-              </div>
-            </div>
-
-            {/* Debt Summary */}
-            <div className="debt-summary">
-              <div className="debt-metric">
-                <div className="metric-value" style={{ color: getDebtColor('p1') }}>
-                  {debtData.summary?.p1 || 0}
-                </div>
-                <div className="metric-label">P1 Critical</div>
-              </div>
-              
-              <div className="debt-metric">
-                <div className="metric-value" style={{ color: getDebtColor('p2') }}>
-                  {debtData.summary?.p2 || 0}
-                </div>
-                <div className="metric-label">P2 High</div>
-              </div>
-              
-              <div className="debt-metric">
-                <div className="metric-value" style={{ color: getDebtColor('p3') }}>
-                  {debtData.summary?.p3 || 0}
-                </div>
-                <div className="metric-label">P3 Medium</div>
-              </div>
-              
-              <div className="debt-metric">
-                <div className="metric-value" style={{ color: getDebtColor('p4') }}>
-                  {debtData.summary?.p4 || 0}
-                </div>
-                <div className="metric-label">P4 Low</div>
-              </div>
-              
-              <div className="debt-metric total">
-                <div className="metric-value">
-                  {debtData.summary?.total || 0}
-                </div>
-                <div className="metric-label">Total Debt</div>
-              </div>
-            </div>
-
-            {/* Debt Trend */}
-            <div className="debt-trend">
-              <span className="trend-label">Trend:</span>
-              <span className={`trend-value ${debtData.debtTrend}`}>
-                {debtData.debtTrend === 'improving' ? '📈 IMPROVING' : 
-                 debtData.debtTrend === 'worsening' ? '📉 WORSENING' : '📊 STABLE'}
-              </span>
-            </div>
-          </section>
-        )}
-
-        {/* Current Debt Details */}
-        {debtData?.currentDebt && (
-          <section className="debt-details">
-            <h3>🔍 CURRENT DEBT BREAKDOWN</h3>
-            
-            {Object.entries(debtData.currentDebt).map(([priority, items]) => (
-              items.length > 0 && (
-                <div key={priority} className="debt-category">
-                  <h4 style={{ color: getDebtColor(priority.toLowerCase()) }}>
-                    {priority.toUpperCase()} - {items.length} items
-                  </h4>
-                  <ul className="debt-list">
-                    {items.slice(0, 5).map((item, index) => (
-                      <li key={index} className="debt-item">
-                        {typeof item === 'string' ? item : item.description || 'Unknown debt item'}
-                      </li>
-                    ))}
-                    {items.length > 5 && (
-                      <li className="debt-item more">
-                        ... and {items.length - 5} more items
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              )
-            ))}
-          </section>
         )}
       </main>
 
       {/* Footer */}
       <footer className="dashboard-footer">
         <div className="footer-content">
-          <div className="footer-tagline">"Refactor or Be Repossessed"</div>
+          <div className="footer-tagline">
+            💀 Refactor or Be Repossessed 💀
+          </div>
           <div className="footer-info">
-            Puberty Labs • Refuctor v{projectInfo?.refuctorVersion}
+            The Debt Collector © 2024 Puberty Labs
           </div>
         </div>
       </footer>
+
+      {/* Tooltip */}
+      {tooltip.show && (
+        <div 
+          className="tooltip"
+          style={{
+            position: 'fixed',
+            left: tooltip.x,
+            top: tooltip.y,
+            transform: 'translateX(-50%) translateY(-100%)',
+            zIndex: 1000,
+            pointerEvents: 'none'
+          }}
+        >
+          <div className="tooltip-content">
+            {tooltip.content}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

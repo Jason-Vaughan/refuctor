@@ -132,9 +132,9 @@ class DebtDetector {
       this.categorizeDebt(debtReport, 'code-quality', codeQualityDebt);
       this.categorizeDebt(debtReport, 'formatting', formattingDebt);
 
-      // Calculate totals
-      debtReport.totalDebt = debtReport.guido.length + debtReport.mafia.length + debtReport.p1.length + 
-                           debtReport.p2.length + debtReport.p3.length + debtReport.p4.length;
+      // Calculate totals - count actual issues, not categories
+      debtReport.totalDebt = markdownDebt.total + spellDebt.total + securityDebt.total + dependencyDebt.total + 
+                           eslintDebt.total + typescriptDebt.total + codeQualityDebt.total + formattingDebt.total;
 
       // Check for mafia takeover and Guido escalation
       await this.checkMafiaStatus(debtReport);
@@ -202,8 +202,7 @@ class DebtDetector {
     } catch (error) {
       console.warn(`Warning during debt detection: ${error.message}`);
       // Continue with partial results, ensure totalDebt is defined
-      debtReport.totalDebt = debtReport.guido.length + debtReport.mafia.length + debtReport.p1.length + 
-                           debtReport.p2.length + debtReport.p3.length + debtReport.p4.length;
+      debtReport.totalDebt = 0; // Will be 0 since all individual debt totals will be 0 in error case
       debtReport.summary = {
         markdown: 0,
         spelling: 0,
