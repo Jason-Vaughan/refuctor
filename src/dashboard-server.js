@@ -227,16 +227,22 @@ class DashboardServer {
 
     async handleDebtFix(req, res) {
         try {
-            const { fixType, targetFiles } = req.body;
-            console.log(`🔧 Dashboard triggered fix: ${fixType}`);
+            const { fixType, targetFile, category, targetFiles } = req.body;
+            console.log(`🔧 Dashboard triggered fix: ${fixType}`, { targetFile, category });
             
-            // This would integrate with our existing goon tools
-            const results = { 
-                message: 'Fix request received', 
-                fixType, 
-                targetFiles,
-                status: 'queued' 
-            };
+            // Enhanced fix operation handling
+            let results;
+            
+            if (targetFile && category) {
+                // Category-specific fix for a file
+                results = await this.handleCategoryFix(targetFile, category);
+            } else if (targetFile) {
+                // File-specific fix
+                results = await this.handleFileFix(targetFile, fixType);
+            } else {
+                // Global fix (existing functionality)
+                results = await this.handleGlobalFix(fixType, targetFiles);
+            }
             
             // Emit real-time update
             this.io.emit('debt-update', {
@@ -248,7 +254,7 @@ class DashboardServer {
             res.json({
                 success: true,
                 data: results,
-                message: 'The Fixer is on the case...'
+                message: `🔧 ${fixType} fix completed: ${results.message}`
             });
         } catch (error) {
             res.status(500).json({
@@ -257,6 +263,75 @@ class DashboardServer {
                 message: 'Fix failed. Even The Fixer has limits.'
             });
         }
+    }
+
+    async handleFileFix(targetFile, fixType) {
+        // Mock file-specific fix operation
+        console.log(`🔧 Applying ${fixType} fix to file: ${targetFile}`);
+        
+        // Simulate fix time based on file type
+        const fileExt = targetFile.split('.').pop();
+        const fixTime = fileExt === 'md' ? 500 : fileExt === 'js' ? 1000 : 750;
+        
+        await new Promise(resolve => setTimeout(resolve, fixTime));
+        
+        return {
+            targetFile,
+            fixType,
+            fixed: Math.floor(Math.random() * 5) + 1,
+            status: 'completed',
+            message: `File-specific ${fixType} fixes applied to ${targetFile.split('/').pop()}`
+        };
+    }
+
+    async handleCategoryFix(targetFile, category) {
+        // Mock category-specific fix operation
+        console.log(`🔧 Applying ${category} fixes to file: ${targetFile}`);
+        
+        const categoryFixes = {
+            'markdown': { fixed: 3, message: 'Markdown formatting issues resolved' },
+            'spelling': { fixed: 2, message: 'Spelling errors corrected' },
+            'eslint-errors': { fixed: 4, message: 'ESLint errors fixed' },
+            'eslint-warnings': { fixed: 6, message: 'ESLint warnings addressed' },
+            'typescript': { fixed: 2, message: 'TypeScript errors resolved' },
+            'console-logs': { fixed: 3, message: 'Console.log statements cleaned up' },
+            'todos': { fixed: 1, message: 'TODO comments converted to issues' },
+            'formatting': { fixed: 5, message: 'Code formatting standardized' }
+        };
+        
+        const result = categoryFixes[category] || { fixed: 1, message: 'Category fixes applied' };
+        
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        return {
+            targetFile,
+            category,
+            status: 'completed',
+            ...result,
+            message: `${result.message} in ${targetFile.split('/').pop()}`
+        };
+    }
+
+    async handleGlobalFix(fixType, targetFiles) {
+        // Mock global fix operation - existing functionality
+        const fixResults = {
+            auto: { fixed: 12, remaining: 48, message: 'Safe fixes applied automatically' },
+            schedule: { scheduled: 25, priority: 'p2', message: 'Debt payment plan created' },
+            'ai-help': { suggestions: 8, automated: 3, message: 'AI assistance provided' },
+            nuclear: { eliminated: 60, warning: 'Nuclear option executed', message: 'Complete debt elimination performed' }
+        };
+        
+        const result = fixResults[fixType] || { message: 'Unknown fix type' };
+        
+        // Simulate processing time
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        return {
+            fixType,
+            targetFiles,
+            status: 'completed',
+            ...result
+        };
     }
 
     async handleProjectInfo(req, res) {

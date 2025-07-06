@@ -1086,6 +1086,25 @@ body {
   }
 }
 
+/* Enhanced Analysis Section */
+.enhanced-analysis-section {
+  margin: 2rem 0;
+  padding: 0;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  min-height: 400px;
+}
+
+.analysis-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .dashboard-grid {
@@ -1124,6 +1143,11 @@ body {
   
   .debt-metrics-grid {
     grid-template-columns: 1fr;
+  }
+
+  .analysis-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 

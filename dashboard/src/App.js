@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import './App.css';
+import FileDebtBreakdown from './components/FileDebtBreakdown';
+import TrendAnalysis from './components/TrendAnalysis';
 
 const App = () => {
   const [debtData, setDebtData] = useState(null);
@@ -122,6 +124,65 @@ const App = () => {
       setTimeout(() => triggerScan(), 2000);
     } catch (error) {
       console.error('💥 Fix failed:', error);
+    }
+  };
+
+  // Auto-fix integration handlers
+  const handleFileSelect = async (filePath) => {
+    try {
+      console.log(`📂 Opening file: ${filePath}`);
+      // TODO: Implement file viewer integration
+      alert(`File selected: ${filePath}\nFile viewer integration coming soon!`);
+    } catch (error) {
+      console.error('💥 File selection failed:', error);
+    }
+  };
+
+  const handleDebtItemClick = async (filePath, action) => {
+    try {
+      console.log(`🔧 Debt item action: ${action} on ${filePath}`);
+      
+      if (action === 'auto-fix') {
+        // Trigger auto-fix for specific file
+        const response = await fetch('/api/debt/fix', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            fixType: 'auto',
+            targetFile: filePath 
+          })
+        });
+        
+        const data = await response.json();
+        console.log('🔧 File-specific fix completed:', data.message);
+        
+        // Refresh debt data after fix
+        setTimeout(() => triggerScan(), 1000);
+      } else {
+        // Handle category-specific fixes
+        const response = await fetch('/api/debt/fix', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            fixType: 'category',
+            targetFile: filePath,
+            category: action 
+          })
+        });
+        
+        const data = await response.json();
+        console.log(`🔧 ${action} fixes completed:`, data.message);
+        
+        // Refresh debt data after fix
+        setTimeout(() => triggerScan(), 1000);
+      }
+    } catch (error) {
+      console.error('💥 Debt item action failed:', error);
+      alert(`Failed to ${action} debt item: ${error.message}`);
     }
   };
 
@@ -1093,6 +1154,30 @@ const App = () => {
             </div>
           </div>
         )}
+
+        {/* New Section: File-Level Breakdown and Trend Analysis */}
+        <div className="enhanced-analysis-section">
+          <div className="analysis-grid">
+            {/* File-Level Breakdown */}
+            <div className="analysis-panel">
+              <FileDebtBreakdown 
+                fileDebtMap={debtData?.fileDebtMap || {}}
+                onFileSelect={handleFileSelect}
+                onDebtItemClick={handleDebtItemClick}
+              />
+            </div>
+            
+            {/* Trend Analysis */}
+            <div className="analysis-panel">
+              <TrendAnalysis 
+                debtHistory={debtData?.debtHistory || []}
+                trendAnalysis={debtData?.trendAnalysis || {}}
+                velocityAnalysis={debtData?.velocityAnalysis || {}}
+                peakAnalysis={debtData?.peakAnalysis || {}}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Debt Details Modal */}
         {showDebtModal && (
