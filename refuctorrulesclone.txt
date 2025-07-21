@@ -82,6 +82,14 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Technical blockers**: Known issues requiring resolution
 - **Risk assessments**: Potential obstacles and mitigation strategies
 
+### 🚨 SESSION HANDOFF ENFORCEMENT 🚨
+**MANDATORY: Update TECHDEBT.md SESSION HANDOFF section with:**
+- ✅ Accomplished This Session
+- 🎯 Next Session Critical Path  
+- ⚠️ Blockers & Risks
+- 🧠 Context for Next Developer
+**NO SESSION ENDS WITHOUT THIS UPDATE!**
+
 ### 3. Documentation Maintenance 📚
 - **Update README.md**: Add new features, modify installation instructions, update status
 - **Update REFUCTOR_ROADMAP.md**: Mark milestones complete, adjust timeline, add discoveries
