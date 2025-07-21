@@ -75,11 +75,28 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
-      chunks: 'all'
-    }
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+        common: {
+          minChunks: 2,
+          chunks: 'all',
+          enforce: true
+        }
+      }
+    },
+    minimize: true,
+    usedExports: true,
+    sideEffects: false
   },
   performance: {
-    maxAssetSize: 512000,
-    maxEntrypointSize: 512000
-  }
+    maxAssetSize: 256000,
+    maxEntrypointSize: 256000,
+    hints: 'warning'
+  },
+  devtool: 'source-map'
 }; 
