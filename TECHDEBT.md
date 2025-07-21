@@ -28,11 +28,11 @@ No P2 debt items - files with violations are intentionally debt-ignored.
 
 ### P4 - Low (Fix When Convenient)
 
-- **Remaining Line Length Violations**: 32 MD013 violations across multiple files
-  - **Status**: Intentionally preserved by goon tools for content safety
-  - **Priority**: P4 (content-sensitive, manual review needed)
-  - **Added**: 2025-01-03 - Post-goon cleanup
-  - **Strategy**: Manual review for URL shortening opportunities
+- **Remaining Line Length Violations**: 4 MD013 violations (IMPLEMENTATION_LOG.md, README.md, TECHDEBT.md)
+  - **Status**: Intentionally preserved - contain URLs and technical content that shouldn't be shortened
+  - **Priority**: P4 (content-sensitive, breaking changes not justified)
+  - **Added**: 2025-01-03 - Post-goon cleanup, updated count 2025-01-06
+  - **Strategy**: Preserve content integrity over strict formatting rules
 
 - **Minor Typo in DebtIgnoreParser**: "tais" unknown word in `src/debt-ignore-parser.js:112`
   - **Status**: Minor spelling error in code comments or strings
