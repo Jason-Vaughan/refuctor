@@ -1,160 +1,162 @@
 import React, { useState, useEffect } from 'react';
 import './AfterDarkMode.css';
 
-/**
- * After Dark Mode - Easter Egg activated by 69 clicks
- * Enhanced animations, sultry transitions, and motivational quotes
- */
-const AfterDarkMode = ({ isActive, onToggle, onExit }) => {
-  const [sultryQuotes] = useState([
-    "Your code is so clean... it's making me hot 🔥",
-    "Refactor me like one of your French modules 💋",
-    "Is that a debt-free status or are you just happy to see me? 😏",
-    "Your commit history is longer than my attention span 💅",
-    "Let's make this codebase... intimate 🌹",
-    "I like my dependencies like I like my coffee... minimal ☕",
-    "You had me at 'zero technical debt' 💕",
-    "Your code architecture is... stimulating 🏗️",
-    "Debt-free and loving it, baby 💃"
-  ]);
-
-  const [currentQuote, setCurrentQuote] = useState(0);
+const AfterDarkMode = ({ isActive, onToggle, clickCount, onClickCountUpdate }) => {
+  const [motivationalQuote, setMotivationalQuote] = useState('');
   const [showQuote, setShowQuote] = useState(false);
+
+  // Sultry motivational quotes for debt elimination
+  const afterDarkQuotes = [
+    "Your code is looking... *tight* tonight. Keep cleaning that debt, you magnificent beast.",
+    "Mmm, nothing sexier than a developer who pays down their technical debt. Keep going...",
+    "That refactoring? *Chef's kiss* Absolutely delicious. Your code is practically purring.",
+    "I see you eliminating debt like a pro. Your algorithms are looking so... *clean*.",
+    "Is it hot in here, or is it just your blazing fast debt elimination skills?",
+    "Your code quality is making me feel things. Don't stop now, debt destroyer.",
+    "The way you handle technical debt? Absolutely *intoxicating*. More, please.",
+    "Your refactoring game is so strong, it should come with a warning label.",
+    "That clean code architecture? Pure *poetry*. Keep composing, maestro.",
+    "I'm getting serious developer vibes watching you eliminate that debt. So professional.",
+    "Your commitment to code quality is... how do I put this... *arousing*.",
+    "Nothing says 'senior developer' like systematic debt elimination. You're glowing.",
+    "That dependency cleanup was smoother than silk. Your package.json looks amazing.",
+    "The precision of your refactoring is making my algorithms tingle.",
+    "Your code is so clean, it practically sparkles. Don't stop now, gorgeous."
+  ];
+
+  // Easter egg activation messages
+  const activationMessages = [
+    "✨ After Dark Mode: ACTIVATED ✨",
+    "Welcome to the sultry side of debt elimination...",
+    "Your code deserves this level of... *attention*.",
+    "Let's make this cleanup session... memorable."
+  ];
 
   useEffect(() => {
     if (isActive) {
-      const quoteInterval = setInterval(() => {
-        setShowQuote(true);
-        setTimeout(() => setShowQuote(false), 4000);
-        setCurrentQuote(prev => (prev + 1) % sultryQuotes.length);
-      }, 8000);
-
-      return () => clearInterval(quoteInterval);
+      const randomQuote = afterDarkQuotes[Math.floor(Math.random() * afterDarkQuotes.length)];
+      setMotivationalQuote(randomQuote);
+      setShowQuote(true);
+      
+      // Show activation message
+      const randomActivation = activationMessages[Math.floor(Math.random() * activationMessages.length)];
+      setTimeout(() => {
+        console.log(`🌙 ${randomActivation}`);
+      }, 500);
     }
-  }, [isActive, sultryQuotes.length]);
+  }, [isActive]);
 
-  if (!isActive) return null;
+  // Cycle through quotes every 30 seconds when active
+  useEffect(() => {
+    if (!isActive) return;
+
+    const quoteInterval = setInterval(() => {
+      const randomQuote = afterDarkQuotes[Math.floor(Math.random() * afterDarkQuotes.length)];
+      setMotivationalQuote(randomQuote);
+      setShowQuote(true);
+    }, 30000);
+
+    return () => clearInterval(quoteInterval);
+  }, [isActive]);
+
+  const getClickProgressMessage = () => {
+    const remaining = 69 - clickCount;
+    if (remaining > 50) return "";
+    if (remaining > 30) return `🤔 Keep clicking... (${remaining} more)`;
+    if (remaining > 15) return `👀 Getting warmer... (${remaining} more)`;
+    if (remaining > 5) return `🔥 Almost there... (${remaining} more)`;
+    if (remaining > 0) return `💥 SO CLOSE! (${remaining} more!)`;
+    return "🌙 AFTER DARK MODE UNLOCKED!";
+  };
+
+  const handleEasterEggClick = () => {
+    if (clickCount < 69) {
+      onClickCountUpdate(clickCount + 1);
+      
+      // Visual feedback for clicks
+      const clickSound = remaining => {
+        if (remaining === 0) return "🌙";
+        if (remaining <= 5) return "💥";
+        if (remaining <= 15) return "🔥";
+        if (remaining <= 30) return "👀";
+        return "🤔";
+      };
+      
+      console.log(`${clickSound(69 - (clickCount + 1))} Click ${clickCount + 1}/69`);
+    }
+    
+    if (clickCount + 1 >= 69 && !isActive) {
+      onToggle(true);
+    }
+  };
+
+  const handleDeactivate = () => {
+    onToggle(false);
+    setShowQuote(false);
+    onClickCountUpdate(0);
+  };
 
   return (
-    <div className="after-dark-overlay">
-      {/* Sultry Background Effects */}
-      <div className="sultry-particles">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="particle"
-            style={{
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Sultry Header */}
-      <div className="after-dark-header">
-        <h1 className="sultry-title">
-          🌙 After Dark Mode 🌙
-        </h1>
-        <p className="sultry-subtitle">
-          Where debt cleanup gets... intimate
-        </p>
-        
-        <button 
-          className="exit-button"
-          onClick={onExit}
-          title="Exit After Dark Mode"
-        >
-          ❌ Exit
-        </button>
-      </div>
-
-      {/* Floating Motivational Quote */}
-      {showQuote && (
-        <div className="floating-quote">
-          <div className="quote-bubble">
-            💋 {sultryQuotes[currentQuote]}
-          </div>
+    <div className={`after-dark-container ${isActive ? 'active' : ''}`}>
+      {/* Easter Egg Trigger */}
+      {!isActive && (
+        <div className="easter-egg-trigger" onClick={handleEasterEggClick}>
+          <span className="trigger-icon">🌙</span>
+          {clickCount > 0 && (
+            <div className="click-progress">
+              <div className="progress-message">{getClickProgressMessage()}</div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${(clickCount / 69) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Enhanced Debt Stats with Sultry Styling */}
-      <div className="sultry-stats">
-        <div className="stat-card sultry">
-          <div className="stat-icon">🔥</div>
-          <div className="stat-content">
-            <div className="stat-label">Hotness Level</div>
-            <div className="stat-value">BLAZING</div>
+      {/* After Dark Mode Interface */}
+      {isActive && (
+        <div className="after-dark-interface">
+          <div className="dark-mode-header">
+            <h2 className="sultry-title">🌙 After Dark Mode</h2>
+            <button className="professional-toggle" onClick={handleDeactivate}>
+              👔 Return to Professional Mode
+            </button>
+          </div>
+
+          {/* Motivational Quote Display */}
+          {showQuote && (
+            <div className="sultry-quote-container">
+              <div className="quote-backdrop">
+                <div className="quote-text">{motivationalQuote}</div>
+                <div className="quote-attribution">- The Debt Collector, After Hours</div>
+              </div>
+            </div>
+          )}
+
+          {/* After Dark Enhancement Indicators */}
+          <div className="enhancement-indicators">
+            <div className="indicator">
+              <span className="indicator-icon">✨</span>
+              <span className="indicator-text">Enhanced Animations</span>
+            </div>
+            <div className="indicator">
+              <span className="indicator-icon">💫</span>
+              <span className="indicator-text">Sultry Transitions</span>
+            </div>
+            <div className="indicator">
+              <span className="indicator-icon">🎭</span>
+              <span className="indicator-text">Motivational Quotes</span>
+            </div>
+            <div className="indicator">
+              <span className="indicator-icon">🌙</span>
+              <span className="indicator-text">After Hours Vibes</span>
+            </div>
           </div>
         </div>
-
-        <div className="stat-card sultry">
-          <div className="stat-icon">💋</div>
-          <div className="stat-content">
-            <div className="stat-label">Code Appeal</div>
-            <div className="stat-value">IRRESISTIBLE</div>
-          </div>
-        </div>
-
-        <div className="stat-card sultry">
-          <div className="stat-icon">🌹</div>
-          <div className="stat-content">
-            <div className="stat-label">Romance Level</div>
-            <div className="stat-value">PASSIONATE</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sultry Action Buttons */}
-      <div className="sultry-actions">
-        <button className="sultry-button primary">
-          💕 Seduce the Bugs Away
-        </button>
-        <button className="sultry-button secondary">
-          🌙 Whisper Sweet Optimizations
-        </button>
-        <button className="sultry-button tertiary">
-          💃 Dance with the Dependencies
-        </button>
-      </div>
-
-      {/* Professional Mode Toggle */}
-      <div className="mode-toggle">
-        <button 
-          className="professional-toggle"
-          onClick={onToggle}
-          title="Switch to Professional Mode"
-        >
-          👔 Professional Mode
-        </button>
-        <span className="mode-hint">
-          Switch back to corporate-friendly UI
-        </span>
-      </div>
-
-      {/* Background Music Controls (Visual Only) */}
-      <div className="music-controls">
-        <div className="now-playing">
-          🎵 Now Playing: "Smooth Code Jazz - Debt-Free Nights"
-        </div>
-        <div className="music-buttons">
-          <button className="music-btn">⏮️</button>
-          <button className="music-btn">⏸️</button>
-          <button className="music-btn">⏭️</button>
-        </div>
-      </div>
-
-      {/* Sultry Footer */}
-      <div className="sultry-footer">
-        <p>
-          "In the dark of night, when the commits are quiet and the PRs are merged,
-          that's when real code magic happens... ✨"
-        </p>
-        <div className="signature">
-          — The Debt Collector, After Hours
-        </div>
-      </div>
+      )}
     </div>
   );
 };
