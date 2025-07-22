@@ -7,6 +7,7 @@ const { debtDetector } = require('./debt-detector');
 const { techDebtManager } = require('./techdebt-manager');
 const { DebtHistoryTracker } = require('./debt-history');
 const { DebtIgnoreParser } = require('./debt-ignore-parser');
+const { DebtModeManager } = require('./debt-mode-manager'); // NEW: Mode management
 const { Accountant } = require('./goons/accountant'); // NEW: Enhanced accountant
 const fs = require('fs-extra');
 
@@ -26,8 +27,9 @@ class DashboardServer {
         // Initialize debt history tracker
         this.historyTracker = new DebtHistoryTracker(this.projectPath);
         
-        // NEW: Initialize enhanced accountant
+        // NEW: Initialize enhanced systems
         this.accountant = new Accountant();
+        this.modeManager = new DebtModeManager();
         
         this.setupMiddleware();
         this.setupRoutes();
@@ -53,6 +55,12 @@ class DashboardServer {
         
         // NEW: Comprehensive financial metrics endpoint (SSOT)
         this.app.get('/api/financial/metrics', this.handleFinancialMetrics.bind(this));
+        
+        // NEW: Mode Management API (SSOT)
+        this.app.get('/api/mode', this.handleGetMode.bind(this));
+        this.app.post('/api/mode', this.handleSetMode.bind(this));
+        this.app.get('/api/mode/available', this.handleGetAvailableModes.bind(this));
+        this.app.post('/api/mode/auto-detect', this.handleAutoDetectMode.bind(this));
         
         // Debt Ignore Management APIs
         this.app.get('/api/debt/ignore', this.handleGetIgnorePatterns.bind(this));
@@ -182,7 +190,7 @@ class DashboardServer {
                 
                 resolvedCount: debtStatus.sessionsTracked || 0,
                 lastScan: new Date().toISOString(),
-                shameLevel: this.calculateShameLevel(currentScan),
+                                    shameLevel: await debtDetector.getContextAwareShameLevel(currentScan, this.projectPath),
                 mafiaStatus: currentScan.mafiaStatus,
                 guidoAppearance: currentScan.guidoAppearance
             };
@@ -242,6 +250,7 @@ class DashboardServer {
             console.log('📊 Calculating comprehensive financial metrics...');
             
             const creditScore = await this.accountant.calculateCreditScore(this.projectPath);
+            const debtCostAnalysis = await this.accountant.analyzeDebtCosts(this.projectPath); // NEW: SSOT debt cost calculation
             const debtStatus = await techDebtManager.getDebtStatus(this.projectPath);
             const currentScan = await debtDetector.scanProject(this.projectPath);
             const debtHistory = await this.historyTracker.getHistory(7);
@@ -259,6 +268,14 @@ class DashboardServer {
                     maturityIndicators: creditScore.projectContext?.maturityIndicators || [],
                     qualityIndicators: creditScore.projectContext?.qualityIndicators || {},
                     projectType: creditScore.projectContext?.projectType || 'unknown'
+                },
+                debtCostAnalysis: {
+                    estimatedHours: debtCostAnalysis.estimatedHours,
+                    estimatedCost: debtCostAnalysis.estimatedCost,
+                    compoundedCost: debtCostAnalysis.compoundedCost,
+                    interestAccrued: debtCostAnalysis.interestAccrued,
+                    contextInfo: debtCostAnalysis.contextInfo,
+                    breakdown: debtCostAnalysis.breakdown
                 },
                 debtStatus: {
                     summary: {
@@ -287,7 +304,7 @@ class DashboardServer {
                     fileDebtMap: currentScan.fileDebtMap || {},
                     topHotspots: currentScan.topHotspots || [],
                     resolvedCount: debtStatus.sessionsTracked || 0,
-                    shameLevel: this.calculateShameLevel(currentScan),
+                    shameLevel: await debtDetector.getContextAwareShameLevel(currentScan, this.projectPath),
                     mafiaStatus: currentScan.mafiaStatus,
                     guidoAppearance: currentScan.guidoAppearance
                 },
@@ -929,6 +946,122 @@ class DashboardServer {
                 resolve();
             });
         });
+    }
+
+    /**
+     * Mode Management API Handlers (SSOT)
+     */
+    
+    // GET /api/mode - Get current mode
+    async handleGetMode(req, res) {
+        try {
+            const currentMode = await this.modeManager.getCurrentMode(this.projectPath);
+            const modeConfig = this.modeManager.getModeConfig(currentMode);
+            const thresholds = await this.modeManager.getThresholds(this.projectPath);
+            const messages = await this.modeManager.getMessages(this.projectPath);
+            
+            res.json({
+                success: true,
+                data: {
+                    currentMode,
+                    config: modeConfig,
+                    thresholds,
+                    messages
+                }
+            });
+        } catch (error) {
+            console.error('Failed to get mode:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+    
+    // POST /api/mode - Set mode
+    async handleSetMode(req, res) {
+        try {
+            const { mode } = req.body;
+            if (!mode) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Mode is required'
+                });
+            }
+            
+            const config = await this.modeManager.setMode(this.projectPath, mode.toUpperCase());
+            const modeConfig = this.modeManager.getModeConfig(mode.toUpperCase());
+            
+            res.json({
+                success: true,
+                data: {
+                    config,
+                    modeConfig,
+                    message: `Mode updated to ${modeConfig.name}`
+                }
+            });
+        } catch (error) {
+            console.error('Failed to set mode:', error);
+            res.status(400).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+    
+    // GET /api/mode/available - Get all available modes
+    async handleGetAvailableModes(req, res) {
+        try {
+            const allModes = this.modeManager.getAllModes();
+            const currentMode = await this.modeManager.getCurrentMode(this.projectPath);
+            
+            res.json({
+                success: true,
+                data: {
+                    modes: allModes,
+                    currentMode
+                }
+            });
+        } catch (error) {
+            console.error('Failed to get available modes:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+    
+    // POST /api/mode/auto-detect - Auto-detect and optionally set mode
+    async handleAutoDetectMode(req, res) {
+        try {
+            const { apply = false } = req.body;
+            
+            const detectedMode = await this.modeManager.detectProjectMode(this.projectPath);
+            const detectedConfig = this.modeManager.getModeConfig(detectedMode);
+            const indicators = await this.modeManager.analyzeProjectIndicators(this.projectPath);
+            
+            let config = null;
+            if (apply) {
+                config = await this.modeManager.setMode(this.projectPath, detectedMode);
+            }
+            
+            res.json({
+                success: true,
+                data: {
+                    detectedMode,
+                    detectedConfig,
+                    indicators,
+                    applied: apply,
+                    config
+                }
+            });
+        } catch (error) {
+            console.error('Failed to auto-detect mode:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
     }
 }
 

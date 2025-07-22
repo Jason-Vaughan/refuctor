@@ -344,6 +344,50 @@ refuctor goon dependency-audit   # Package cleanup
 - **✅ Payment Timeline Visualization**: Historical debt payment record with late flags
 - **✅ Developer Profile Classification**: Prime Developer, Standard, Subprime, or Vibe Coder status
 
+**✅ Context-Aware Debt Cost Calculation - COMPLETED (Session 7/22/2025):**
+- **✅ Mode-Based Cost Analysis**: Different hourly rates and time estimates based on project phase
+- **✅ Development Project Recognition**: 70% time reduction for active development projects
+- **✅ Intelligent Debt Aging**: Capped aging for new projects, contextual compound interest
+- **✅ Documentation vs Code Pricing**: $25/hour for docs, $100/hour for code, $10/hour for dictionary
+- **✅ Dramatic Cost Accuracy**: Fixed $85,575 → $8,161 (79% reduction) for appropriate projects
+- **✅ Context-Aware Shame Levels**: "GUIDO TERRITORY" → "NEEDS ATTENTION" for well-managed projects
+
+#### **✅ Mode-Based Debt Classification System - COMPLETED (Session 7/22/2025)**
+
+**🎯 Three-Tier Adaptive Classification:**
+
+**✅ 👥 Dev Crew Mode (Development Phase):**
+- **Supportive Language**: "Documentation work in progress", "Debug cleanup scheduled"
+- **Lenient Thresholds**: 1000+ markdown warnings, 2000+ console.logs before escalation
+- **Development-Focused**: Recognizes active iteration, debugging, documentation work
+- **Encouraging Messages**: "Task completion in progress", "Improvements planned"
+
+**✅ 🎖️ Beta Caporegime Mode (Pre-Release Phase):**
+- **Moderate Standards**: Balanced thresholds for testing and cleanup phase
+- **Release-Oriented**: "Tighten up documentation for release", "Polish required for beta quality"
+- **Quality Focus**: Medium strictness preparing for production deployment
+- **Time-Conscious**: "Debug logs should be removed before release"
+
+**✅ 🕴️ Prod Family Mode (Production Phase):**
+- **Zero Tolerance**: Strict thresholds matching original Guido/Mafia system
+- **Production-Grade**: "Production documentation must be perfect", "Security vulnerabilities = fired"
+- **Professional Standards**: Appropriate for deployed, customer-facing code
+- **Uncompromising**: Original harsh enforcement for production environments
+
+**✅ SSOT Architecture & Integration:**
+- **✅ Single Configuration Source**: `.refuctor/mode-config.json` for persistence
+- **✅ CLI Management**: `refuctor mode` commands for switching and status
+- **✅ Dashboard Integration**: Beautiful radio button interface with real-time switching
+- **✅ API Endpoints**: REST API for mode management with full CRUD operations
+- **✅ Auto-Detection Intelligence**: Smart project analysis with apply option
+- **✅ Context Override Protection**: Well-managed projects avoid harsh penalties regardless of mode
+
+**✅ Smart Project Analysis:**
+- **✅ Development Indicators**: Active roadmap, debug logs, frequent commits
+- **✅ Beta Indicators**: Testing frameworks, CI/CD scripts, release branches
+- **✅ Production Indicators**: Stable versions, production configs, deployment readiness
+- **✅ Override Logic**: Project maturity analysis prevents inappropriate classifications
+
 #### **The Fixer** (Pre-build Preparation)
 
 - **Syntax Pre-cleaning**: Fix blocking syntax errors

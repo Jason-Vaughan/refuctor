@@ -3,6 +3,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const glob = require('glob');
 const { DebtIgnoreParser } = require('./debt-ignore-parser');
+const { DebtModeManager } = require('./debt-mode-manager');
 const SnarkySpellHandler = require('./snarky-spell-handler');
 
 /**
@@ -11,34 +12,8 @@ const SnarkySpellHandler = require('./snarky-spell-handler');
  */
 class DebtDetector {
   constructor() {
-    this.debtThresholds = {
-      mafia: { 
-        markdownWarnings: 50, spellErrors: 25, securityCritical: 3, 
-        eslintErrors: 75, tsErrors: 30, consoleLogs: 20, todos: 15,
-        extremeDebt: 100, daysOverdue: 3 
-      },
-      guido: { 
-        markdownWarnings: 100, spellErrors: 50, securityCritical: 5, 
-        eslintErrors: 150, tsErrors: 50, consoleLogs: 40, todos: 30,
-        extremeDebt: 200, vigorishDays: 2 
-      },
-      p1: { 
-        markdownWarnings: 20, spellErrors: 10, securityHigh: 1,
-        eslintErrors: 25, tsErrors: 10, consoleLogs: 8, todos: 8
-      },
-      p2: { 
-        markdownWarnings: 5, spellErrors: 3, securityMedium: 3,
-        eslintErrors: 10, tsErrors: 5, consoleLogs: 4, todos: 4
-      },
-      p3: { 
-        markdownWarnings: 2, spellErrors: 1, unused: 5,
-        eslintWarnings: 5, formatting: 10, deadCode: 3
-      },
-      p4: { 
-        markdownWarnings: 1, spellErrors: 1, style: 10,
-        eslintWarnings: 1, minorIssues: 5
-      }
-    };
+    // Mode-based thresholds managed by DebtModeManager (SSOT)
+    this.modeManager = new DebtModeManager();
     this.ignoreParser = new DebtIgnoreParser();
     this.mafiaMessages = [
       "🕴️ Your debt has been purchased by... let's call them 'private investors'.",
@@ -122,15 +97,15 @@ class DebtDetector {
         debtReport.ignoredDebt = markdownDebt.ignoredDebt || { total: 0, files: [] };
       }
 
-      // Categorize and merge results
-      this.categorizeDebt(debtReport, 'markdown', markdownDebt);
-      this.categorizeDebt(debtReport, 'spelling', spellDebt);  
-      this.categorizeDebt(debtReport, 'security', securityDebt);
-      this.categorizeDebt(debtReport, 'dependencies', dependencyDebt);
-      this.categorizeDebt(debtReport, 'eslint', eslintDebt);
-      this.categorizeDebt(debtReport, 'typescript', typescriptDebt);
-      this.categorizeDebt(debtReport, 'code-quality', codeQualityDebt);
-      this.categorizeDebt(debtReport, 'formatting', formattingDebt);
+      // Categorize and merge results (mode-aware)
+      await this.categorizeDebt(debtReport, 'markdown', markdownDebt, projectPath);
+      await this.categorizeDebt(debtReport, 'spelling', spellDebt, projectPath);  
+      await this.categorizeDebt(debtReport, 'security', securityDebt, projectPath);
+      await this.categorizeDebt(debtReport, 'dependencies', dependencyDebt, projectPath);
+      await this.categorizeDebt(debtReport, 'eslint', eslintDebt, projectPath);
+      await this.categorizeDebt(debtReport, 'typescript', typescriptDebt, projectPath);
+      await this.categorizeDebt(debtReport, 'code-quality', codeQualityDebt, projectPath);
+      await this.categorizeDebt(debtReport, 'formatting', formattingDebt, projectPath);
 
       // Calculate totals - count actual issues, not categories
       // DEBT IGNORE RESPECT: Subtract ignored debt from total
@@ -148,8 +123,8 @@ class DebtDetector {
       debtReport.totalIgnoredDebt = totalIgnoredDebt;
 
       // Check for mafia takeover and Guido escalation
-      await this.checkMafiaStatus(debtReport);
-      this.checkForGuidoDeployment(debtReport);
+              await this.checkMafiaStatus(debtReport, projectPath);
+        await this.checkForGuidoDeployment(debtReport, projectPath);
 
       // Generate summary
       debtReport.summary = {
@@ -163,7 +138,7 @@ class DebtDetector {
         formatting: formattingDebt.total,
         snarkyProcessed: spellDebt.snarkyProcessed || false,
         snarkyAdded: spellDebt.snarkyAdded || 0,
-        debtLevel: this.calculateDebtLevel(debtReport),
+        debtLevel: await this.calculateDebtLevel(debtReport, projectPath),
         p1: debtReport.p1.length,
         p2: debtReport.p2.length,
         p3: debtReport.p3.length,
@@ -806,106 +781,213 @@ class DebtDetector {
   /**
    * Categorize debt into Mafia/Guido/P1-P4 priorities
    */
-  categorizeDebt(debtReport, category, debtData) {
+  async categorizeDebt(debtReport, category, debtData, projectPath) {
     const { total, issues = [], severity = {}, errors = 0, warnings = 0, consoleLogs = [], todos = [] } = debtData;
     
     if (total === 0) return;
 
-    // Guido Level (ULTIMATE ESCALATION)
-    if (category === 'markdown' && total >= this.debtThresholds.guido.markdownWarnings) {
-      debtReport.guido.push(`${total} markdown errors - 🤌 Guido: "Capisce? Your documentation is DONE."`);
-    } else if (category === 'spelling' && total >= this.debtThresholds.guido.spellErrors) {
-      debtReport.guido.push(`${total} spelling errors - 🔨 Guido: "I've seen cleaner spelling in ransom notes."`);
-    } else if (category === 'security' && severity.critical >= this.debtThresholds.guido.securityCritical) {
-      debtReport.guido.push(`${severity.critical} critical security holes - 💀 Guido: "Your security is so bad, I'm embarrassed FOR you."`);
-    } else if (category === 'eslint' && errors >= this.debtThresholds.guido.eslintErrors) {
-      debtReport.guido.push(`${errors} ESLint errors - 🤌 Guido: "Your code is so broken, my compiler won't even LOOK at it."`);
-    } else if (category === 'typescript' && total >= this.debtThresholds.guido.tsErrors) {
-      debtReport.guido.push(`${total} TypeScript errors - 🔨 Guido: "TypeScript gave up on you. Even TYPES are embarrassed."`);
-    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.guido.consoleLogs) {
-      debtReport.guido.push(`${consoleLogs.length} console.log statements - 💀 Guido: "Your debugging is PATHETIC. Clean it up!"`);
-    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.guido.todos) {
-      debtReport.guido.push(`${todos.length} TODO comments - 🤌 Guido: "TODO? More like TO-DON'T. Fix this shit!"`);
+    // Get mode-specific thresholds and messages
+    const thresholds = await this.modeManager.getThresholds(projectPath);
+    const messages = await this.modeManager.getMessages(projectPath);
+    const currentMode = thresholds.mode;
+    const modeConfig = this.modeManager.getModeConfig(currentMode);
+
+    // Mode-aware debt level classification (replaces rigid Guido/Mafia)
+    if (category === 'markdown' && total >= thresholds.guido.markdownWarnings) {
+      const message = modeConfig.emoji + ' ' + modeConfig.name + `: "${messages.markdown}" (${total} markdown issues)`;
+      debtReport.guido.push(message);
+    } else if (category === 'spelling' && total >= thresholds.guido.spellErrors) {
+      const message = modeConfig.emoji + ' ' + modeConfig.name + `: "${messages.spelling}" (${total} spelling issues)`;
+      debtReport.guido.push(message);
+    } else if (category === 'security' && severity.critical >= thresholds.guido.securityCritical) {
+      const message = modeConfig.emoji + ' ' + modeConfig.name + `: "${messages.security}" (${severity.critical} security issues)`;
+      debtReport.guido.push(message);
+    } else if (category === 'eslint' && errors >= thresholds.guido.eslintErrors) {
+      const message = modeConfig.emoji + ' ' + modeConfig.name + `: "Code quality needs attention" (${errors} ESLint errors)`;
+      debtReport.guido.push(message);
+    } else if (category === 'typescript' && total >= thresholds.guido.tsErrors) {
+      const message = modeConfig.emoji + ' ' + modeConfig.name + `: "Type safety review needed" (${total} TypeScript errors)`;
+      debtReport.guido.push(message);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= thresholds.guido.consoleLogs) {
+      const message = modeConfig.emoji + ' ' + modeConfig.name + `: "${messages.console}" (${consoleLogs.length} console.log statements)`;
+      debtReport.guido.push(message);
+    } else if (category === 'code-quality' && todos && todos.length >= thresholds.guido.todos) {
+      const message = modeConfig.emoji + ' ' + modeConfig.name + `: "Task tracking in progress" (${todos.length} TODO comments)`;
+      debtReport.guido.push(message);
     }
     
-    // Mafia Level (LOAN SHARK TAKEOVER)
-    else if (category === 'markdown' && total >= this.debtThresholds.mafia.markdownWarnings) {
-      debtReport.mafia.push(`${total} markdown errors - 🕴️ The Family owns this debt now. VIGorish starts today.`);
-    } else if (category === 'spelling' && total >= this.debtThresholds.mafia.spellErrors) {
-      debtReport.mafia.push(`${total} spelling errors - 💰 Tony's dictionary says you owe us. With interest.`);
-    } else if (category === 'security' && severity.critical >= this.debtThresholds.mafia.securityCritical) {
-      debtReport.mafia.push(`${severity.critical} critical security holes - 🚗 Nice firewall. Shame if it 'malfunctioned'.`);
-    } else if (category === 'eslint' && errors >= this.debtThresholds.mafia.eslintErrors) {
-      debtReport.mafia.push(`${errors} ESLint errors - 🕴️ Your linter quit. We bought the contract. Fix it OR ELSE.`);
-    } else if (category === 'typescript' && total >= this.debtThresholds.mafia.tsErrors) {
-      debtReport.mafia.push(`${total} TypeScript errors - 💰 Your types are so wrong, we're charging interest on EACH ONE.`);
-    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.mafia.consoleLogs) {
-      debtReport.mafia.push(`${consoleLogs.length} console.log statements - 🚗 Nice debug logs. Shame if they... disappeared.`);
-    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.mafia.todos) {
-      debtReport.mafia.push(`${todos.length} TODOs - 💰 The Family doesn't do TODOs. We do DONE or DEAD.`);
+    // Mafia Level (LOAN SHARK TAKEOVER) - mode-aware
+    else if (category === 'markdown' && total >= thresholds.mafia.markdownWarnings) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} markdown issues - 👥 Dev Crew: "Documentation refinement needed"` :
+        `${total} markdown errors - 🕴️ The Family owns this debt now. VIGorish starts today.`;
+      debtReport.mafia.push(message);
+    } else if (category === 'spelling' && total >= thresholds.mafia.spellErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} spelling issues - 👥 Dev Crew: "Dictionary updates recommended"` :
+        `${total} spelling errors - 💰 Tony's dictionary says you owe us. With interest.`;
+      debtReport.mafia.push(message);
+    } else if (category === 'security' && severity.critical >= thresholds.mafia.securityCritical) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${severity.critical} security issues - 👥 Dev Crew: "Security review in progress"` :
+        `${severity.critical} critical security holes - 🚗 Nice firewall. Shame if it 'malfunctioned'.`;
+      debtReport.mafia.push(message);
+    } else if (category === 'eslint' && errors >= thresholds.mafia.eslintErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${errors} ESLint errors - 👥 Dev Crew: "Code quality improvements needed"` :
+        `${errors} ESLint errors - 🕴️ Your linter quit. We bought the contract. Fix it OR ELSE.`;
+      debtReport.mafia.push(message);
+    } else if (category === 'typescript' && total >= thresholds.mafia.tsErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} TypeScript errors - 👥 Dev Crew: "Type safety improvements needed"` :
+        `${total} TypeScript errors - 💰 Your types are so wrong, we're charging interest on EACH ONE.`;
+      debtReport.mafia.push(message);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= thresholds.mafia.consoleLogs) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${consoleLogs.length} console.log statements - 👥 Dev Crew: "Debug logging cleanup scheduled"` :
+        `${consoleLogs.length} console.log statements - 🚗 Nice debug logs. Shame if they... disappeared.`;
+      debtReport.mafia.push(message);
+    } else if (category === 'code-quality' && todos && todos.length >= thresholds.mafia.todos) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${todos.length} TODOs - 👥 Dev Crew: "Task completion in progress"` :
+        `${todos.length} TODOs - 💰 The Family doesn't do TODOs. We do DONE or DEAD.`;
+      debtReport.mafia.push(message);
     }
     
-    // P1 Critical thresholds
-    else if (category === 'markdown' && total >= this.debtThresholds.p1.markdownWarnings) {
-      debtReport.p1.push(`${total} markdown linting errors - This is fucking embarrassing. Fix it NOW.`);
-    } else if (category === 'spelling' && total >= this.debtThresholds.p1.spellErrors) {
-      debtReport.p1.push(`${total} spelling errors - Your spell checker filed for bankruptcy.`);
-    } else if (category === 'security' && (severity.critical > 0 || severity.high >= this.debtThresholds.p1.securityHigh)) {
-      debtReport.p1.push(`${severity.critical || 0} critical + ${severity.high || 0} high security vulnerabilities - Call the cyber police.`);
-    } else if (category === 'eslint' && errors >= this.debtThresholds.p1.eslintErrors) {
-      debtReport.p1.push(`${errors} ESLint errors - Your code is in FORECLOSURE. Fix it before we repossess your IDE.`);
-    } else if (category === 'typescript' && total >= this.debtThresholds.p1.tsErrors) {
-      debtReport.p1.push(`${total} TypeScript errors - Your types are so fucked, TypeScript is considering therapy.`);
-    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.p1.consoleLogs) {
-      debtReport.p1.push(`${consoleLogs.length} console.log statements - This is NOT production debugging. Clean this shit up!`);
-    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.p1.todos) {
-      debtReport.p1.push(`${todos.length} TODO comments - If it's TODO, then FUCKING DO IT. Stop procrastinating.`);
+    // P1 Critical thresholds - mode-aware
+    else if (category === 'markdown' && total >= thresholds.p1.markdownWarnings) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} markdown issues - 👥 Dev Crew: "Documentation formatting needs attention"` :
+        `${total} markdown linting errors - This is fucking embarrassing. Fix it NOW.`;
+      debtReport.p1.push(message);
+    } else if (category === 'spelling' && total >= thresholds.p1.spellErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} spelling issues - 👥 Dev Crew: "Terminology review needed"` :
+        `${total} spelling errors - Your spell checker filed for bankruptcy.`;
+      debtReport.p1.push(message);
+    } else if (category === 'security' && (severity.critical > 0 || severity.high >= thresholds.p1.securityHigh)) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${severity.critical || 0} critical + ${severity.high || 0} high security issues - 👥 Dev Crew: "Security review scheduled"` :
+        `${severity.critical || 0} critical + ${severity.high || 0} high security vulnerabilities - Call the cyber police.`;
+      debtReport.p1.push(message);
+    } else if (category === 'eslint' && errors >= thresholds.p1.eslintErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${errors} ESLint errors - 👥 Dev Crew: "Code quality improvements in progress"` :
+        `${errors} ESLint errors - Your code is in FORECLOSURE. Fix it before we repossess your IDE.`;
+      debtReport.p1.push(message);
+    } else if (category === 'typescript' && total >= thresholds.p1.tsErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} TypeScript errors - 👥 Dev Crew: "Type checking improvements needed"` :
+        `${total} TypeScript errors - Your types are so fucked, TypeScript is considering therapy.`;
+      debtReport.p1.push(message);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= thresholds.p1.consoleLogs) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${consoleLogs.length} console.log statements - 👥 Dev Crew: "Debug cleanup on roadmap"` :
+        `${consoleLogs.length} console.log statements - This is NOT production debugging. Clean this shit up!`;
+      debtReport.p1.push(message);
+    } else if (category === 'code-quality' && todos && todos.length >= thresholds.p1.todos) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${todos.length} TODO comments - 👥 Dev Crew: "Task completion in progress"` :
+        `${todos.length} TODO comments - If it's TODO, then FUCKING DO IT. Stop procrastinating.`;
+      debtReport.p1.push(message);
     }
     
-    // P2 High thresholds  
-    else if (category === 'markdown' && total >= this.debtThresholds.p2.markdownWarnings) {
-      debtReport.p2.push(`${total} markdown linting errors - We're taking back the repo. Clean this today.`);
-    } else if (category === 'spelling' && total >= this.debtThresholds.p2.spellErrors) {
-      debtReport.p2.push(`${total} spelling errors - Dictionary.com is judging you.`);
-    } else if (category === 'security' && severity.medium >= this.debtThresholds.p2.securityMedium) {
-      debtReport.p2.push(`${severity.medium} medium security vulnerabilities - Not great, Bob.`);
-    } else if (category === 'eslint' && errors >= this.debtThresholds.p2.eslintErrors) {
-      debtReport.p2.push(`${errors} ESLint errors - Your code quality is declining rapidly. Fix before it gets worse.`);
-    } else if (category === 'typescript' && total >= this.debtThresholds.p2.tsErrors) {
-      debtReport.p2.push(`${total} TypeScript errors - Your types are having an identity crisis.`);
-    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= this.debtThresholds.p2.consoleLogs) {
-      debtReport.p2.push(`${consoleLogs.length} console.log statements - Please clean up your debug statements.`);
-    } else if (category === 'code-quality' && todos && todos.length >= this.debtThresholds.p2.todos) {
-      debtReport.p2.push(`${todos.length} TODO comments - Some actual TODOs that need doing.`);
+    // P2 High thresholds - mode-aware
+    else if (category === 'markdown' && total >= thresholds.p2.markdownWarnings) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} markdown issues - 👥 Dev Crew: "Documentation polish recommended"` :
+        `${total} markdown linting errors - We're taking back the repo. Clean this today.`;
+      debtReport.p2.push(message);
+    } else if (category === 'spelling' && total >= thresholds.p2.spellErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} spelling issues - 👥 Dev Crew: "Terminology consistency needed"` :
+        `${total} spelling errors - Dictionary.com is judging you.`;
+      debtReport.p2.push(message);
+    } else if (category === 'security' && severity.medium >= thresholds.p2.securityMedium) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${severity.medium} medium security issues - 👥 Dev Crew: "Security improvements planned"` :
+        `${severity.medium} medium security vulnerabilities - Not great, Bob.`;
+      debtReport.p2.push(message);
+    } else if (category === 'eslint' && errors >= thresholds.p2.eslintErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${errors} ESLint errors - 👥 Dev Crew: "Code quality review scheduled"` :
+        `${errors} ESLint errors - Your code quality is declining rapidly. Fix before it gets worse.`;
+      debtReport.p2.push(message);
+    } else if (category === 'typescript' && total >= thresholds.p2.tsErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} TypeScript errors - 👥 Dev Crew: "Type improvements in progress"` :
+        `${total} TypeScript errors - Your types are having an identity crisis.`;
+      debtReport.p2.push(message);
+    } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= thresholds.p2.consoleLogs) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${consoleLogs.length} console.log statements - 👥 Dev Crew: "Debug cleanup scheduled"` :
+        `${consoleLogs.length} console.log statements - Please clean up your debug statements.`;
+      debtReport.p2.push(message);
+    } else if (category === 'code-quality' && todos && todos.length >= thresholds.p2.todos) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${todos.length} TODO comments - 👥 Dev Crew: "Task tracking active"` :
+        `${todos.length} TODO comments - Some actual TODOs that need doing.`;
+      debtReport.p2.push(message);
     }
     
-    // P3 Medium thresholds
-    else if (category === 'markdown' && total >= this.debtThresholds.p3.markdownWarnings) {
-      debtReport.p3.push(`${total} markdown linting errors - A bit crusty. Handle it this sprint.`);
-    } else if (category === 'spelling' && total >= this.debtThresholds.p3.spellErrors) {
-      debtReport.p3.push(`${total} spelling errors - Autocorrect is crying.`);
+    // P3 Medium thresholds - mode-aware
+    else if (category === 'markdown' && total >= thresholds.p3.markdownWarnings) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} markdown issues - 👥 Dev Crew: "Documentation refinement recommended"` :
+        `${total} markdown linting errors - A bit crusty. Handle it this sprint.`;
+      debtReport.p3.push(message);
+    } else if (category === 'spelling' && total >= thresholds.p3.spellErrors) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} spelling issues - 👥 Dev Crew: "Terminology cleanup when convenient"` :
+        `${total} spelling errors - Autocorrect is crying.`;
+      debtReport.p3.push(message);
     } else if (category === 'dependencies' && total > 0) {
-      debtReport.p3.push(`${total} dependency issues - Your package.json needs therapy.`);
-    } else if (category === 'eslint' && warnings >= this.debtThresholds.p3.eslintWarnings) {
-      debtReport.p3.push(`${warnings} ESLint warnings - Code style could be cleaner.`);
-    } else if (category === 'formatting' && total >= this.debtThresholds.p3.formatting) {
-      debtReport.p3.push(`${total} formatting issues - Your code formatting is inconsistent.`);
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} dependency issues - 👥 Dev Crew: "Package review scheduled"` :
+        `${total} dependency issues - Your package.json needs therapy.`;
+      debtReport.p3.push(message);
+    } else if (category === 'eslint' && warnings >= thresholds.p3.eslintWarnings) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${warnings} ESLint warnings - 👥 Dev Crew: "Style consistency improvements"` :
+        `${warnings} ESLint warnings - Code style could be cleaner.`;
+      debtReport.p3.push(message);
+    } else if (category === 'formatting' && total >= thresholds.p3.formatting) {
+      const message = currentMode === 'DEV_CREW' ? 
+        `${total} formatting issues - 👥 Dev Crew: "Formatting improvements planned"` :
+        `${total} formatting issues - Your code formatting is inconsistent.`;
+      debtReport.p3.push(message);
     }
     
-    // P4 Low (everything else)
+    // P4 Low (everything else) - mode-aware
     else if (total > 0) {
       if (category === 'eslint' && warnings > 0) {
-        debtReport.p4.push(`${warnings} ESLint warnings - Minor style issues, but still matters.`);
+        const message = currentMode === 'DEV_CREW' ? 
+          `${warnings} ESLint warnings - 👥 Dev Crew: "Style improvements when time allows"` :
+          `${warnings} ESLint warnings - Minor style issues, but still matters.`;
+        debtReport.p4.push(message);
       } else {
-        debtReport.p4.push(`${total} ${category} issues - Minor blemish. But you'll pay later...`);
+        const message = currentMode === 'DEV_CREW' ? 
+          `${total} ${category} issues - 👥 Dev Crew: "Low priority improvements"` :
+          `${total} ${category} issues - Minor blemish. But you'll pay later...`;
+        debtReport.p4.push(message);
       }
     }
   }
 
   /**
-   * Calculate overall debt level
+   * Calculate overall debt level with context awareness
    */
-  calculateDebtLevel(debtReport) {
+  async calculateDebtLevel(debtReport, projectPath = '.') {
+    // ENHANCED: Context-aware debt classification for development projects
+    const isDevProject = await this.isDevelopmentProject(projectPath);
+    const projectContext = await this.analyzeProjectMaturity(projectPath);
+    
+    if (isDevProject && projectContext.isWellManaged) {
+      // Well-managed development projects get more lenient classification
+      return this.calculateDevelopmentProjectDebtLevel(debtReport, projectContext);
+    }
+    
+    // Original classification for production or poorly managed projects
     if (debtReport.guido.length > 0) return 'GUIDO_DEPLOYED';
     if (debtReport.mafia.length > 0) return 'MAFIA_TAKEOVER';
     if (debtReport.p1.length > 0) return 'CRITICAL';
@@ -916,13 +998,134 @@ class DebtDetector {
   }
 
   /**
+   * Context-aware debt level calculation for development projects
+   */
+  calculateDevelopmentProjectDebtLevel(debtReport, projectContext) {
+    const totalDebt = debtReport.totalDebt;
+    const markdownDebt = debtReport.summary?.markdown || 0;
+    const spellingDebt = debtReport.summary?.spelling || 0;
+    const codeQualityDebt = debtReport.summary?.codeQuality || 0;
+    
+    // Calculate debt composition ratios
+    const documentationRatio = markdownDebt / totalDebt;
+    const realCodeIssueRatio = (totalDebt - markdownDebt - spellingDebt) / totalDebt;
+    
+    // For well-managed development projects, classification is based on REAL issues, not docs
+    if (realCodeIssueRatio > 0.7 && codeQualityDebt > 500) {
+      return 'HIGH'; // Significant code quality issues
+    } else if (realCodeIssueRatio > 0.5 && codeQualityDebt > 200) {
+      return 'MEDIUM'; // Moderate code quality issues
+    } else if (documentationRatio > 0.8) {
+      return 'DOCUMENTATION_HEAVY'; // Mostly docs, not critical
+    } else if (totalDebt > 2000) {
+      return 'HIGH'; // Genuinely high debt
+    } else if (totalDebt > 1000) {
+      return 'MEDIUM'; // Moderate debt
+    } else {
+      return 'LOW'; // Manageable debt for development
+    }
+  }
+
+  /**
+   * Determine if this is a development project
+   */
+  async isDevelopmentProject(projectPath) {
+    try {
+      const fs = require('fs-extra');
+      const path = require('path');
+      
+      // Check for development indicators
+      const indicators = [
+        'ROADMAP.md',
+        'IMPLEMENTATION_LOG.md', 
+        'TECHDEBT.md',
+        '.git',
+        'src/',
+        'development'
+      ];
+      
+      for (const indicator of indicators) {
+        if (await fs.pathExists(path.join(projectPath, indicator))) {
+          return true;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Analyze project maturity and management quality
+   */
+  async analyzeProjectMaturity(projectPath) {
+    try {
+      const fs = require('fs-extra');
+      const path = require('path');
+      
+      let maturityScore = 0;
+      let indicators = [];
+      
+      // Check for project management indicators
+      if (await fs.pathExists(path.join(projectPath, 'REFUCTOR_ROADMAP.md'))) {
+        const roadmap = await fs.readFile(path.join(projectPath, 'REFUCTOR_ROADMAP.md'), 'utf8');
+        if (roadmap.length > 10000) { // Comprehensive roadmap
+          maturityScore += 30;
+          indicators.push('comprehensive-roadmap');
+        }
+      }
+      
+      if (await fs.pathExists(path.join(projectPath, 'TECHDEBT.md'))) {
+        maturityScore += 20;
+        indicators.push('active-debt-tracking');
+      }
+      
+      if (await fs.pathExists(path.join(projectPath, '.debtignore'))) {
+        maturityScore += 15;
+        indicators.push('debt-management-system');
+      }
+      
+      if (await fs.pathExists(path.join(projectPath, 'refuctorrulesclone.txt'))) {
+        maturityScore += 10;
+        indicators.push('development-standards');
+      }
+      
+      // Check for comprehensive documentation
+      const mdFiles = ['README.md', 'IMPLEMENTATION_LOG.md', 'MCP_TESTING_LOG.md'];
+      let documentationCount = 0;
+      for (const file of mdFiles) {
+        if (await fs.pathExists(path.join(projectPath, file))) {
+          documentationCount++;
+        }
+      }
+      if (documentationCount >= 2) {
+        maturityScore += 15;
+        indicators.push('comprehensive-documentation');
+      }
+      
+      return {
+        score: maturityScore,
+        isWellManaged: maturityScore >= 50, // 50+ indicates well-managed project
+        indicators,
+        classification: maturityScore >= 70 ? 'EXCELLENT' : maturityScore >= 50 ? 'WELL_MANAGED' : maturityScore >= 25 ? 'DEVELOPING' : 'BASIC'
+      };
+    } catch (error) {
+      return { score: 0, isWellManaged: false, indicators: [], classification: 'UNKNOWN' };
+    }
+  }
+
+  /**
    * Check for mafia takeover (debt sold to loan sharks)
    */
-  async checkMafiaStatus(debtReport) {
+  async checkMafiaStatus(debtReport, projectPath = '.') {
+    // Get mode-aware thresholds
+    const thresholds = await this.modeManager.getThresholds(projectPath);
+    
     const totalDebt = debtReport.totalDebt;
     const hasMafiaDebt = debtReport.mafia.length > 0;
     const extremeP1 = debtReport.p1.length >= 5; // 5+ critical issues
-    const projectFailing = totalDebt >= this.debtThresholds.mafia.extremeDebt;
+    const projectFailing = totalDebt >= (thresholds.mafia.extremeDebt || 100);
 
     // Check if debt should be sold to mafia
     if (hasMafiaDebt || extremeP1 || projectFailing) {
@@ -946,10 +1149,13 @@ class DebtDetector {
   /**
    * Check if Guido the Thumb Crusher should be deployed
    */
-  checkForGuidoDeployment(debtReport) {
+  async checkForGuidoDeployment(debtReport, projectPath = '.') {
+    // Get mode-aware thresholds
+    const thresholds = await this.modeManager.getThresholds(projectPath);
+    
     const hasGuidoDebt = debtReport.guido.length > 0;
-    const mafiaOverdue = debtReport.mafiaStatus && debtReport.mafiaStatus.debtAge >= this.debtThresholds.guido.vigorishDays;
-    const extremeTotal = debtReport.totalDebt >= this.debtThresholds.guido.extremeDebt;
+    const mafiaOverdue = debtReport.mafiaStatus && debtReport.mafiaStatus.debtAge >= (thresholds.guido.vigorishDays || 2);
+    const extremeTotal = debtReport.totalDebt >= (thresholds.guido.extremeDebt || 200);
 
     // Guido appears when vigorish goes unpaid or extreme debt reached
     if (hasGuidoDebt || mafiaOverdue || extremeTotal) {
@@ -988,16 +1194,21 @@ class DebtDetector {
   }
 
   /**
-   * Generate humorous shame report
+   * Generate humorous shame report with context-aware cost calculation
    */
   async generateShameReport(projectPath) {
     const debtReport = await this.scanProject(projectPath, true);
     
+    // Use the Accountant's context-aware cost calculation instead of naive estimates
+    const { Accountant } = require('./goons/accountant');
+    const accountant = new Accountant();
+    const debtAnalysis = await accountant.analyzeDebtCosts(projectPath);
+    
     const shameReport = {
       totalShame: debtReport.totalDebt,
-      shameLevel: this.calculateShameLevel(debtReport.totalDebt),
-      timeWasted: Math.round(debtReport.totalDebt * 0.5), // 30 minutes per issue
-      cleanupCost: Math.round(debtReport.totalDebt * 75), // $75 per issue
+      shameLevel: await this.getContextAwareShameLevel(debtReport, projectPath),
+      timeWasted: debtAnalysis.estimatedHours, // Context-aware time calculation
+      cleanupCost: debtAnalysis.estimatedCost, // Context-aware cost calculation
       shameItems: []
     };
 
@@ -1043,6 +1254,36 @@ class DebtDetector {
     if (totalDebt < 30) return 'professional disgrace';
     if (totalDebt < 150) return 'career ending';
     return 'guido territory'; // Beyond career ending - loan shark level
+  }
+
+  /**
+   * Get context-aware shame level for development projects
+   */
+  async getContextAwareShameLevel(debtReport, projectPath) {
+    const debtLevel = await this.calculateDebtLevel(debtReport, projectPath);
+    
+    // Map context-aware debt levels to appropriate shame levels
+    switch (debtLevel) {
+      case 'CLEAN':
+        return 'spotless';
+      case 'LOW':
+        return 'mild embarrassment';
+      case 'MEDIUM':
+        return 'professional responsibility';
+      case 'HIGH':
+        return 'needs attention';
+      case 'DOCUMENTATION_HEAVY':
+        return 'documentation focused'; // Not shameful for dev projects
+      case 'CRITICAL':
+        return 'career ending';
+      case 'MAFIA_TAKEOVER':
+        return 'guido territory';
+      case 'GUIDO_DEPLOYED':
+        return 'guido territory';
+      default:
+        // Fallback to original naive calculation
+        return this.calculateShameLevel(debtReport.totalDebt);
+    }
   }
 
   /**

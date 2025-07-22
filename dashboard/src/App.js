@@ -16,6 +16,10 @@ const App = () => {
   // NEW: SSOT Financial metrics from backend
   const [financialMetrics, setFinancialMetrics] = useState(null);
   const [loadingFinancials, setLoadingFinancials] = useState(false);
+  // NEW: Mode management state (SSOT)
+  const [currentMode, setCurrentMode] = useState(null);
+  const [availableModes, setAvailableModes] = useState([]);
+  const [loadingMode, setLoadingMode] = useState(false);
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [terminalHistory, setTerminalHistory] = useState([]);
   const [terminalInput, setTerminalInput] = useState('');
@@ -27,20 +31,31 @@ const App = () => {
   const fetchFinancialMetrics = async () => {
     if (loadingFinancials) return;
     
+    console.log('🔄 Fetching financial metrics...');
     setLoadingFinancials(true);
     try {
       const response = await fetch('/api/financial/metrics');
+      console.log('📡 Response status:', response.status, response.ok);
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 Raw API response:', data);
         if (data.success) {
           setFinancialMetrics(data.data);
-          console.log('📊 SSOT Financial metrics loaded:', data.data);
+          console.log('✅ SSOT Financial metrics loaded successfully!');
+          console.log('💰 Cost:', data.data?.debtCostAnalysis?.estimatedCost);
+          console.log('🕐 Hours:', data.data?.debtCostAnalysis?.estimatedHours);
+          console.log('📊 Credit:', data.data?.creditScore?.score);
+        } else {
+          console.error('❌ API returned success:false', data);
         }
+      } else {
+        console.error('❌ HTTP error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('💥 Failed to fetch financial metrics:', error);
     } finally {
       setLoadingFinancials(false);
+      console.log('🏁 Financial metrics fetch completed');
     }
   };
 
@@ -92,8 +107,10 @@ const App = () => {
       setDebtData(statusData.data);
       setLastScan(new Date().toISOString());
       
-      // Load financial metrics for SSOT
+      // Load SSOT data
       fetchFinancialMetrics();
+      fetchCurrentMode();
+      fetchAvailableModes();
       
     } catch (error) {
       console.error('💥 Failed to load dashboard data:', error);
@@ -228,6 +245,18 @@ const App = () => {
 
   const getShameMessage = (shameLevel) => {
     switch (shameLevel) {
+      // Context-aware shame levels for well-managed development projects
+      case 'spotless':
+        return '🎉 Debt-free! You magnificent debt-slayer!';
+      case 'mild embarrassment':
+        return '⚠️ Minor debt detected. Handle it when convenient.';
+      case 'professional responsibility':
+        return '📝 Professional development debt. Schedule cleanup time.';
+      case 'needs attention':
+        return '🛠️ Moderate debt levels. Worth addressing in next sprint.';
+      case 'documentation focused':
+        return '📚 Documentation-heavy debt. Normal for active development.';
+      // Legacy shame levels for production/unmanaged projects
       case 'debt-free':
         return '🎉 Debt-free! You magnificent debt-slayer!';
       case 'minor-issues':
@@ -237,6 +266,9 @@ const App = () => {
       case 'embarrassing':
         return '💀 This is fucking embarrassing. Fix it NOW.';
       case 'bankruptcy-imminent':
+      case 'career ending':
+        return '💀 This is career-ending debt. Fix it NOW.';
+      case 'guido territory':
         return '⚰️ Your code is in foreclosure. Guido is on his way.';
       default:
         return '📊 Debt status unknown. Run a scan.';
@@ -282,17 +314,94 @@ const App = () => {
     }
   };
 
-  const calculateTimeWasted = (debtData) => {
-    if (!debtData || !debtData.summary) return 0;
-    const total = debtData.summary.total || 0;
-    const hours = Math.round(total * 0.5); // 30 minutes per debt item
-    return `${hours}h`;
+  // REMOVED: Local calculations violate SSOT principle
+  // Dashboard now uses accountant's context-aware calculations via API
+
+  // NEW: Mode management functions (SSOT)
+  const fetchCurrentMode = async () => {
+    setLoadingMode(true);
+    try {
+      const response = await fetch('/api/mode');
+      const result = await response.json();
+      if (result.success) {
+        setCurrentMode(result.data);
+      } else {
+        console.error('Failed to fetch current mode:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching current mode:', error);
+    } finally {
+      setLoadingMode(false);
+    }
   };
 
-  const calculateDebtCost = (debtData) => {
-    if (!debtData || !debtData.summary) return 0;
-    const total = debtData.summary.total || 0;
-    return Math.round(total * 75); // $75 per debt item
+  const fetchAvailableModes = async () => {
+    try {
+      const response = await fetch('/api/mode/available');
+      const result = await response.json();
+      if (result.success) {
+        setAvailableModes(result.data.modes);
+      } else {
+        console.error('Failed to fetch available modes:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching available modes:', error);
+    }
+  };
+
+  const switchMode = async (newMode) => {
+    setLoadingMode(true);
+    try {
+      const response = await fetch('/api/mode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mode: newMode }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        // Refresh all data after mode change
+        await fetchCurrentMode();
+        await fetchFinancialMetrics();
+        await loadDashboardData();
+        console.log('✅ Mode switched to:', result.data.modeConfig.name);
+      } else {
+        console.error('Failed to switch mode:', result.error);
+      }
+    } catch (error) {
+      console.error('Error switching mode:', error);
+    } finally {
+      setLoadingMode(false);
+    }
+  };
+
+  const autoDetectMode = async (apply = false) => {
+    setLoadingMode(true);
+    try {
+      const response = await fetch('/api/mode/auto-detect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ apply }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        if (apply) {
+          await fetchCurrentMode();
+          await fetchFinancialMetrics();
+          await loadDashboardData();
+        }
+        return result.data;
+      } else {
+        console.error('Failed to auto-detect mode:', result.error);
+      }
+    } catch (error) {
+      console.error('Error auto-detecting mode:', error);
+    } finally {
+      setLoadingMode(false);
+    }
   };
 
   const calculateAPR = (debtData) => {
@@ -986,11 +1095,21 @@ const App = () => {
                   <div className="metric-label">Credit Tier</div>
                 </div>
                 <div className="financial-metric">
-                  <div className="metric-value">${calculateDebtCost(debtData)}</div>
+                  <div className="metric-value">
+                    {loadingFinancials ? '...' : 
+                     financialMetrics?.debtCostAnalysis?.estimatedCost ? 
+                     `$${financialMetrics.debtCostAnalysis.estimatedCost}` : 
+                     '$0'}
+                  </div>
                   <div className="metric-label">Total Debt Cost</div>
                 </div>
                 <div className="financial-metric">
-                  <div className="metric-value">{calculateTimeWasted(debtData)}</div>
+                  <div className="metric-value">
+                    {loadingFinancials ? '...' : 
+                     financialMetrics?.debtCostAnalysis?.estimatedHours ? 
+                     `${financialMetrics.debtCostAnalysis.estimatedHours}h` : 
+                     '0h'}
+                  </div>
                   <div className="metric-label">Time Wasted</div>
                 </div>
                 <div className="financial-metric">
@@ -1021,7 +1140,10 @@ const App = () => {
               {/* Shame Level */}
               <div className="shame-level">
                 <div className={`shame-indicator ${debtData?.shameLevel || 'unknown'}`}>
-                  {getShameMessage(debtData?.shameLevel)}
+                  {loadingFinancials ? '📊 Loading debt analysis...' : 
+                 financialMetrics?.debtStatus?.shameLevel ? 
+                 getShameMessage(financialMetrics.debtStatus.shameLevel) : 
+                 getShameMessage(debtData?.shameLevel)}
                 </div>
               </div>
 
@@ -1073,6 +1195,59 @@ const App = () => {
             <div className="control-panel-header">
               <h2>🎯 Debt Management Operations</h2>
               <div className="control-panel-subtitle">Professional debt elimination strategies</div>
+            </div>
+
+            {/* NEW: Mode Management Controls (SSOT) */}
+            <div className="mode-management-section">
+              <div className="mode-header">
+                <h3>🔧 Classification Mode</h3>
+                <div className="mode-subtitle">
+                  {loadingMode ? 'Loading...' : 
+                   currentMode ? `Current: ${currentMode.config.emoji} ${currentMode.config.name}` : 
+                   'Select debt classification mode'}
+                </div>
+              </div>
+              
+              <div className="mode-controls">
+                <div className="mode-radio-group">
+                  {availableModes.map((mode) => (
+                    <label key={mode.key} className="mode-radio-option">
+                      <input
+                        type="radio"
+                        name="debt-mode"
+                        value={mode.key}
+                        checked={currentMode?.currentMode === mode.key}
+                        onChange={() => switchMode(mode.key)}
+                        disabled={loadingMode}
+                      />
+                      <div className="mode-radio-content">
+                        <div className="mode-icon">{mode.emoji}</div>
+                        <div className="mode-info">
+                          <div className="mode-name">{mode.name}</div>
+                          <div className="mode-description">{mode.description}</div>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                
+                <div className="mode-actions">
+                  <button 
+                    className="mode-action-button auto-detect"
+                    onClick={() => autoDetectMode(true)}
+                    disabled={loadingMode}
+                  >
+                    🔍 Auto-Detect & Apply
+                  </button>
+                  <button 
+                    className="mode-action-button refresh"
+                    onClick={fetchCurrentMode}
+                    disabled={loadingMode}
+                  >
+                    🔄 Refresh
+                  </button>
+                </div>
+              </div>
             </div>
             
             <div className="control-buttons-container">

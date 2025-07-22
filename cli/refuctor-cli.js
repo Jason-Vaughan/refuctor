@@ -6,6 +6,7 @@ const { techDebtManager } = require('../src/techdebt-manager');
 const { markdownFixerGoon } = require('../src/goons/markdown-fixer');
 const { DebtDetector } = require('../src/debt-detector.js');
 const { DebtIgnoreParser } = require('../src/debt-ignore-parser');
+const { DebtModeManager } = require('../src/debt-mode-manager');
 const SetupWizard = require('../src/setup-wizard');
 const packageJson = require('../package.json');
 const fs = require('fs-extra');
@@ -2088,6 +2089,118 @@ program
     } catch (error) {
       console.error(colors.bold(colors.red('\n💥 GAMIFICATION ERROR:')));
       console.error(colors.red(`The gamification system crashed: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Mode Management Commands (SSOT)
+program
+  .command('mode [action] [mode]')
+  .description('Manage debt classification mode')
+  .option('--auto', 'Auto-detect appropriate mode')
+  .action(async (action, mode, options) => {
+    try {
+      const modeManager = new DebtModeManager();
+      const projectPath = process.cwd();
+
+      switch (action) {
+        case 'status':
+        case 'show':
+        default:
+          // Show current mode and available options
+          const currentMode = await modeManager.getCurrentMode(projectPath);
+          const modeConfig = modeManager.getModeConfig(currentMode);
+          const allModes = modeManager.getAllModes();
+          
+          console.log(colors.bold(colors.yellow('\n🎯 DEBT CLASSIFICATION MODE')));
+          console.log(colors.green(`Current Mode: ${modeConfig.emoji} ${modeConfig.name}`));
+          console.log(colors.gray(`Description: ${modeConfig.description}`));
+          console.log(colors.gray(`Personality: ${modeConfig.personality}`));
+          
+          console.log(colors.yellow('\n📋 Available Modes:'));
+          allModes.forEach(mode => {
+            const current = mode.key === currentMode ? colors.green(' (CURRENT)') : '';
+            console.log(colors.cyan(`  ${mode.emoji} ${mode.name}${current}`));
+            console.log(colors.gray(`     ${mode.description}`));
+          });
+          
+          console.log(colors.yellow('\n🛠️ Commands:'));
+          console.log(colors.gray('  refuctor mode set DEV_CREW      - Set to development mode'));
+          console.log(colors.gray('  refuctor mode set BETA_CAPOREGIME - Set to beta/testing mode'));  
+          console.log(colors.gray('  refuctor mode set PROD_FAMILY     - Set to production mode'));
+          console.log(colors.gray('  refuctor mode auto               - Auto-detect mode'));
+          break;
+
+        case 'set':
+          if (!mode) {
+            console.error(colors.red('Error: Mode required for set action'));
+            console.log(colors.gray('Available modes: DEV_CREW, BETA_CAPOREGIME, PROD_FAMILY'));
+            process.exit(1);
+          }
+          
+          const upperMode = mode.toUpperCase();
+          try {
+            const config = await modeManager.setMode(projectPath, upperMode);
+            const newModeConfig = modeManager.getModeConfig(upperMode);
+            
+            console.log(colors.bold(colors.green('\n✅ MODE UPDATED')));
+            console.log(colors.cyan(`New Mode: ${newModeConfig.emoji} ${newModeConfig.name}`));
+            console.log(colors.gray(`Description: ${newModeConfig.description}`));
+            console.log(colors.gray(`Set at: ${config.setAt}`));
+            
+            // Show impact
+            console.log(colors.yellow('\n📊 Impact:'));
+            console.log(colors.gray('  • Debt thresholds updated'));
+            console.log(colors.gray('  • Classification messages adjusted'));
+            console.log(colors.gray('  • Shame levels recalibrated'));
+            console.log(colors.gray('\nRun "refuctor scan" to see changes in action!'));
+            
+          } catch (error) {
+            console.error(colors.red(`Error setting mode: ${error.message}`));
+            process.exit(1);
+          }
+          break;
+
+        case 'auto':
+          const detectedMode = await modeManager.detectProjectMode(projectPath);
+          const detectedConfig = modeManager.getModeConfig(detectedMode);
+          const indicators = await modeManager.analyzeProjectIndicators(projectPath);
+          
+          console.log(colors.bold(colors.yellow('\n🔍 AUTO-DETECTION RESULTS')));
+          console.log(colors.green(`Detected Mode: ${detectedConfig.emoji} ${detectedConfig.name}`));
+          console.log(colors.gray(`Reason: ${detectedConfig.description}`));
+          
+          console.log(colors.yellow('\n📋 Project Indicators:'));
+          Object.entries(indicators).forEach(([key, value]) => {
+            const status = value ? colors.green('✓') : colors.gray('✗');
+            const label = key.replace(/([A-Z])/g, ' $1').toLowerCase();
+            console.log(`  ${status} ${label}`);
+          });
+          
+          if (options.auto) {
+            await modeManager.setMode(projectPath, detectedMode);
+            console.log(colors.bold(colors.green('\n✅ MODE SET TO AUTO-DETECTED')));
+          } else {
+            console.log(colors.yellow('\nUse --auto flag to apply detected mode'));
+          }
+          break;
+
+        case 'help':
+          console.log(colors.bold(colors.yellow('\n🎯 DEBT MODE MANAGEMENT')));
+          console.log(colors.gray('Refuctor adapts its debt classification based on project type:\n'));
+          
+          const modes = modeManager.getAllModes();
+          modes.forEach(mode => {
+            console.log(colors.cyan(`${mode.emoji} ${mode.name}:`));
+            console.log(colors.gray(`   ${mode.description}`));
+            console.log(colors.gray(`   ${mode.personality}\n`));
+          });
+          break;
+      }
+
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 MODE MANAGEMENT ERROR:')));
+      console.error(colors.red(`Failed to manage mode: ${error.message}`));
       process.exit(1);
     }
   });
