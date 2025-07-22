@@ -789,4 +789,17 @@ class DashboardServer {
     }
 }
 
-module.exports = DashboardServer; 
+module.exports = DashboardServer;
+
+// Start the server if this file is run directly
+if (require.main === module) {
+    const server = new DashboardServer();
+    server.start().catch(console.error);
+    
+    // Graceful shutdown
+    process.on('SIGINT', async () => {
+        console.log('\n🛑 Shutting down dashboard server...');
+        await server.stop();
+        process.exit(0);
+    });
+} 

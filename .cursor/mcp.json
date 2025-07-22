@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "refuctor-debt-broker": {
+      "command": "node",
+      "args": ["./src/refuctor-mcp-server.js"],
+      "env": {},
+      "cwd": "."
+    }
+  }
+} 
