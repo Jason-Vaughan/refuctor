@@ -167,7 +167,7 @@ refuctor wrap
 
 ### How It Works
 Refuctor uses AI-powered pattern recognition to distinguish between:
-- **🔧 Genuine typos** (teh, recieve, seperate) → Auto-fix
+- **🔧 Genuine typos** (teh, receive, separate) → Auto-fix
 - **🎭 Intentional snarky language** (refuctoring, bitchuation, snarkified) → Add to dictionary
 - **🤔 Uncertain terms** → Ask for human review
 
@@ -208,7 +208,7 @@ refuctor snarky-add "bitchuation" "refuctorize" "codegasm"
 # 4. Fix obvious typos
 refuctor snarky-fix
 # Shows: ❌ teh in README.md:42
-#        ❌ recieve in docs/api.md:15
+#        ❌ receive in docs/api.md:15
 ```
 
 ### Project Dictionary
