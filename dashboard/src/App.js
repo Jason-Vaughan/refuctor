@@ -197,8 +197,17 @@ const App = () => {
           {/* Enhanced Analysis Section - Lazy Loaded */}
           <Suspense fallback={<div className="loading-component">Loading analysis...</div>}>
             <div className="enhanced-analysis">
-              <FileDebtBreakdown debtData={debtData} />
-              <TrendAnalysis debtData={debtData} />
+              <FileDebtBreakdown 
+                fileDebtMap={debtData?.fileDebtMap} 
+                onFileSelect={(file) => console.log('File selected:', file)}
+                onDebtItemClick={(item) => console.log('Debt item clicked:', item)}
+              />
+              <TrendAnalysis 
+                debtHistory={debtData?.debtHistory}
+                trendAnalysis={debtData?.trendAnalysis}
+                velocityAnalysis={debtData?.velocityAnalysis}
+                peakAnalysis={debtData?.peakAnalysis}
+              />
             </div>
           </Suspense>
         </main>
@@ -218,7 +227,12 @@ const App = () => {
             </div>
             <div className="modal-content">
               <Suspense fallback={<div className="loading-component">Loading details...</div>}>
-                <FileDebtBreakdown debtData={debtData} detailed={true} />
+                <FileDebtBreakdown 
+                  fileDebtMap={debtData?.fileDebtMap} 
+                  detailed={true}
+                  onFileSelect={(file) => console.log('File selected:', file)}
+                  onDebtItemClick={(item) => console.log('Debt item clicked:', item)}
+                />
               </Suspense>
             </div>
           </div>
