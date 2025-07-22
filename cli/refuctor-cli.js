@@ -801,6 +801,117 @@ goonCommand
     }
   });
 
+// Goon: Fix-Lint
+goonCommand
+  .command('fix-lint')
+  .description(colors.magenta('🔧 Aggressive code quality debt elimination'))
+  .option('-d, --dry-run', 'Preview fixes without applying them', true)
+  .option('-f, --files <pattern>', 'Target specific file pattern')
+  .option('-t, --types <types>', 'Linter types (javascript,typescript,json)', 'javascript,typescript,json')
+  .action(async (options) => {
+    console.log(colors.bold(colors.magenta('\n🔧 FIX-LINT GOON DEPLOYED')));
+    console.log(colors.gray('Aggressive code quality enforcement specialist'));
+    console.log(colors.gray('Initiating linting debt elimination...\n'));
+    
+    try {
+      const FixLintGoon = require('../src/goons/fix-lint');
+      const fixLintGoon = new FixLintGoon();
+      
+      const types = options.types.split(',').map(t => t.trim());
+      const goonOptions = {
+        dryRun: options.dryRun,
+        filePattern: options.files,
+        types: types
+      };
+      
+      const report = await fixLintGoon.eliminateDebt('.', goonOptions);
+      
+      console.log(colors.bold(colors.green('\n📊 FIX-LINT GOON DEPLOYMENT COMPLETE')));
+      console.log(colors.blue(`⏱️  Duration: ${Math.round(report.duration / 1000)}s`));
+      console.log(colors.blue(`📁 Files Processed: ${report.totalFilesProcessed}`));
+      console.log(colors.yellow(`🏖️  Files on Debt Holiday: ${report.totalFilesIgnored}`));
+      console.log(colors.green(`🔧 Total Fixes: ${report.totalFixesApplied}`));
+      
+      if (report.totalFixesApplied === 0 && report.totalFilesProcessed > 0) {
+        console.log(colors.bold(colors.green('\n🏆 DEBT-FREE ACHIEVEMENT UNLOCKED!')));
+        console.log(colors.green('Your code is cleaner than a mobster\'s money after laundering!'));
+      } else if (report.totalFixesApplied > 0) {
+        console.log(colors.bold(colors.green(`\n💰 DEBT REFINANCED: ${report.totalFixesApplied} issues eliminated!`)));
+        console.log(colors.green('Your code just got a credit score boost!'));
+      }
+      
+      if (options.dryRun) {
+        console.log(colors.yellow('\n⚠️  DRY RUN MODE: No changes were made'));
+        console.log(colors.gray('Remove --dry-run flag to apply fixes'));
+      }
+      
+      if (report.errors.length > 0) {
+        console.log(colors.yellow(`\n⚠️  Encountered ${report.errors.length} errors during processing`));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 FIX-LINT GOON DEPLOYMENT FAILED:')));
+      console.error(colors.red(`Even our most aggressive goon couldn't handle this mess: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Goon: Clean-Imports
+goonCommand
+  .command('clean-imports')
+  .description(colors.magenta('🧹 Aggressive import optimization and cleanup'))
+  .option('-d, --dry-run', 'Preview cleanup without applying changes', true)
+  .option('-a, --aggressive', 'Enable aggressive cleanup mode')
+  .option('-u, --unused', 'Remove unused imports', true)
+  .action(async (options) => {
+    console.log(colors.bold(colors.magenta('\n🧹 IMPORT CLEANER GOON DEPLOYED')));
+    console.log(colors.gray('Aggressive import optimization specialist'));
+    console.log(colors.gray('Initiating import debt elimination...\n'));
+    
+    try {
+      const { ImportCleaner } = require('../src/goons/import-cleaner');
+      const importCleaner = new ImportCleaner();
+      
+      const goonOptions = {
+        dryRun: options.dryRun,
+        aggressive: options.aggressive,
+        removeUnused: options.unused
+      };
+      
+      const report = await importCleaner.eliminateDebt('.', goonOptions);
+      
+      console.log(colors.bold(colors.green('\n📊 IMPORT CLEANER GOON DEPLOYMENT COMPLETE')));
+      console.log(colors.blue(`⏱️  Duration: ${Math.round(report.duration / 1000)}s`));
+      console.log(colors.blue(`📁 Files Analyzed: ${report.totalFilesAnalyzed}`));
+      console.log(colors.yellow(`🗑️  Unused Imports Found: ${report.unusedImportsFound}`));
+      console.log(colors.yellow(`🔄 Circular Dependencies: ${report.circularDependencies}`));
+      
+      if (report.totalIssuesFound === 0) {
+        console.log(colors.bold(colors.green('\n🏆 IMPORT PERFECTION ACHIEVED!')));
+        console.log(colors.green('Your imports are cleaner than a mobster\'s money after laundering!'));
+      } else if (report.importsRemoved > 0) {
+        console.log(colors.bold(colors.green(`\n💰 IMPORT DEBT REFINANCED: ${report.importsRemoved} unused imports eliminated!`)));
+        if (report.bytesFreed > 0) {
+          console.log(colors.green(`💾 Bytes freed: ${report.bytesFreed} (bundle optimization)`));
+        }
+      }
+      
+      if (options.dryRun) {
+        console.log(colors.yellow('\n⚠️  DRY RUN MODE: No changes were made'));
+        console.log(colors.gray('Remove --dry-run flag to apply cleanup'));
+      }
+      
+      if (report.errors.length > 0) {
+        console.log(colors.yellow(`\n⚠️  Encountered ${report.errors.length} errors during processing`));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 IMPORT CLEANER GOON DEPLOYMENT FAILED:')));
+      console.error(colors.red(`Import optimization failed: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
 // Easter eggs
 program
   .option('--bailMeOut', 'Motivational quotes from failed startups')

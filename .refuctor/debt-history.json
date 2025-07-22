@@ -52,5 +52,32 @@
     "shameLevel": "minor-issues",
     "hotspotCount": 10,
     "fileCount": 30
+  },
+  {
+    "timestamp": "2025-07-22T01:59:05.532Z",
+    "date": "2025-07-22",
+    "summary": {
+      "total": 1137,
+      "p1": 0,
+      "p2": 0,
+      "p3": 0,
+      "p4": 0,
+      "mafia": 1,
+      "guido": 2
+    },
+    "breakdown": {
+      "markdown": 284,
+      "spelling": 43,
+      "security": 0,
+      "dependencies": 0,
+      "eslint": 0,
+      "typescript": 0,
+      "codeQuality": 810,
+      "formatting": 0
+    },
+    "debtTrend": "worsening",
+    "shameLevel": "bankruptcy-imminent",
+    "hotspotCount": 10,
+    "fileCount": 45
   }
 ]

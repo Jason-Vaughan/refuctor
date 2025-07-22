@@ -133,8 +133,19 @@ class DebtDetector {
       this.categorizeDebt(debtReport, 'formatting', formattingDebt);
 
       // Calculate totals - count actual issues, not categories
-      debtReport.totalDebt = markdownDebt.total + spellDebt.total + securityDebt.total + dependencyDebt.total + 
+      // DEBT IGNORE RESPECT: Subtract ignored debt from total
+      const rawTotalDebt = markdownDebt.total + spellDebt.total + securityDebt.total + dependencyDebt.total + 
                            eslintDebt.total + typescriptDebt.total + codeQualityDebt.total + formattingDebt.total;
+      
+      const totalIgnoredDebt = (markdownDebt.ignoredDebt?.total || 0) + 
+                              (spellDebt.ignoredDebt?.total || 0) + 
+                              (eslintDebt.ignoredDebt?.total || 0) + 
+                              (typescriptDebt.ignoredDebt?.total || 0) + 
+                              (codeQualityDebt.ignoredDebt?.total || 0) + 
+                              (formattingDebt.ignoredDebt?.total || 0);
+      
+      debtReport.totalDebt = rawTotalDebt - totalIgnoredDebt;
+      debtReport.totalIgnoredDebt = totalIgnoredDebt;
 
       // Check for mafia takeover and Guido escalation
       await this.checkMafiaStatus(debtReport);
@@ -157,7 +168,9 @@ class DebtDetector {
         p2: debtReport.p2.length,
         p3: debtReport.p3.length,
         p4: debtReport.p4.length,
-        total: debtReport.totalDebt
+        total: debtReport.totalDebt,
+        totalIgnored: debtReport.totalIgnoredDebt || 0,
+        rawTotal: rawTotalDebt
       };
 
       // Generate heat map data for dashboard visualization
