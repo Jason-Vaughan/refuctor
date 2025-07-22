@@ -29,7 +29,7 @@ const App = () => {
 
   // Socket connection effect
   useEffect(() => {
-    const newSocket = io();
+    const newSocket = io('http://localhost:1947');
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
@@ -61,8 +61,8 @@ const App = () => {
   const loadDashboardData = async () => {
     try {
       const [projectResponse, statusResponse] = await Promise.all([
-        fetch('/api/project/info'),
-        fetch('/api/debt/status')
+        fetch('http://localhost:1947/api/project/info'),
+        fetch('http://localhost:1947/api/debt/status')
       ]);
 
       const projectData = await projectResponse.json();
@@ -90,7 +90,7 @@ const App = () => {
         setScanProgress(prev => Math.min(prev + 10, 90));
       }, 200);
       
-      const response = await fetch('/api/debt/scan');
+      const response = await fetch('http://localhost:1947/api/debt/scan');
       const data = await response.json();
       
       clearInterval(progressInterval);
@@ -114,7 +114,7 @@ const App = () => {
   const triggerFix = async () => {
     try {
       setIsFixing(true);
-      const response = await fetch('/api/debt/fix', {
+      const response = await fetch('http://localhost:1947/api/debt/fix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fixType: 'auto' })
@@ -136,7 +136,7 @@ const App = () => {
   const triggerNuclearOption = async () => {
     try {
       setIsFixing(true);
-      const response = await fetch('/api/debt/fix', {
+      const response = await fetch('http://localhost:1947/api/debt/fix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fixType: 'nuclear' })

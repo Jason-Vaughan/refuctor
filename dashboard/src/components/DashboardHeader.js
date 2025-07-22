@@ -1,6 +1,12 @@
 import React from 'react';
 
 const DashboardHeader = ({ connected, projectInfo, debtData }) => {
+  // Provide mock data for development
+  const mockProjectInfo = {
+    name: "@puberty-labs/refuctor",
+    path: "/Users/jasonvaughan/Documents/Projects/Refuctor",
+    version: "1.0.0"
+  };
   const getConnectionStatus = () => {
     if (connected) {
       return (
@@ -36,10 +42,10 @@ const DashboardHeader = ({ connected, projectInfo, debtData }) => {
         </div>
         
         <div className="header-center">
-          {projectInfo && (
+          {(projectInfo || mockProjectInfo) && (
             <div className="project-info">
-              <span className="project-name">{projectInfo.name}</span>
-              <span className="project-type">{projectInfo.type}</span>
+              <span className="project-name">{(projectInfo || mockProjectInfo).name}</span>
+              <span className="project-path">{(projectInfo || mockProjectInfo).path}</span>
             </div>
           )}
         </div>
