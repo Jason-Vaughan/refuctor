@@ -215,24 +215,59 @@ const App = () => {
     }
   };
 
-  // Phase 2 Enhancement: Credit Score & Financial Calculations
+  // Phase 2 Enhancement: FIXED Credit Score & Financial Calculations
   const calculateCreditScore = (debtData) => {
     if (!debtData || !debtData.summary) return 300;
     
     const total = debtData.summary.total || 0;
     const p1Count = debtData.summary.p1 || 0;
     const p2Count = debtData.summary.p2 || 0;
+    const p3Count = debtData.summary.p3 || 0;
+    const p4Count = debtData.summary.p4 || 0;
     
-    // Credit score algorithm (simplified for preview)
-    let score = 850; // Start with perfect score
+    // ENHANCED: Context-aware algorithm for dashboard (matches accountant.js logic)
+    let score = 75; // More forgiving baseline
     
-    // Deduct for debt levels
-    score -= (p1Count * 50); // P1 Critical: -50 points each
-    score -= (p2Count * 25); // P2 High: -25 points each  
-    score -= (total * 5);     // All debt: -5 points each
+    // Project maturity bonuses (simplified detection for dashboard)
+    // If we have detailed debt data, assume this is a well-managed project
+    if (debtData.breakdown && Object.keys(debtData.breakdown).length > 5) {
+      score += 25; // Comprehensive roadmap bonus equivalent
+    }
+    if (total > 100) {
+      score += 15; // Active debt tracking bonus (lots of tracked debt = good management)
+    }
     
-    // Ensure minimum score
-    return Math.max(300, Math.round(score));
+    // Context-aware debt penalties (much more forgiving)
+    // Assume most debt in a tracked system is development/documentation debt
+    const assumedCriticalDebt = Math.min(p1Count, 5); // Cap critical assumptions
+    const assumedDevelopmentDebt = Math.max(0, total - assumedCriticalDebt - p2Count);
+    
+    // Critical issues get full penalty
+    score -= assumedCriticalDebt * 12;
+    
+    // P2 issues get moderate penalty
+    score -= p2Count * 4;
+    
+    // Development/documentation debt gets very light penalty
+    score -= Math.min(assumedDevelopmentDebt * 0.3, 30);
+    
+    // P3/P4 get minimal penalty
+    score -= p3Count * 2;
+    score -= p4Count * 0.5;
+    
+    // Well-managed project bonus
+    if (total > 500) {
+      score += 15; // Bonus for comprehensive debt tracking
+    }
+    
+    // Debt-free bonuses
+    if (total === 0) score += 25;
+    if (p1Count === 0) score += 15;
+    
+    // Convert to 300-850 scale (more generous)
+    const creditScore = Math.round(300 + (Math.max(20, Math.min(100, score)) / 100) * 550);
+    
+    return Math.max(300, Math.min(850, creditScore));
   };
 
   const getCreditTier = (debtData) => {

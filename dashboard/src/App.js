@@ -12,12 +12,37 @@ const App = () => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [tooltip, setTooltip] = useState({ show: false, content: '', x: 0, y: 0 });
+  
+  // NEW: SSOT Financial metrics from backend
+  const [financialMetrics, setFinancialMetrics] = useState(null);
+  const [loadingFinancials, setLoadingFinancials] = useState(false);
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [terminalHistory, setTerminalHistory] = useState([]);
   const [terminalInput, setTerminalInput] = useState('');
   const [ignorePatterns, setIgnorePatterns] = useState([]);
   const [showDebtDetails, setShowDebtDetails] = useState(false);
   const [showDebtModal, setShowDebtModal] = useState(false);
+
+  // NEW: Fetch comprehensive financial metrics (SSOT)
+  const fetchFinancialMetrics = async () => {
+    if (loadingFinancials) return;
+    
+    setLoadingFinancials(true);
+    try {
+      const response = await fetch('/api/financial/metrics');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setFinancialMetrics(data.data);
+          console.log('📊 SSOT Financial metrics loaded:', data.data);
+        }
+      }
+    } catch (error) {
+      console.error('💥 Failed to fetch financial metrics:', error);
+    } finally {
+      setLoadingFinancials(false);
+    }
+  };
 
   useEffect(() => {
     // Initialize socket connection
@@ -66,6 +91,9 @@ const App = () => {
       setProjectInfo(projectData.data);
       setDebtData(statusData.data);
       setLastScan(new Date().toISOString());
+      
+      // Load financial metrics for SSOT
+      fetchFinancialMetrics();
       
     } catch (error) {
       console.error('💥 Failed to load dashboard data:', error);
@@ -942,11 +970,19 @@ const App = () => {
               <h2>💰 Financial Impact</h2>
               <div className="financial-grid">
                 <div className="financial-metric">
-                  <div className="metric-value">{calculateCreditScore(debtData)}</div>
+                  <div className="metric-value">
+                    {loadingFinancials ? '...' : 
+                     financialMetrics?.creditScore?.score || 
+                     calculateCreditScore(debtData)}
+                  </div>
                   <div className="metric-label">Credit Score</div>
                 </div>
                 <div className="financial-metric">
-                  <div className="metric-value">{getCreditTierLabel(debtData).split(' ')[1]}</div>
+                  <div className="metric-value">
+                    {loadingFinancials ? '...' : 
+                     financialMetrics?.creditScore?.classification?.replace('_', ' ') || 
+                     getCreditTierLabel(debtData).split(' ')[1]}
+                  </div>
                   <div className="metric-label">Credit Tier</div>
                 </div>
                 <div className="financial-metric">
@@ -958,7 +994,12 @@ const App = () => {
                   <div className="metric-label">Time Wasted</div>
                 </div>
                 <div className="financial-metric">
-                  <div className="metric-value">{calculateAPR(debtData)}%</div>
+                  <div className="metric-value">
+                    {loadingFinancials ? '...' : 
+                     financialMetrics?.creditScore?.interestRate ? 
+                     `${financialMetrics.creditScore.interestRate}%` : 
+                     `${calculateAPR(debtData)}%`}
+                  </div>
                   <div className="metric-label">Interest Rate (APR)</div>
                 </div>
               </div>

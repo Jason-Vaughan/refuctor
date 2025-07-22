@@ -7,6 +7,7 @@ const { debtDetector } = require('./debt-detector');
 const { techDebtManager } = require('./techdebt-manager');
 const { DebtHistoryTracker } = require('./debt-history');
 const { DebtIgnoreParser } = require('./debt-ignore-parser');
+const { Accountant } = require('./goons/accountant'); // NEW: Enhanced accountant
 const fs = require('fs-extra');
 
 class DashboardServer {
@@ -24,6 +25,9 @@ class DashboardServer {
         
         // Initialize debt history tracker
         this.historyTracker = new DebtHistoryTracker(this.projectPath);
+        
+        // NEW: Initialize enhanced accountant
+        this.accountant = new Accountant();
         
         this.setupMiddleware();
         this.setupRoutes();
@@ -43,6 +47,12 @@ class DashboardServer {
         this.app.get('/api/debt/history', this.handleDebtHistory.bind(this));
         this.app.post('/api/debt/fix', this.handleDebtFix.bind(this));
         this.app.get('/api/project/info', this.handleProjectInfo.bind(this));
+        
+        // NEW: Enhanced credit score endpoint
+        this.app.get('/api/credit/score', this.handleCreditScore.bind(this));
+        
+        // NEW: Comprehensive financial metrics endpoint (SSOT)
+        this.app.get('/api/financial/metrics', this.handleFinancialMetrics.bind(this));
         
         // Debt Ignore Management APIs
         this.app.get('/api/debt/ignore', this.handleGetIgnorePatterns.bind(this));
@@ -190,6 +200,139 @@ class DashboardServer {
                 message: 'Debt status is in bankruptcy court.'
             });
         }
+    }
+
+    // NEW: Enhanced credit score endpoint
+    async handleCreditScore(req, res) {
+        try {
+            console.log('🔍 Calculating enhanced credit score...');
+            
+            // Use the enhanced accountant to get real credit score
+            const creditData = await this.accountant.calculateCreditScore(this.projectPath);
+            
+            console.log(`📊 Credit Score: ${creditData.score}/850 (${creditData.classification})`);
+            
+            res.json({
+                success: true,
+                creditScore: creditData.score,
+                classification: creditData.classification,
+                interestRate: creditData.interestRate,
+                breakdown: creditData.breakdown,
+                projectContext: creditData.projectContext,
+                maturityIndicators: creditData.projectContext?.maturityIndicators || [],
+                qualityIndicators: creditData.projectContext?.qualityIndicators || {},
+                projectType: creditData.projectContext?.projectType || 'unknown',
+                timestamp: new Date().toISOString(),
+                message: this.getCreditScoreMessage(creditData.score, creditData.classification)
+            });
+            
+        } catch (error) {
+            console.error('💥 Credit score calculation failed:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Credit score is in technical bankruptcy. The accountant has fled to the Bahamas.'
+            });
+        }
+    }
+
+    // NEW: Comprehensive financial metrics endpoint (SSOT)
+    async handleFinancialMetrics(req, res) {
+        try {
+            console.log('📊 Calculating comprehensive financial metrics...');
+            
+            const creditScore = await this.accountant.calculateCreditScore(this.projectPath);
+            const debtStatus = await techDebtManager.getDebtStatus(this.projectPath);
+            const currentScan = await debtDetector.scanProject(this.projectPath);
+            const debtHistory = await this.historyTracker.getHistory(7);
+            const trendAnalysis = await this.historyTracker.getTrendAnalysis();
+            const velocityAnalysis = await this.historyTracker.getVelocityAnalysis();
+            const peakAnalysis = await this.historyTracker.getPeakAnalysis();
+
+            const metrics = {
+                creditScore: {
+                    score: creditScore.score,
+                    classification: creditScore.classification,
+                    interestRate: creditScore.interestRate,
+                    breakdown: creditScore.breakdown,
+                    projectContext: creditScore.projectContext,
+                    maturityIndicators: creditScore.projectContext?.maturityIndicators || [],
+                    qualityIndicators: creditScore.projectContext?.qualityIndicators || {},
+                    projectType: creditScore.projectContext?.projectType || 'unknown'
+                },
+                debtStatus: {
+                    summary: {
+                        p1: currentScan.p1?.length || 0,
+                        p2: currentScan.p2?.length || 0,
+                        p3: currentScan.p3?.length || 0,
+                        p4: currentScan.p4?.length || 0,
+                        total: this.calculateTotalViolations(currentScan),
+                        markdown: currentScan.summary?.markdown || 0,
+                        spelling: currentScan.summary?.spelling || 0,
+                        security: currentScan.summary?.security || 0,
+                        dependencies: currentScan.summary?.dependencies || 0,
+                        eslint: currentScan.summary?.eslint || 0,
+                        typescript: currentScan.summary?.typescript || 0,
+                        codeQuality: currentScan.summary?.codeQuality || 0,
+                        formatting: currentScan.summary?.formatting || 0
+                    },
+                    currentDebt: {
+                        P1: currentScan.p1 || [],
+                        P2: currentScan.p2 || [],
+                        P3: currentScan.p3 || [],
+                        P4: currentScan.p4 || [],
+                        Mafia: currentScan.mafia || [],
+                        Guido: currentScan.guido || []
+                    },
+                    fileDebtMap: currentScan.fileDebtMap || {},
+                    topHotspots: currentScan.topHotspots || [],
+                    resolvedCount: debtStatus.sessionsTracked || 0,
+                    shameLevel: this.calculateShameLevel(currentScan),
+                    mafiaStatus: currentScan.mafiaStatus,
+                    guidoAppearance: currentScan.guidoAppearance
+                },
+                debtHistory: {
+                    history: debtHistory,
+                    trendAnalysis: trendAnalysis,
+                    velocityAnalysis: velocityAnalysis,
+                    peakAnalysis: peakAnalysis,
+                    daysRequested: 7,
+                    entriesFound: debtHistory.length,
+                    hasEnoughDataForTrends: debtHistory.length >= 2
+                },
+                projectInfo: {
+                    name: 'Unknown Project', // Will be fetched from package.json
+                    version: '0.0.0', // Will be fetched from package.json
+                    description: 'Project info unavailable', // Will be fetched from package.json
+                    path: this.projectPath,
+                    refuctorVersion: '0.1.0-beta.1'
+                }
+            };
+
+            res.json({
+                success: true,
+                data: metrics,
+                message: 'Comprehensive financial metrics calculated.'
+            });
+        } catch (error) {
+            console.error('❌ Financial metrics calculation failed:', error.message);
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Financial metrics are in technical bankruptcy. The accountant has fled to the Bahamas.'
+            });
+        }
+    }
+
+    // Helper: Get snarky message for credit score
+    getCreditScoreMessage(score, classification) {
+        if (score >= 800) return '🌟 Elite credit! You magnificent debt-slaying machine!';
+        if (score >= 750) return '💎 Prime developer! Your code is financially sound!';
+        if (score >= 700) return '💼 Solid credit! You know how to manage debt!';
+        if (score >= 650) return '📊 Standard credit. Room for improvement, but not bad!';
+        if (score >= 600) return '⚠️ Subprime territory. Time to clean up your act!';
+        if (score >= 550) return '🚨 Credit concerns detected. Guido is watching...';
+        return '💀 Your credit is in foreclosure. Run. Hide. Code better.';
     }
 
     async handleDebtHistory(req, res) {
