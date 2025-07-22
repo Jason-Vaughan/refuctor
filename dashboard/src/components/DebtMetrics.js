@@ -1,4 +1,5 @@
 import React from 'react';
+import './DebtMetrics.css';
 
 const DebtMetrics = ({ debtData, onShowModal }) => {
   // Provide mock data for development when no real data is available
