@@ -49,71 +49,79 @@ const DebtMetrics = ({ debtData, onShowModal }) => {
 
   return (
     <div className="debt-metrics">
-      <div className="metrics-grid">
-        <div 
-          className={`metric-card total-debt ${debtStatus.status}`}
-          onClick={onShowModal}
-          style={{ cursor: 'pointer' }}
-        >
-          <div className="metric-header">
-            <span className="metric-icon">📊</span>
-            <h3>Total Debt</h3>
-          </div>
-          <div className="metric-value">
-            <span className="debt-count">{totalDebt}</span>
-            <span className="debt-label">issues</span>
-          </div>
-          <div className="metric-status">
-            <span className={`status-indicator ${debtStatus.status}`}>
-              {debtStatus.message}
-            </span>
-          </div>
+      {/* Total Debt Card */}
+      <div 
+        className={`debt-card total-debt ${debtStatus.status}`}
+        onClick={onShowModal}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className="card-header">
+          <span className="card-icon">📊</span>
+          <h3>Total Debt</h3>
         </div>
-
-        <div className="metric-card priority-breakdown">
-          <div className="metric-header">
-            <span className="metric-icon">🚨</span>
-            <h3>Priority Breakdown</h3>
-          </div>
-          <div className="priority-grid">
-            <div className={`priority-item p1 ${p1Count > 0 ? 'active' : ''}`}>
-              <span className="priority-label">P1 Critical</span>
-              <span className="priority-count">{p1Count}</span>
-            </div>
-            <div className={`priority-item p2 ${p2Count > 0 ? 'active' : ''}`}>
-              <span className="priority-label">P2 High</span>
-              <span className="priority-count">{p2Count}</span>
-            </div>
-            <div className={`priority-item p3 ${p3Count > 0 ? 'active' : ''}`}>
-              <span className="priority-label">P3 Medium</span>
-              <span className="priority-count">{p3Count}</span>
-            </div>
-            <div className={`priority-item p4 ${p4Count > 0 ? 'active' : ''}`}>
-              <span className="priority-label">P4 Low</span>
-              <span className="priority-count">{p4Count}</span>
-            </div>
-          </div>
+        <div className="total-debt-number">{totalDebt}</div>
+        <div className={`debt-subtitle ${p1Count > 0 ? 'immediate' : ''}`}>
+          {debtStatus.message}
         </div>
+      </div>
 
-        <div className="metric-card debt-temperature">
-          <div className="metric-header">
-            <span className="metric-icon">🌡️</span>
-            <h3>Debt Temperature</h3>
-          </div>
-          <div className="temperature-display">
-            <div className={`temperature-bar ${debtStatus.status}`}>
-              <div 
-                className="temperature-fill" 
-                style={{ width: `${Math.min(100, (totalDebt / 50) * 100)}%` }}
-              ></div>
+      {/* Priority Breakdown Card */}
+      <div className="debt-card priority-breakdown">
+        <div className="card-header">
+          <span className="card-icon">🚨</span>
+          <h3>Priority Breakdown</h3>
+        </div>
+        <ul className="priority-list">
+          <li className="priority-item">
+            <div className="priority-label">
+              <div className="priority-dot p1"></div>
+              P1 Critical
             </div>
-            <span className="temperature-label">
-              {totalDebt === 0 ? 'Ice Cold' : 
-               totalDebt < 10 ? 'Cool' :
-               totalDebt < 25 ? 'Warm' :
-               totalDebt < 50 ? 'Hot' : 'Burning'}
-            </span>
+            <span className={`priority-count p1`}>{p1Count}</span>
+          </li>
+          <li className="priority-item">
+            <div className="priority-label">
+              <div className="priority-dot p2"></div>
+              P2 High
+            </div>
+            <span className={`priority-count p2`}>{p2Count}</span>
+          </li>
+          <li className="priority-item">
+            <div className="priority-label">
+              <div className="priority-dot p3"></div>
+              P3 Medium
+            </div>
+            <span className={`priority-count p3`}>{p3Count}</span>
+          </li>
+          <li className="priority-item">
+            <div className="priority-label">
+              <div className="priority-dot p4"></div>
+              P4 Low
+            </div>
+            <span className={`priority-count p4`}>{p4Count}</span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Debt Temperature Card */}
+      <div className="debt-card debt-temperature">
+        <div className="card-header">
+          <span className="card-icon">🌡️</span>
+          <h3>Debt Temperature</h3>
+        </div>
+        <div className="temperature-display">
+          <div className={`temperature-bar ${debtStatus.status}`}>
+            <div 
+              className="temperature-fill" 
+              style={{ width: `${Math.min(100, (totalDebt / 50) * 100)}%` }}
+            ></div>
           </div>
+          <span className="temperature-label">
+            {totalDebt === 0 ? 'Ice Cold' : 
+             totalDebt < 10 ? 'Cool' :
+             totalDebt < 25 ? 'Warm' :
+             totalDebt < 50 ? 'Hot' : 'Burning'}
+          </span>
         </div>
       </div>
     </div>
