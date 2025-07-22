@@ -913,6 +913,211 @@ goonCommand
     }
   });
 
+// Goon: Comment Killer
+goonCommand
+  .command('kill-comments')
+  .option('--dry-run', 'Preview comment elimination without making changes')
+  .option('--aggressive', 'Enable aggressive comment removal mode')
+  .option('--preserve-license', 'Keep license headers intact')
+  .description('💀 Eliminate TODO comments, dead code comments, and debug cruft')
+  .action(async (options) => {
+    try {
+      console.log(colors.bold(colors.magenta('\n💀 COMMENT KILLER GOON DEPLOYED')));
+      console.log(colors.gray('Targeting TODO comments, debug statements, and commented-out code...'));
+      
+      const { CommentKiller } = require('../src/goons/comment-killer');
+      const commentKiller = new CommentKiller();
+      
+      const goonOptions = {
+        dryRun: options.dryRun || false,
+        aggressive: options.aggressive || false,
+        preserveLicense: options.preserveLicense !== false,
+        showProgress: true
+      };
+      
+      const report = await commentKiller.eliminateCommentDebt('.', goonOptions);
+      
+      console.log(colors.bold(colors.green('\n📊 COMMENT KILLER GOON DEPLOYMENT COMPLETE')));
+      
+      if (report.summary) {
+        console.log(colors.cyan('\n📈 ELIMINATION SUMMARY:'));
+        if (report.summary.todoComments > 0) {
+          console.log(colors.yellow(`   • TODO Comments: ${report.summary.todoComments} eliminated`));
+        }
+        if (report.summary.debugComments > 0) {
+          console.log(colors.yellow(`   • Debug Comments: ${report.summary.debugComments} eliminated`));
+        }
+        if (report.summary.commentedCode > 0) {
+          console.log(colors.yellow(`   • Commented Code: ${report.summary.commentedCode} blocks removed`));
+        }
+        if (report.summary.emptyComments > 0) {
+          console.log(colors.yellow(`   • Empty Comments: ${report.summary.emptyComments} cleaned up`));
+        }
+        
+        const totalEliminated = Object.values(report.summary).reduce((sum, count) => sum + count, 0);
+        if (totalEliminated === 0) {
+          console.log(colors.green('   ✨ No comment debt found! Your comments are pristine.'));
+        } else {
+          console.log(colors.green(`   💪 Total comment debt eliminated: ${totalEliminated} issues`));
+        }
+      }
+      
+      if (options.dryRun) {
+        console.log(colors.blue('\n🔍 DRY RUN MODE: No files were modified'));
+        console.log(colors.blue('   Run without --dry-run to apply changes'));
+      } else {
+        console.log(colors.green('\n✅ Comment elimination complete! Repository is cleaner.'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 COMMENT KILLER GOON DEPLOYMENT FAILED:')));
+      console.error(colors.red(`Comment elimination failed: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Goon: The Fixer
+goonCommand
+  .command('fix-syntax')
+  .option('--dry-run', 'Preview syntax fixes without making changes')
+  .option('--emergency', 'Emergency pre-build mode - fix only critical blocking issues')
+  .option('--max-attempts <number>', 'Maximum fix attempts per file', '5')
+  .description('🔧 Emergency pre-build syntax cleanup and formatting fixes')
+  .action(async (options) => {
+    try {
+      console.log(colors.bold(colors.magenta('\n🔧 THE FIXER GOON DEPLOYED')));
+      console.log(colors.gray('Emergency pre-build cleanup in progress...'));
+      
+      const { Fixer } = require('../src/goons/fixer');
+      const fixer = new Fixer();
+      
+      const goonOptions = {
+        dryRun: options.dryRun || false,
+        emergency: options.emergency || false,
+        maxFixAttempts: parseInt(options.maxAttempts) || 5,
+        showProgress: true
+      };
+      
+      const report = await fixer.emergencyFix('.', goonOptions);
+      
+      console.log(colors.bold(colors.green('\n📊 THE FIXER GOON DEPLOYMENT COMPLETE')));
+      
+      if (report.summary) {
+        console.log(colors.cyan('\n🔧 REPAIR SUMMARY:'));
+        if (report.summary.syntaxFixed > 0) {
+          console.log(colors.yellow(`   • Syntax Errors: ${report.summary.syntaxFixed} fixed`));
+        }
+        if (report.summary.formattingFixed > 0) {
+          console.log(colors.yellow(`   • Formatting Issues: ${report.summary.formattingFixed} corrected`));
+        }
+        if (report.summary.importsFixed > 0) {
+          console.log(colors.yellow(`   • Import Issues: ${report.summary.importsFixed} resolved`));
+        }
+        if (report.summary.consoleStatementsRemoved > 0) {
+          console.log(colors.yellow(`   • Console Statements: ${report.summary.consoleStatementsRemoved} removed`));
+        }
+        
+        const totalFixed = Object.values(report.summary).reduce((sum, count) => sum + count, 0);
+        if (totalFixed === 0) {
+          console.log(colors.green('   ✨ No syntax issues found! Code is ready for build.'));
+        } else {
+          console.log(colors.green(`   💪 Total issues fixed: ${totalFixed} problems resolved`));
+        }
+      }
+      
+      if (options.dryRun) {
+        console.log(colors.blue('\n🔍 DRY RUN MODE: No files were modified'));
+        console.log(colors.blue('   Run without --dry-run to apply fixes'));
+      } else {
+        console.log(colors.green('\n✅ Emergency fixes complete! Build should proceed.'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 THE FIXER GOON DEPLOYMENT FAILED:')));
+      console.error(colors.red(`Emergency fixes failed: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Goon: Dead Code Hunter
+goonCommand
+  .command('hunt-dead-code')
+  .option('--dry-run', 'Preview dead code detection without making changes')
+  .option('--aggressive', 'Enable aggressive removal of potentially unused exports and functions')
+  .option('--include-tests', 'Include test files in analysis')
+  .option('--threshold <number>', 'Minimum usage threshold (default: 1)', '1')
+  .description('💀 Hunt down unused functions, variables, imports, and dead code')
+  .action(async (options) => {
+    try {
+      console.log(colors.bold(colors.magenta('\n💀 DEAD CODE HUNTER GOON DEPLOYED')));
+      console.log(colors.gray('Hunting zombies, ghosts, and abandoned cargo...'));
+      
+      const { DeadCodeHunter } = require('../src/goons/dead-code-hunter');
+      const hunter = new DeadCodeHunter();
+      
+      const goonOptions = {
+        dryRun: options.dryRun || false,
+        aggressive: options.aggressive || false,
+        includeTestFiles: options.includeTests || false,
+        minUsageThreshold: parseInt(options.threshold) || 1,
+        showProgress: true
+      };
+      
+      const report = await hunter.huntDeadCode('.', goonOptions);
+      
+      console.log(colors.bold(colors.green('\n📊 DEAD CODE HUNTER GOON DEPLOYMENT COMPLETE')));
+      
+      if (report.summary) {
+        console.log(colors.cyan('\n🏴‍☠️ HUNT SUMMARY:'));
+        if (report.summary.unusedFunctions > 0) {
+          console.log(colors.yellow(`   • Zombie Functions: ${report.summary.unusedFunctions} functions found lurking`));
+        }
+        if (report.summary.unusedVariables > 0) {
+          console.log(colors.yellow(`   • Ghost Variables: ${report.summary.unusedVariables} variables haunting your code`));
+        }
+        if (report.summary.unusedImports > 0) {
+          console.log(colors.yellow(`   • Abandoned Imports: ${report.summary.unusedImports} imports nobody claimed`));
+        }
+        if (report.summary.unusedExports > 0) {
+          console.log(colors.yellow(`   • Orphaned Exports: ${report.summary.unusedExports} exports sailing to nowhere`));
+        }
+        
+        if (report.summary.totalDeadCode === 0) {
+          console.log(colors.green('   ✨ No dead code found! Your codebase is pristine.'));
+        } else {
+          console.log(colors.green(`   💀 Total dead code hunted: ${report.summary.totalDeadCode} items`));
+          
+          if (report.summary.removed > 0) {
+            console.log(colors.green(`   🗑️  Items eliminated: ${report.summary.removed}`));
+          }
+          if (report.summary.failed > 0) {
+            console.log(colors.red(`   ⚠️  Items that escaped: ${report.summary.failed}`));
+          }
+        }
+      }
+      
+      if (report.snarkyReport) {
+        console.log(colors.cyan('\n📋 AUTOPSY REPORT:'));
+        console.log(colors.white(report.snarkyReport));
+      }
+      
+      if (options.dryRun) {
+        console.log(colors.blue('\n🔍 DRY RUN MODE: No code was eliminated'));
+        console.log(colors.blue('   Run without --dry-run to eliminate dead code'));
+        if (options.aggressive) {
+          console.log(colors.blue('   Use --aggressive for more thorough elimination'));
+        }
+      } else {
+        console.log(colors.green('\n✅ Dead code hunt complete! Repository is cleaner.'));
+      }
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('\n💥 DEAD CODE HUNTER GOON DEPLOYMENT FAILED:')));
+      console.error(colors.red(`Dead code hunt failed: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
 // Easter eggs
 program
   .option('--bailMeOut', 'Motivational quotes from failed startups')
@@ -984,14 +1189,16 @@ program
       console.log(`   P4 (Low): ${initialScan.p4.length}`);
       console.log(`   Total Debt: ${initialScan.totalDebt}`);
       
-      // Step 2: Deploy markdown goons
-      console.log(magenta('\n🗂️  DEPLOYING MARKDOWN FIXER GOONS...'));
+      // Step 2: Deploy all specialized goons
+      let totalFixes = 0;
+      
+      // Deploy Markdown Fixer Goon
+      console.log(magenta('\n🗂️  DEPLOYING MARKDOWN FIXER GOON...'));
       const glob = require('glob');
       const mdFiles = glob.sync('**/*.{md,mdc}', { 
         ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'] 
       });
       
-      let totalFixes = 0;
       for (const file of mdFiles) {
         if (options.target && !options.target.split(',').some(t => file.includes(t.trim()))) {
           continue;
@@ -1004,6 +1211,89 @@ program
           console.log(green(`   ✅ ${file}: ${report.fixesApplied} violations eliminated`));
           totalFixes += report.fixesApplied;
         }
+      }
+      
+      // Deploy Fix-Lint Goon
+      console.log(magenta('\n🔧 DEPLOYING FIX-LINT GOON...'));
+      try {
+        const FixLintGoon = require('../src/goons/fix-lint');
+        const fixLintGoon = new FixLintGoon();
+        const lintReport = await fixLintGoon.eliminateDebt('.', { dryRun: options.dryRun });
+        
+        if (lintReport.summary) {
+          const lintFixes = Object.values(lintReport.summary).reduce((sum, count) => sum + count, 0);
+          totalFixes += lintFixes;
+          console.log(green(`   ✅ Lint fixes applied: ${lintFixes}`));
+        }
+      } catch (error) {
+        console.log(red(`   ❌ Fix-Lint goon failed: ${error.message}`));
+      }
+      
+      // Deploy Import Cleaner Goon
+      console.log(magenta('\n🧹 DEPLOYING IMPORT CLEANER GOON...'));
+      try {
+        const { ImportCleaner } = require('../src/goons/import-cleaner');
+        const importCleaner = new ImportCleaner();
+        const importReport = await importCleaner.eliminateDebt('.', { dryRun: options.dryRun });
+        
+        if (importReport.summary) {
+          const importFixes = Object.values(importReport.summary).reduce((sum, count) => sum + count, 0);
+          totalFixes += importFixes;
+          console.log(green(`   ✅ Import optimizations: ${importFixes}`));
+        }
+      } catch (error) {
+        console.log(red(`   ❌ Import Cleaner goon failed: ${error.message}`));
+      }
+      
+      // Deploy Comment Killer Goon
+      console.log(magenta('\n💀 DEPLOYING COMMENT KILLER GOON...'));
+      try {
+        const { CommentKiller } = require('../src/goons/comment-killer');
+        const commentKiller = new CommentKiller();
+        const commentReport = await commentKiller.eliminateCommentDebt('.', { dryRun: options.dryRun });
+        
+        if (commentReport.summary) {
+          const commentFixes = Object.values(commentReport.summary).reduce((sum, count) => sum + count, 0);
+          totalFixes += commentFixes;
+          console.log(green(`   ✅ Comment debt eliminated: ${commentFixes}`));
+        }
+      } catch (error) {
+        console.log(red(`   ❌ Comment Killer goon failed: ${error.message}`));
+      }
+      
+      // Deploy The Fixer Goon
+      console.log(magenta('\n🔧 DEPLOYING THE FIXER GOON...'));
+      try {
+        const { Fixer } = require('../src/goons/fixer');
+        const fixer = new Fixer();
+        const fixerReport = await fixer.emergencyFix('.', { dryRun: options.dryRun });
+        
+        if (fixerReport.summary) {
+          const fixerFixes = Object.values(fixerReport.summary).reduce((sum, count) => sum + count, 0);
+          totalFixes += fixerFixes;
+          console.log(green(`   ✅ Emergency fixes applied: ${fixerFixes}`));
+        }
+      } catch (error) {
+        console.log(red(`   ❌ The Fixer goon failed: ${error.message}`));
+      }
+      
+      // Deploy Dead Code Hunter Goon
+      console.log(magenta('\n💀 DEPLOYING DEAD CODE HUNTER GOON...'));
+      try {
+        const { DeadCodeHunter } = require('../src/goons/dead-code-hunter');
+        const hunter = new DeadCodeHunter();
+        const hunterReport = await hunter.huntDeadCode('.', { dryRun: options.dryRun });
+        
+        if (hunterReport.summary) {
+          const deadCodeEliminated = hunterReport.summary.removed || 0;
+          totalFixes += deadCodeEliminated;
+          console.log(green(`   ✅ Dead code eliminated: ${deadCodeEliminated}`));
+          if (hunterReport.summary.totalDeadCode > deadCodeEliminated) {
+            console.log(yellow(`   ⚠️  Dead code detected: ${hunterReport.summary.totalDeadCode} (use --aggressive for more)`));
+          }
+        }
+      } catch (error) {
+        console.log(red(`   ❌ Dead Code Hunter goon failed: ${error.message}`));
       }
       
       // Step 3: Final scan
