@@ -265,8 +265,8 @@ This recursive validation proves the concept works in practice.
 
 ### **Snarky Humor**
 
-- **Easter Eggs**: 69 clicks unlock After Dark Mode in dashboard
-- **Taglines**: "Debt Never Sleeps. Neither Should You."
+- **CLI Personality**: `refuctor shame` for motivational debt shaming with financial metaphors
+- **Taglines**: "Debt Never Sleeps. Neither Should You." | "Refactor or Be Repossessed."
 - **Self-Aware**: "Built by someone who created 36 warnings while building a debt warning system."
 
 ### **Professional Edge**

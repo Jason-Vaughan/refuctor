@@ -122,15 +122,15 @@ class GamificationSystem {
       progress: { current: 0, target: 25 }
     });
 
-    // Easter Egg Achievements
-    this.achievements.set('after-dark-discoverer', {
-      id: 'after-dark-discoverer',
-      title: 'Night Owl',
-      description: 'Discovered the After Dark Mode',
-      icon: '🌙',
+    // Professional Achievement
+    this.achievements.set('debt-eliminator', {
+      id: 'debt-eliminator',
+      title: 'Debt Eliminator',
+      description: 'Achieved zero technical debt status',
+      icon: '💀',
       rarity: 'legendary',
-      xp: 69,
-      category: 'easter-egg'
+      xp: 100,
+      category: 'mastery'
     });
 
     this.achievements.set('guido-survivor', {
