@@ -21,6 +21,9 @@ const App = () => {
   const [currentMode, setCurrentMode] = useState(null);
   const [availableModes, setAvailableModes] = useState([]);
   const [loadingMode, setLoadingMode] = useState(false);
+  
+  // Debt Details Modal state
+  const [showDebtModal, setShowDebtModal] = useState(false);
 
   // Fetch comprehensive financial metrics (SSOT)
   const fetchFinancialMetrics = async () => {
@@ -42,6 +45,110 @@ const App = () => {
     } finally {
       setLoadingFinancials(false);
     }
+  };
+
+  // Debt Details Modal handlers
+  const handleDebtDetailsClick = () => {
+    setShowDebtModal(true);
+  };
+
+  const handleDebtModalClose = () => {
+    setShowDebtModal(false);
+  };
+
+  // Get actual debt counts including Guido/Mafia levels (restored from original)
+  const getDebtCounts = (debtData) => {
+    if (!debtData) return { total: 0, p1: 0, p2: 0, p3: 0, p4: 0, guido: 0, mafia: 0 };
+    
+    const guidoCount = debtData.currentDebt?.Guido?.length || 0;
+    const mafiaCount = debtData.currentDebt?.Mafia?.length || 0;
+    const p1Count = debtData.summary?.p1 || 0;
+    const p2Count = debtData.summary?.p2 || 0;
+    const p3Count = debtData.summary?.p3 || 0;
+    const p4Count = debtData.summary?.p4 || 0;
+    
+    return {
+      total: debtData.summary?.total || 0,
+      p1: p1Count,
+      p2: p2Count,
+      p3: p3Count,
+      p4: p4Count,
+      guido: guidoCount,
+      mafia: mafiaCount
+    };
+  };
+
+  // Get detailed debt breakdown with file information (restored from original)
+  const getDetailedDebtBreakdown = (debtData) => {
+    if (!debtData?.summary) return [];
+    
+    const breakdown = [];
+    const summary = debtData.summary;
+    
+    if (summary.markdown > 0) breakdown.push({ 
+      category: 'Markdown Issues', 
+      count: summary.markdown, 
+      icon: '📝',
+      description: 'Documentation formatting and structure issues',
+      severity: 'high'
+    });
+    if (summary.spelling > 0) breakdown.push({ 
+      category: 'Spelling Errors', 
+      count: summary.spelling, 
+      icon: '📚',
+      description: 'Misspelled words and typos in documentation',
+      severity: 'medium'
+    });
+    if (summary.security > 0) breakdown.push({ 
+      category: 'Security Vulnerabilities', 
+      count: summary.security, 
+      icon: '🔒',
+      description: 'Known security issues in dependencies',
+      severity: 'critical'
+    });
+    if (summary.dependencies > 0) breakdown.push({ 
+      category: 'Dependency Issues', 
+      count: summary.dependencies, 
+      icon: '📦',
+      description: 'Outdated or problematic package dependencies',
+      severity: 'medium'
+    });
+    if (summary.eslint > 0) breakdown.push({ 
+      category: 'ESLint Issues', 
+      count: summary.eslint, 
+      icon: '🔧',
+      description: 'Code style and quality violations',
+      severity: 'medium'
+    });
+    if (summary.typescript > 0) breakdown.push({ 
+      category: 'TypeScript Errors', 
+      count: summary.typescript, 
+      icon: '📘',
+      description: 'Type checking and compilation errors',
+      severity: 'high'
+    });
+    if (summary.codeQuality > 0) breakdown.push({ 
+      category: 'Code Quality Issues', 
+      count: summary.codeQuality, 
+      icon: '💻',
+      description: 'Console.log statements, TODOs, and code smells',
+      severity: 'low'
+    });
+    if (summary.formatting > 0) breakdown.push({ 
+      category: 'Formatting Issues', 
+      count: summary.formatting, 
+      icon: '🎨',
+      description: 'Code formatting and style inconsistencies',
+      severity: 'low'
+    });
+    
+    return breakdown;
+  };
+
+  // Get top debt hotspots for modal (restored from original)
+  const getTopHotspots = (debtData) => {
+    if (!debtData?.topHotspots) return [];
+    return debtData.topHotspots.slice(0, 10);
   };
 
   useEffect(() => {
@@ -431,7 +538,7 @@ const App = () => {
 
               {/* Debt Summary */}
               <div className="debt-summary">
-                <div className="debt-metric total">
+                <div className="debt-metric total clickable" onClick={handleDebtDetailsClick}>
                   <div className="metric-value">{financialMetrics?.debtStatus?.summary?.total || 0}</div>
                   <div className="metric-label">Total Debt</div>
                   <div className="metric-subtitle">Click for details</div>
@@ -641,6 +748,94 @@ const App = () => {
         </div>
       </footer>
 
+      {/* Debt Details Modal - Comprehensive Original Version */}
+      {showDebtModal && (
+        <div className="modal-overlay" onClick={handleDebtModalClose}>
+          <div className="debt-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>📊 Debt Analysis Details</h2>
+              <button className="modal-close" onClick={handleDebtModalClose}>✕</button>
+            </div>
+            
+            <div className="modal-content">
+              {/* Summary Stats */}
+              <div className="debt-summary-stats">
+                <div className="summary-stat">
+                  <div className="stat-value">{getDebtCounts(debtData).total}</div>
+                  <div className="stat-label">Total Issues</div>
+                </div>
+                {getDebtCounts(debtData).guido > 0 && (
+                  <div className="summary-stat guido">
+                    <div className="stat-value">{getDebtCounts(debtData).guido}</div>
+                    <div className="stat-label">🤌 Guido Categories</div>
+                  </div>
+                )}
+                <div className="summary-stat">
+                  <div className="stat-value">{getTopHotspots(debtData).length}</div>
+                  <div className="stat-label">Hotspot Files</div>
+                </div>
+              </div>
+
+              {/* Debt Breakdown by Category */}
+              <div className="debt-breakdown-section">
+                <h3>📋 Issues by Category</h3>
+                <div className="debt-categories">
+                  {getDetailedDebtBreakdown(debtData).map((item, index) => (
+                    <div key={index} className={`debt-category-card ${item.severity}`}>
+                      <div className="category-header">
+                        <span className="category-icon">{item.icon}</span>
+                        <div className="category-info">
+                          <h4>{item.category}</h4>
+                          <p>{item.description}</p>
+                        </div>
+                        <div className="category-count">{item.count}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Top Debt Hotspots */}
+              {getTopHotspots(debtData).length > 0 && (
+                <div className="hotspots-section">
+                  <h3>🔥 Top Debt Hotspots</h3>
+                  <div className="hotspots-list">
+                    {getTopHotspots(debtData).map((hotspot, index) => (
+                      <div key={index} className="hotspot-card">
+                        <div className="hotspot-info">
+                          <div className="hotspot-file">{hotspot.file}</div>
+                          <div className="hotspot-stats">
+                            <span className="hotspot-count">{hotspot.debtCount} issues</span>
+                            <span className={`hotspot-priority ${hotspot.priority}`}>
+                              {hotspot.priority.toUpperCase()}
+                            </span>
+                            <span className="hotspot-temp">🌡️ {hotspot.temperature}°</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Guido Messages if present */}
+              {debtData?.currentDebt?.Guido && debtData.currentDebt.Guido.length > 0 && (
+                <div className="guido-messages-section">
+                  <h3>🤌 Guido's Collection Notices</h3>
+                  <div className="guido-messages">
+                    {debtData.currentDebt.Guido.map((message, index) => (
+                      <div key={index} className="guido-message">
+                        <div className="guido-text">{message}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tooltip */}
       {tooltip.show && (
         <div 
@@ -659,6 +854,7 @@ const App = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

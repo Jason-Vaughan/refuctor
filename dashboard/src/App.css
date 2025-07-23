@@ -2198,3 +2198,113 @@ body {
 .terminal-input::placeholder {
   color: #57606f;
 }
+
+/* Debt Details Modal Styles */
+.debt-details-modal {
+  max-width: 700px;
+}
+
+.debt-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.breakdown-section h3 {
+  color: #fff;
+  margin: 0 0 15px 0;
+  font-size: 1.2em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.breakdown-item.critical {
+  border-color: rgba(255, 107, 107, 0.5);
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.breakdown-label {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.breakdown-value {
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.breakdown-value.p1 {
+  color: #ff4444;
+}
+
+.breakdown-value.p2 {
+  color: #ff8800;
+}
+
+.breakdown-value.p3 {
+  color: #ffcc00;
+}
+
+.breakdown-value.p4 {
+  color: #88cc00;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+}
+
+.no-data p {
+  margin: 10px 0;
+}
+
+/* Enhanced Clickable Debt Metric */
+.debt-metric.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.debt-metric.clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.debt-metric.clickable:hover .metric-subtitle {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.debt-metric.clickable:active {
+  transform: translateY(-1px);
+}
+
+/* Responsive Modal Updates */
+@media (max-width: 768px) {
+  .debt-details-modal {
+    width: 95%;
+    margin: 10px;
+  }
+  
+  .breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
