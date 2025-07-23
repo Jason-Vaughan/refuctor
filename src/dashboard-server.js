@@ -86,12 +86,10 @@ class DashboardServer {
 
     async handleDebtScan(req, res) {
         try {
-            console.log('📊 Running debt scan for dashboard...');
             const results = await debtDetector.scanProject(this.projectPath);
             
             // Store scan result in history for trend analysis
             await this.historyTracker.addScanResult(results);
-            console.log('📈 Scan result stored in debt history');
             
             // Get real historical data and trend analysis
             const debtHistory = await this.historyTracker.getHistory(7);
@@ -213,7 +211,6 @@ class DashboardServer {
     // NEW: Enhanced credit score endpoint
     async handleCreditScore(req, res) {
         try {
-            console.log('🔍 Calculating enhanced credit score...');
             
             // Use the enhanced accountant to get real credit score
             const creditData = await this.accountant.calculateCreditScore(this.projectPath);
@@ -247,7 +244,6 @@ class DashboardServer {
     // NEW: Comprehensive financial metrics endpoint (SSOT)
     async handleFinancialMetrics(req, res) {
         try {
-            console.log('📊 Calculating comprehensive financial metrics...');
             
             const creditScore = await this.accountant.calculateCreditScore(this.projectPath);
             const debtCostAnalysis = await this.accountant.analyzeDebtCosts(this.projectPath); // NEW: SSOT debt cost calculation
@@ -388,7 +384,6 @@ class DashboardServer {
     async handleDebtFix(req, res) {
         try {
             const { fixType, targetFile, category, targetFiles } = req.body;
-            console.log(`🔧 Dashboard triggered fix: ${fixType}`, { targetFile, category });
             
             // Enhanced fix operation handling
             let results;
@@ -427,7 +422,6 @@ class DashboardServer {
 
     async handleFileFix(targetFile, fixType) {
         // Mock file-specific fix operation
-        console.log(`🔧 Applying ${fixType} fix to file: ${targetFile}`);
         
         // Simulate fix time based on file type
         const fileExt = targetFile.split('.').pop();
@@ -446,7 +440,6 @@ class DashboardServer {
 
     async handleCategoryFix(targetFile, category) {
         // Mock category-specific fix operation
-        console.log(`🔧 Applying ${category} fixes to file: ${targetFile}`);
         
         const categoryFixes = {
             'markdown': { fixed: 3, message: 'Markdown formatting issues resolved' },
@@ -524,7 +517,6 @@ class DashboardServer {
 
     setupSocketIO() {
         this.io.on('connection', (socket) => {
-            console.log('📡 Dashboard client connected');
             
             // Send initial connection data
             socket.emit('connection-established', {
@@ -671,7 +663,6 @@ class DashboardServer {
             });
 
             socket.on('disconnect', () => {
-                console.log('📡 Dashboard client disconnected');
             });
         });
 
@@ -931,9 +922,6 @@ class DashboardServer {
     async start() {
         return new Promise((resolve) => {
             this.server.listen(this.port, () => {
-                console.log(`🌐 Refuctor Dashboard running at http://localhost:${this.port}`);
-                console.log(`📊 Monitoring project: ${this.projectPath}`);
-                console.log(`💀 The Debt Collector is watching...`);
                 resolve();
             });
         });
@@ -942,7 +930,6 @@ class DashboardServer {
     async stop() {
         return new Promise((resolve) => {
             this.server.close(() => {
-                console.log('🛑 Dashboard server stopped');
                 resolve();
             });
         });
@@ -1074,7 +1061,6 @@ if (require.main === module) {
     
     // Graceful shutdown
     process.on('SIGINT', async () => {
-        console.log('\n🛑 Shutting down dashboard server...');
         await server.stop();
         process.exit(0);
     });

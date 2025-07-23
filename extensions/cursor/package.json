@@ -313,6 +313,6 @@
     "vsce": "^2.15.0"
   },
   "dependencies": {
-    "@puberty-labs/refuctor-core": "^1.0.0"
+    "@puberty-labs/refuctor": "^1.0.0"
   }
 } 

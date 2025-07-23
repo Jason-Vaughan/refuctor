@@ -3,24 +3,32 @@ description:
 globs:
 alwaysApply: false
 ---
+
 # [PROJECT_NAME] Cursor Rules
+
 # "No Bloat. No Debt. No Bullshit."
 
 ## 📋 CURSOR RULES CLONE WORKFLOW
-**This file (`cursorrulesclone.txt`) is a staging/backup file for cursor rules management.**
+
+**This
+file
+(`cursorrulesclone.txt`) is a staging/backup file for cursor rules management.**
 
 **Why this exists:**
+
 - Cursor rules are now managed through Cursor's interface (not as a file)
 - Interface-managed rules can't be edited programmatically
 - This clone file serves as the editable source of truth
 
 **Workflow:**
+
 1. AI makes changes to this clone file when cursor rules need updates
 2. AI will ALWAYS prompt you to copy the entire contents to Cursor's interface
 3. You manually copy/paste the full content to update the live rules
 4. This ensures cursor rules stay synchronized with our development needs
 
 **When to update the live rules:**
+
 - Any time this file is modified during a session
 - When you see a prompt: "🚨 CURSOR RULES UPDATED - Please copy cursorrulesclone.txt to Cursor interface"
 
@@ -29,12 +37,14 @@ alwaysApply: false
 <!-- cSpell:words [PROJECT_TERMS] cursorrules refuctor techdebt -->
 
 ## 🎯 Core Philosophy
+
 - **MINIMUM BLOAT**: Every line of code must justify its existence
 - **IMMEDIATE TECH DEBT**: Address technical debt the moment it's identified
 - **SINGLE SOURCE OF TRUTH**: All documentation lives in ROADMAP.md or README.md
 - **FUNCTIONAL WITH PERSONALITY**: Maintain project character without sacrificing performance
 
 ## 🚫 Anti-Bloat Enforcement
+
 - NO unused imports, variables, or functions
 - NO commented-out code blocks (delete it)
 - NO duplicate logic (DRY principle, but don't over-abstract)
@@ -44,21 +54,26 @@ alwaysApply: false
 - NO premature optimization, but NO obvious performance sins
 
 ## 📁 File Management
+
 - Keep file count minimal - prefer larger cohesive files over micro-files
 - Delete temp files, test artifacts, and debug outputs immediately
 - Use .gitignore aggressively for build artifacts
 - One source of truth: if it's in primary docs, don't duplicate it elsewhere
 
 ## 🎨 Brand Guidelines
+
 - Maintain project personality in CLI output, error messages, and logs
 - Use project-specific terminology consistently
 - Follow established color scheme and visual identity
 - Apply consistent voice and tone throughout user-facing content
 
 ## 🧹 Session Wrap Protocol (Enhanced)
-When user says "session wrap" or "let's wrap", execute this comprehensive 9-step procedure:
+
+When user says "session wrap" or "let's wrap",
+execute this comprehensive 9-step procedure:
 
 ### 1. Session Summary 📋
+
 - **Accomplishments**: What we built, fixed, or improved
 - **Technical breakthroughs**: Solutions to blockers or architecture decisions
 - **Testing results**: What works, what broke, validation outcomes
@@ -66,6 +81,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Performance metrics**: Build times, bundle sizes, runtime improvements
 
 ### 2. Next Session Priorities 🎯
+
 - **Critical path items**: Must-do tasks for next session
 - **Specific success criteria**: Measurable goals to achieve
 - **Roadmap milestone progress**: Which milestones advanced/completed
@@ -73,6 +89,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Risk assessments**: Potential obstacles and mitigation strategies
 
 ### 3. Documentation Maintenance 📚
+
 - **Update project documentation**: Add new features, modify milestones, update status
 - **Update cursor rules**: Reflect any new patterns, rules, or architecture changes through Cursor interface
 - **Brand guidelines compliance**: Ensure project personality maintained
@@ -80,11 +97,12 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Cross-reference validation**: Check internal links and file references
 
 ### 4. Technical Debt Cleanup 🧹
+
 - **AUTOMATED DEBT SCANNING**: Run comprehensive tech debt detection
 - **Update TECHDEBT.md**: Log new issues found, mark resolved items complete
 - **Cursor Error Analysis**: Count and categorize all IDE warning indicators
 - **Linting Issues**: `npx markdownlint-cli *.md` and other applicable linters
-- **Spell Check Issues**: `npx cspell "**/*"` across all relevant files  
+- **Spell Check Issues**: `npx cspell "**/*"` across all relevant files
 - **Unused Dependencies**: Analyze package.json vs actual imports
 - **Dead Code Detection**: Functions, variables, imports no longer referenced
 - **TODO Comment Audit**: Find orphaned TODOs without corresponding issues
@@ -96,6 +114,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **DEBT ACCOUNTABILITY**: Every new debt item gets session timestamp and priority
 
 ### 5. Configuration Validation ⚙️
+
 - **Verify .gitignore**: Add new patterns for build artifacts, temp files
 - **Check package.json**: Version consistency, dependency alignment, script validity
 - **Validate cursor configurations**: Interface-managed rules, workspace settings
@@ -103,13 +122,16 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Cross-platform compatibility**: Ensure setup works on different systems
 
 ### 6. Git Management Strategy 🔀
+
 **Local Development Commits (Full Project):**
+
 - **Commit ALL files locally**: Documentation, cursor rules clone file, internal docs, dev files
 - **Full project history**: Maintain complete development context
 - **Descriptive commit messages** (under 200 chars, explain the "why")
 - **Include session wrap context** in commit description
 
 **Distribution Preparation:**
+
 - **Review .gitignore carefully**: Only core files for public distribution
 - **Exclude internal docs**: Development roadmaps, cursor rules clone, dev notes, session wraps
 - **Core files only**: Source code, configs, essential documentation, package.json
@@ -117,6 +139,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Version bump if features added** following semantic versioning
 
 ### 7. Handoff Notes 🚀
+
 - **Clear starting points**: Exactly where to begin next session
 - **Development environment status**: What's running, what's configured
 - **Known issues with context**: Debugging solutions that worked
@@ -124,6 +147,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Architecture state**: Current working patterns and decisions
 
 ### 8. Project Health Report 📊
+
 - **Repository cleanliness**: File count, organization, bloat assessment
 - **Documentation currency**: How up-to-date is everything (0-100%)
 - **Feature completion**: Progress toward MVP and milestone goals
@@ -131,6 +155,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Technical debt score**: Overall codebase health assessment
 
 ### 9. AI Self-Reflection & Process Improvement 🤔
+
 - **Session learnings**: What worked well vs. what caused friction
 - **Process bottlenecks**: Identify inefficient patterns or repeated issues
 - **Rule enhancement opportunities**: Suggest specific cursor rules improvements
@@ -139,6 +164,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - **Update recommendations**: Propose specific rule changes for next session
 
 ## 🛠️ Code Quality Standards
+
 - Functions should do one thing well
 - Variable names should be descriptive (no single letters except loop counters)
 - Error messages should be helpful and match project personality
@@ -147,6 +173,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - Async/await over Promises over callbacks
 
 ## 🎯 Project-Specific Rules
+
 - CLI commands should reflect project personality and branding
 - Error messages should use consistent terminology and tone
 - Success messages should match project voice
@@ -154,6 +181,7 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - Follow established naming conventions and patterns
 
 ## 🚨 Automatic Actions
+
 - Run linter after every code change
 - Clean up imports on save
 - Validate JSON configs on modification
@@ -161,7 +189,9 @@ When user says "session wrap" or "let's wrap", execute this comprehensive 9-step
 - Verify all external links in documentation
 
 ## 💡 Decision Framework
+
 Before adding anything, ask:
+
 1. Does this solve a real problem?
 2. Is there a simpler way?
 3. Will this create maintenance burden?
@@ -169,6 +199,7 @@ Before adding anything, ask:
 5. Can we delete something else instead?
 
 ## 📋 Session Context Continuity
+
 - **Always update cursor rules** through Cursor interface with current working state during session wraps
 - **Document architecture changes** immediately when they occur
 - **Track TODO items** with priority and context in primary documentation
@@ -176,6 +207,7 @@ Before adding anything, ask:
 - **Maintain clean development state** between sessions
 
 ## 📁 File Organization Standards
+
 - **Naming conventions**: Use descriptive prefixes consistent with project patterns
 - **File lifecycle management**: Clean up temp files, test artifacts, debug outputs
 - **Directory structure**: Organize by function, not file type
@@ -183,6 +215,7 @@ Before adding anything, ask:
 - **Deletion protocol**: Justify removals, check for dependencies before deleting
 
 ## 🛠️ Development Workflow
+
 - **Manual testing**: Test all functionality during development
 - **Cross-platform validation**: Ensure compatibility across operating systems
 - **Version management**: Use semantic versioning with clear release notes
@@ -190,6 +223,7 @@ Before adding anything, ask:
 - **Migration guides**: Provide clear upgrade paths for users
 
 ## 🔧 Technical Standards
+
 - **Error handling**: Create helpful error messages matching project personality
 - **Configuration management**: Support multiple config sources with validation
 - **File system operations**: Use proper permission checking and backup strategies
@@ -197,18 +231,22 @@ Before adding anything, ask:
 - **Performance**: Monitor build times, startup speed, memory usage
 
 ## 🔀 Git & Distribution Strategy
+
 **Local Development Philosophy:**
+
 - **Commit everything locally**: Full development context, internal docs, roadmaps
 - **Rich development history**: Track all decisions, changes, and iterations
 - **No file exclusions locally**: Complete project state for development continuity
 
 **Distribution Philosophy:**
+
 - **Minimal public footprint**: Only essential files for end users
 - **Strategic .gitignore**: Hide internal development artifacts
 - **Core functionality focus**: Main functionality, configs, user documentation only
 - **Clean public repo**: No development notes, roadmaps, or internal planning docs
 
 **Files for Local Development Only:**
+
 - ROADMAP.md or detailed planning documents
 - cursorrulesclone.txt (development guidelines backup)
 - Session wrap files and development notes
@@ -216,9 +254,11 @@ Before adding anything, ask:
 - Development-specific assets and configurations
 
 **Files for Public Distribution:**
+
 - Source code and core functionality
 - package.json and essential configs
 - User-facing README and documentation
 - License and contribution guidelines
 
-Remember: Maintain quality, eliminate bloat, and keep the project personality intact.
+Remember: Maintain quality,
+eliminate bloat, and keep the project personality intact.

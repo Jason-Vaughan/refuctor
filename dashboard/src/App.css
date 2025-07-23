@@ -658,7 +658,7 @@ body {
 
 .financial-metrics h2 {
   color: #ffffff;
-  font-size: 2rem;
+  font-size: 2.4rem; /* Increased from 2rem */
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.2rem;
@@ -690,14 +690,14 @@ body {
 }
 
 .financial-metric .metric-value {
-  font-size: 1.5rem;
+  font-size: 2rem; /* Increased from 1.5rem */
   font-weight: 900;
   color: #ffffff;
   margin-bottom: 0.5rem;
 }
 
 .financial-metric .metric-label {
-  font-size: 0.9rem;
+  font-size: 1.2rem; /* Increased from 0.9rem */
   color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -726,7 +726,7 @@ body {
 
 .status-header h2 {
   color: #ffffff;
-  font-size: 2rem;
+  font-size: 2.4rem; /* Increased from 2rem */
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.2rem;
@@ -738,7 +738,7 @@ body {
 
 .last-scan {
   color: #888;
-  font-size: 0.9rem;
+  font-size: 1.1rem; /* Increased from 0.9rem */
 }
 
 /* Shame Level */
@@ -751,7 +751,7 @@ body {
   border-radius: 8px;
   font-weight: bold;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1.3rem; /* Increased from 1.1rem */
 }
 
 .shame-indicator.debt-free {
@@ -807,7 +807,7 @@ body {
 }
 
 .debt-metric.total .metric-label {
-  font-size: 1.2rem;
+  font-size: 1.4rem; /* Increased from 1.2rem */
   color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -834,7 +834,7 @@ body {
 }
 
 .debt-metric .metric-value {
-  font-size: 2rem;
+  font-size: 2.4rem; /* Increased from 2rem */
   font-weight: 900;
   margin-bottom: 0.5rem;
 }
@@ -856,7 +856,7 @@ body {
 }
 
 .debt-metric .metric-label {
-  font-size: 0.9rem;
+  font-size: 1.2rem; /* Increased from 0.9rem */
   color: #888;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -865,7 +865,7 @@ body {
 /* Clickable total debt */
 .debt-metric.total .metric-subtitle {
   color: #777;
-  font-size: 0.9rem;
+  font-size: 1.1rem; /* Increased from 0.9rem */
   font-style: italic;
   margin-top: 0.3rem;
 }

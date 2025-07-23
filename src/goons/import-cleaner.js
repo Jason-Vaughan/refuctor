@@ -61,8 +61,6 @@ class ImportCleaner {
   async eliminateDebt(projectPath = '.', options = {}) {
     const { dryRun = true, aggressive = false, removeUnused = true } = options;
     
-    console.log(`\n🧹 IMPORT CLEANER GOON DEPLOYED`);
-    console.log(`💀 ${this.personality}`);
     console.log(`🎯 Mode: ${dryRun ? 'DRY RUN (Preview)' : 'LIVE CLEANUP'}`);
     console.log(`📂 Target: ${path.resolve(projectPath)}\n`);
     
@@ -93,7 +91,6 @@ class ImportCleaner {
     };
     
     if (removeUnused && analysis.unusedImports.length > 0) {
-      console.log(`🗑️  Found ${analysis.unusedImports.length} unused imports to eliminate...`);
       
       if (!dryRun) {
         const cleanupResult = await this.cleanupUnusedImports(analysis.unusedImports, projectPath);
@@ -102,7 +99,6 @@ class ImportCleaner {
         report.bytesFreed = cleanupResult.bytesFreed;
         report.errors = cleanupResult.errors;
       } else {
-        console.log(`   📋 Would remove ${analysis.unusedImports.length} unused imports`);
         report.importsRemoved = analysis.unusedImports.length;
       }
     }
@@ -121,43 +117,26 @@ class ImportCleaner {
    * Generate snarky Goon-style summary
    */
   generateGoonSummary(report, analysis) {
-    console.log(`\n🧹 IMPORT CLEANER GOON SUMMARY 🧹`);
     console.log(`⏱️  Duration: ${Math.round(report.duration / 1000)}s`);
-    console.log(`📁 Files Analyzed: ${report.totalFilesAnalyzed}`);
-    console.log(`🗑️  Unused Imports Found: ${report.unusedImportsFound}`);
-    console.log(`🔄 Circular Dependencies: ${report.circularDependencies}`);
-    console.log(`📋 Duplicate Imports: ${report.duplicateImports}`);
     
     if (report.totalIssuesFound === 0) {
-      console.log(`\n🏆 Holy import optimization, Batman! Your imports are cleaner than a mobster's laundry!`);
-      console.log(`💎 No import debt found. You magnificent import-managing legend!`);
     } else {
-      console.log(`\n💸 IMPORT DEBT DETECTED: ${report.totalIssuesFound} issues found`);
       
       if (report.mode === 'dry-run') {
-        console.log(`📋 Would eliminate ${report.importsRemoved} unused imports`);
-        console.log(`💰 Potential cleanup: Reduce bloat and improve build times`);
       } else {
-        console.log(`✅ Eliminated ${report.importsRemoved} unused imports`);
-        console.log(`📦 Files cleaned: ${report.filesFixed}`);
-        console.log(`💾 Bytes freed: ${report.bytesFreed}`);
       }
     }
     
     // Show circular dependencies warning
     if (report.circularDependencies > 0) {
-      console.log(`\n⚠️  CIRCULAR DEPENDENCY ALERT: ${report.circularDependencies} detected`);
-      console.log(`🔄 These require manual architect-level attention to resolve`);
     }
     
     if (report.errors.length > 0) {
-      console.log(`\n❌ ERRORS ENCOUNTERED: ${report.errors.length}`);
       report.errors.slice(0, 3).forEach(error => {
         console.log(`   💥 ${path.basename(error.file)}: ${error.error}`);
       });
     }
     
-    console.log(`\n🧹 Import Cleaner Goon: "Your imports are now optimized for maximum efficiency. Capisce?"`);
   }
 
   // Simplified version for now - keeping the basic structure

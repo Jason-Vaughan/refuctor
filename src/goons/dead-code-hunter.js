@@ -59,14 +59,12 @@ class DeadCodeHunter {
     } = options;
     
     if (showProgress) {
-      console.log('🔍 Analyzing codebase structure...');
     }
     
     // Phase 1: Build code database
     await this.buildCodeDatabase(projectPath, includeTestFiles);
     
     if (showProgress) {
-      console.log('💀 Hunting for dead code...');
     }
     
     // Phase 2: Analyze usage patterns
@@ -76,7 +74,6 @@ class DeadCodeHunter {
     const removalPlan = this.generateRemovalPlan(deadCodeResults, aggressive);
     
     if (showProgress) {
-      console.log(`🎯 Found ${removalPlan.totalItems} potential dead code items`);
     }
     
     let executionResults = null;
@@ -481,7 +478,6 @@ class DeadCodeHunter {
   async removeDeadCode(item) {
     // This is a simplified implementation
     // In a real scenario, you'd want more sophisticated AST manipulation
-    console.log(`🗑️  Would remove ${item.type}: ${item.name} from ${item.file}:${item.line}`);
   }
 
   /**

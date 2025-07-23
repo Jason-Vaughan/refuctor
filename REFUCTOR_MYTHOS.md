@@ -700,6 +700,7 @@ graph TD
 ### **Web Dashboard Financial Metrics**
 
 **Real-time Credit Monitoring Features:**
+
 - **Credit Score Tracker**: Live 300-850 score with trend indicators
 - **Interest Rate Calculator**: Dynamic APR based on current coding patterns  
 - **Payment History Timeline**: Visual debt payment record with late payment flags
@@ -759,11 +760,13 @@ graph TD
 *"When the Family can't collect VIGorish, they call me. I don't just repo code - I repo fingers. Capisce?"*
 
 **Escalation Timeline:**
+
 1. **P4 → P3 → P2 → P1**: Normal Collection Agency operations
 2. **🕴️ MAFIA TAKEOVER**: Debt sold to "private investors", VIGorish charging begins
 3. **🤌 GUIDO DEPLOYMENT**: VIGorish payment overdue, Thumb Crusher activated
 
 **VIGorish Rates (Daily Compounding):**
+
 - **150+ Total Debt**: 25% daily
 - **100+ Total Debt**: 20% daily  
 - **50+ Total Debt**: 15% daily
@@ -952,6 +955,7 @@ gantt
 ### **Current Implementation Metrics**
 
 **✅ PHASE 1 COMPLETE:**
+
 - **Commands**: 11/11 ✅ COMPLETE  
 - **Core Modules**: 4/4 ✅ COMPLETE  
 - **Goon Tools**: 1/6 specialized tools (fix-markdown working)  
@@ -961,6 +965,7 @@ gantt
 - **Documentation**: Complete visual roadmap ✅  
 
 **📋 UPCOMING PHASES:**
+
 - **Phase 2**: GUI Dashboard with Electron framework
 - **Phase 3**: MCP Server integration for cross-workspace coordination  
 - **Phase 4**: Complete Debt Collection Agency (Goons + Accountant + The Fixer + Detective)

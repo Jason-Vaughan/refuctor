@@ -47,8 +47,6 @@ class FixLintGoon {
   async eliminateDebt(projectPath = '.', options = {}) {
     const { dryRun = true, filePattern = null, types = ['javascript', 'typescript', 'json'] } = options;
     
-    console.log(`🔧 FIX-LINT GOON DEPLOYED`);
-    console.log(`💀 ${this.personality}`);
     console.log(`🎯 Mode: ${dryRun ? 'DRY RUN (Preview)' : 'LIVE FIXES'}`);
     console.log(`📂 Target: ${path.resolve(projectPath)}\n`);
     
@@ -72,7 +70,6 @@ class FixLintGoon {
     // Process each linter type
     for (const linterType of types) {
       if (!this.linters[linterType]) {
-        console.log(`⚠️  Unknown linter type: ${linterType}. Skipping...`);
         continue;
       }
 
@@ -128,11 +125,9 @@ class FixLintGoon {
     allFiles = [...new Set(allFiles)];
     
     if (allFiles.length === 0) {
-      console.log(`   📭 No ${linterType} files found to process`);
       return report;
     }
 
-    console.log(`   📁 Found ${allFiles.length} ${linterType} files`);
 
     // Separate ignored vs processable files
     const filesToProcess = [];
@@ -151,11 +146,9 @@ class FixLintGoon {
     report.ignoredFiles = ignoredFiles;
 
     if (filesToProcess.length === 0) {
-      console.log(`   🏝️ All ${linterType} files are on debt holiday!`);
       return report;
     }
 
-    console.log(`   🔧 Processing ${filesToProcess.length} ${linterType} files...`);
 
     // Process each file
     for (const file of filesToProcess) {
@@ -170,7 +163,6 @@ class FixLintGoon {
             fixes: fixResult.fixesApplied,
             issues: fixResult.issues || []
           });
-          console.log(`   ✅ ${file}: ${fixResult.fixesApplied} fixes ${dryRun ? 'would be' : ''} applied`);
         } else {
           console.log(`   ✨ ${file}: Already clean (you magnificent developer!)`);
         }
@@ -182,7 +174,6 @@ class FixLintGoon {
           file,
           error: error.message
         });
-        console.log(`   ❌ ${file}: Error - ${error.message}`);
       }
     }
 
@@ -290,37 +281,24 @@ class FixLintGoon {
    * Generate snarky summary with Refuctor personality
    */
   generateSnarkySummary(report) {
-    console.log(`\n💀 FIX-LINT GOON SUMMARY 💀`);
     console.log(`⏱️  Duration: ${Math.round(report.duration / 1000)}s`);
-    console.log(`📁 Files Processed: ${report.totalFilesProcessed}`);
-    console.log(`🏖️  Files on Debt Holiday: ${report.totalFilesIgnored}`);
-    console.log(`🔧 Total Fixes Applied: ${report.totalFixesApplied}`);
     
     if (report.totalFixesApplied === 0 && report.totalFilesProcessed > 0) {
-      console.log(`\n🏆 Holy shit, your code is actually clean! The Fix-Lint Goon is... impressed?`);
-      console.log(`💎 No debt found. You magnificent code-slaying legend!`);
     } else if (report.totalFixesApplied > 0) {
-      console.log(`\n💰 DEBT REFINANCED: ${report.totalFixesApplied} issues ${report.mode === 'dry-run' ? 'would be' : 'have been'} eliminated!`);
-      console.log(`🎯 Your code just got a credit score boost!`);
     }
 
     // Show breakdown by type
-    console.log(`\n📊 BREAKDOWN BY TYPE:`);
     for (const [type, typeReport] of Object.entries(report.fixesByType)) {
       console.log(`   ${type}: ${typeReport.fixesApplied} fixes (${typeReport.filesProcessed} files)`);
     }
 
     if (report.errors.length > 0) {
-      console.log(`\n⚠️  ERRORS ENCOUNTERED: ${report.errors.length}`);
       report.errors.slice(0, 5).forEach(error => {
-        console.log(`   ❌ ${error.file}: ${error.error}`);
       });
       if (report.errors.length > 5) {
-        console.log(`   ... and ${report.errors.length - 5} more errors`);
       }
     }
 
-    console.log(`\n🤌 Fix-Lint Goon: "Capisce? Your code is less embarrassing now."`);
   }
 }
 

@@ -1,6 +1,8 @@
 # Refuctor - The Debt Cleansing Syndicate
 
-![Refuctor Logo](https://github.com/Jason-Vaughan/puberty-labs-assets/blob/main/refuctor-logo.png?raw=true)
+<img
+src="https://github.com/Jason-Vaughan/puberty-labs-assets/blob/main/refuctor-log
+o.png?raw=true" alt="Refuctor Logo" width="150" style="max-width: 100%;">
 
 > *"Because even your code deserves a fresh financial start."*
 
@@ -14,6 +16,9 @@
 that turns code cleanup into a darkly humorous financial metaphor. It's the
 world's first debt management system that actually makes developers *want* to
 clean up their code.
+
+**🎯 Optimized for Cursor IDE** - Native integration with AI-powered workflows,
+plus dedicated extension available for enhanced functionality.
 
 ### 🔥 Origin Story
 
@@ -36,22 +41,40 @@ actually works.
 ### **Global Installation (Recommended)**
 
 ```bash
+
 # Install globally for CLI access
+
 npm install -g @puberty-labs/refuctor
 
 # Verify installation
+
 refuctor --version
-```
+```text
 
 ### **Local Installation**
 
 ```bash
+
 # Install locally in your project
+
 npm install --save-dev @puberty-labs/refuctor
 
 # Use with npx
+
 npx refuctor scan
-```
+```text
+
+### **Cursor Extension**
+
+```bash
+
+# Install the dedicated Cursor extension for enhanced IDE integration
+
+# Available through Cursor's extension marketplace
+
+# Search for "Refuctor - The Debt Collector" in Extensions
+
+```text
 
 ---
 
@@ -64,6 +87,17 @@ npx refuctor scan
 - **📊 Debt Detection Engine**: Markdown linting, spell checking, security audits with MAFIA/Guido escalation levels
 - **🎯 Interactive Controls**: SCAN DEBT, FIX DEBT, and NUCLEAR OPTION buttons with real-time progress updates
 - **💰 Financial Metaphors**: P1-P4 debt levels with loan shark takeover warnings when debt reaches critical mass
+
+### 🎯 **Cursor IDE Integration**
+
+- **🤖 Native AI Assistant Integration**: Seamless integration with Cursor's AI workflows via MCP (Model Context Protocol)
+- **🔌 Dedicated Extension**: Custom Cursor extension for enhanced IDE experience with real-time debt indicators
+- **⚡ AI-Powered Commands**: Natural language debt scanning - just ask "scan this project for technical debt"
+- **🎯 Optimized Workflows**: Built specifically for Cursor's AI-first development approach
+- **📊 Status Bar Integration**: Live debt count and credit score display in IDE
+
+### ✅ **Advanced Features**
+
 - **⚡ Real-time WebSocket**: Live debt updates, progress tracking, critical alerts, and automated monitoring
 - **🔥 Advanced Heat Maps**: File-level debt visualization with interactive hotspot analysis and temperature indicators
 - **📈 Trend Analysis**: Historical debt tracking, velocity calculations, and predictive insights with real trend data
@@ -80,7 +114,9 @@ npx refuctor scan
 
 ### 🎯 **Dashboard Features (Production Ready)**
 
-**The Refuctor dashboard at `http://localhost:1947` provides comprehensive debt management:**
+**The
+Refuctor
+dashboard at `http://localhost:1947` provides comprehensive debt management:**
 
 - **🔥 Advanced Debt Visualization**: File-level breakdown with sorting, filtering, and pagination
 - **📈 Historical Trend Analysis**: Interactive charts showing debt velocity, priority distribution, and key insights
@@ -90,6 +126,7 @@ npx refuctor scan
 - **🎯 Performance Optimized**: Debounced search, memoized components, and efficient data handling
 
 **Dashboard Features:**
+
 - **File Debt Breakdown**: Interactive component showing files with debt counts, categories, and severity
 - **Trend Analysis**: Historical debt visualization with tabbed interface and SVG charts
 - **Search & Filter**: Debounced search with severity filtering and pagination
@@ -98,7 +135,7 @@ npx refuctor scan
 ### 🎯 **Specialized Goons (Advanced Features)**
 
 - **🔧 Markdown Fixer**: Automated markdown linting cleanup
-- **📦 Import Cleaner**: Unused import elimination  
+- **📦 Import Cleaner**: Unused import elimination
 - **💀 Comment Killer**: Remove outdated comments and dead code
 - **💰 Accountant**: Credit rating system (300-850 score) with financial metaphors
 - **🔧 General Fixer**: Multi-purpose debt cleanup tool
@@ -110,79 +147,107 @@ npx refuctor scan
 ### **1. Initialize Your Project**
 
 ```bash
+
 # Navigate to your project directory
+
 cd your-project
 
 # Run the comprehensive setup wizard
+
 refuctor init
 
 # The setup wizard will:
+
 # 🔍 Analyze your project (detect React, Vue, Angular, Node.js)
+
 # 📝 Generate project-specific cspell.json dictionary
+
 # 🚫 Create .debtignore file with framework-specific patterns
+
 # 📊 Set up context-aware TECHDEBT.md with monitoring recommendations
+
 # 💻 Configure IDE integration (Cursor workspace optimization)
+
 # 🎯 Provide actionable next steps for debt management
-```
+
+```text
 
 ### **2. Scan for Debt**
 
 ```bash
+
 # Comprehensive debt scan
+
 refuctor scan
 
 # Verbose output with detailed breakdown
+
 refuctor scan --verbose
 
 # Check project information
+
 refuctor info
-```
+```text
 
 ### **3. Launch Dashboard (Optional)**
 
 ```bash
+
 # Start real-time dashboard (basic monitoring)
+
 refuctor serve
 
 # Start without opening browser
+
 refuctor serve --no-browser
 
 # Open http://localhost:1947 for basic debt monitoring
+
 # Note: Dashboard is functional but still in development
-```
+
+```text
 
 ### **4. Fix Issues**
 
 ```bash
+
 # See what can be auto-fixed
+
 refuctor fix --dry-run
 
 # Apply automatic fixes
+
 refuctor fix
 
 # Use specialized goons
+
 refuctor goon fix-markdown
 refuctor goon clean-imports
 refuctor goon comment-killer
-```
+```text
 
 ### **5. 🍳 Cook the Books (When Refuctor Misses Issues)**
 
 When VS Code shows problems that Refuctor scan doesn't detect:
 
 ```bash
+
 # Export VS Code problems to markdown report
+
 refuctor cook
 
 # Custom output file
+
 refuctor cook --output my-debt-report.md
 
 # Different formats
+
 refuctor cook --format json
 refuctor cook --format csv
-```
+```text
 
 **What "Cook the Books" does:**
+
 - 🍳 Runs markdownlint with JSON output (catches markdown issues)
 - 📝 Runs cspell for spelling issues (with detailed reporting)
 - 💻 Runs TypeScript checks if applicable
@@ -204,7 +269,7 @@ refuctor info            # Show project analysis
 refuctor shame           # Generate humorous debt report
 refuctor wrap            # Session wrap protocol
 refuctor cook            # Export VS Code problems
-```
+```text
 
 ### **Goon Commands (Specialized Tools)**
 
@@ -214,14 +279,14 @@ refuctor goon clean-imports    # Remove unused imports
 refuctor goon comment-killer   # Remove dead comments
 refuctor goon accountant       # Generate credit score report
 refuctor goon fixer           # General purpose fixes
-```
+```text
 
 ### **Easter Eggs**
 
 ```bash
 refuctor --bailmeout     # Motivational quotes
 refuctor shame           # Humorous debt shaming
-```
+```text
 
 ---
 
@@ -302,20 +367,30 @@ Refuctor automatically detects and configures for:
 
 ## 📊 MCP Integration
 
-Refuctor includes a Model Context Protocol (MCP) server for AI assistant integration:
+Refuctor
+includes a Model Context Protocol (MCP) server for AI assistant integration:
 
 ```bash
+
 # Start MCP server
+
 refuctor mcp-server
 
 # Available MCP tools:
+
 # - scan_debt: Scan project for technical debt
+
 # - fix_debt: Auto-fix common issues
+
 # - get_shame_report: Generate humorous debt report
+
 # - broadcast_debt_status: Share debt status across workspaces
+
 # - manage_debt_ignore: Manage .debtignore patterns
+
 # - get_debt_status: Get current debt status and trends
-```
+
+```text
 
 ---
 
@@ -374,24 +449,42 @@ refuctor mcp-server
 ### 🎯 **Future Development**
 
 - Gamification system with achievements
-- Advanced AI-powered suggestions  
+- Advanced AI-powered suggestions
 - Team collaboration features
 - IDE extensions (Cursor, VS Code)
 
-**Recommendation**: Use the CLI commands for production work, dashboard for monitoring only.
+**Recommendation**: Use the CLI commands for production work,
+dashboard for monitoring only.
 
 ---
 
 ## 🎬 Conclusion
 
-**Refuctor transforms technical debt management from reactive cleanup to proactive prevention.** By combining professional-grade tooling with irreverent humor and financial metaphors, we've created a tool that developers actually want to use.
+**Refuctor
+transforms
+technical
+debt
+management
+from
+reactive
+cleanup
+to
+proactive
+prevention.**
+By
+combining
+professional-grade tooling with irreverent humor and financial metaphors,
+we've created a tool that developers actually want to use.
 
-The foundation is proven, the results are measurable, and the personality is unforgettable.
+The foundation is proven,
+the results are measurable, and the personality is unforgettable.
 
 **Ready to eliminate technical debt with a sense of humor?**
 
 ---
 
-*"Built by someone who created 36 warnings while building a debt warning system. Self-own level: legendary."*
+*"Built
+by someone who created 36 warnings while building a debt warning system.
+Self-own level: legendary."*
 
 **Let's turn technical debt into a solved problem.** 🚀💪

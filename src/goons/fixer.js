@@ -50,8 +50,6 @@ class Fixer {
       maxFixAttempts = 5
     } = options;
     
-    console.log('🚨 EMERGENCY FIXER ACTIVATED');
-    console.log('Attempting to fix critical build-blocking issues...\n');
     
     await this.ignoreParser.loadIgnorePatterns(projectPath);
     
@@ -66,20 +64,16 @@ class Fixer {
     
     // Get initial build status
     const initialBuildStatus = await this.checkBuildStatus(projectPath);
-    console.log(`📊 Initial build status: ${initialBuildStatus.success ? '✅ PASSING' : '❌ FAILING'}`);
     
     if (initialBuildStatus.success) {
-      console.log('🎉 Build is already passing - no emergency fixes needed!');
       return { ...results, buildStatus: 'passing' };
     }
     
     // Extract error information
     const buildErrors = this.parseBuildErrors(initialBuildStatus.error);
-    console.log(`🔍 Found ${buildErrors.length} build errors to fix\n`);
     
     // Attempt fixes
     for (let attempt = 1; attempt <= maxFixAttempts; attempt++) {
-      console.log(`🔧 Fix attempt ${attempt}/${maxFixAttempts}...`);
       results.totalAttempts = attempt;
       
       const fixResult = await this.applyEmergencyFixes(projectPath, buildErrors, {
@@ -92,7 +86,6 @@ class Fixer {
       results.fixes.push(...fixResult.fixes);
       
       if (dryRun) {
-        console.log('🔍 DRY RUN: Would apply fixes without testing build');
         break;
       }
       
@@ -100,24 +93,19 @@ class Fixer {
       const buildStatus = await this.checkBuildStatus(projectPath);
       
       if (buildStatus.success) {
-        console.log(`🎉 BUILD FIXED after ${attempt} attempts!`);
         results.buildStatus = 'fixed';
         results.criticalIssuesResolved = buildErrors.length;
         break;
       } else {
-        console.log(`❌ Build still failing after attempt ${attempt}`);
         // Update build errors for next iteration
         const newBuildErrors = this.parseBuildErrors(buildStatus.error);
         if (newBuildErrors.length < buildErrors.length) {
-          console.log(`📈 Progress: Reduced errors from ${buildErrors.length} to ${newBuildErrors.length}`);
           buildErrors.splice(0, buildErrors.length, ...newBuildErrors);
         }
       }
     }
     
     if (results.buildStatus !== 'fixed') {
-      console.log('⚠️  Emergency fixes could not resolve all build issues');
-      console.log('💡 Manual intervention may be required');
       results.buildStatus = 'partially_fixed';
     }
     
@@ -412,8 +400,6 @@ class Fixer {
       generateTestFiles = false
     } = options;
     
-    console.log('🧪 PREPARING TEST ENVIRONMENT');
-    console.log('Setting up clean testing state...\n');
     
     const results = {
       cacheCleared: false,
@@ -427,24 +413,20 @@ class Fixer {
       if (clearCache) {
         await this.clearBuildCache(projectPath);
         results.cacheCleared = true;
-        console.log('✅ Build cache cleared');
       }
       
       // Install dependencies if requested
       if (installDependencies) {
         await this.installDependencies(projectPath);
         results.dependenciesInstalled = true;
-        console.log('✅ Dependencies installed');
       }
       
       // Generate basic test files if requested
       if (generateTestFiles) {
         await this.generateBasicTestFiles(projectPath);
         results.testFilesGenerated = true;
-        console.log('✅ Basic test files generated');
       }
       
-      console.log('\n🎉 Test environment ready!');
       
     } catch (error) {
       results.errors.push(error.message);

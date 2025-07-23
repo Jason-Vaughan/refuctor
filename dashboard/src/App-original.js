@@ -25,17 +25,14 @@ const App = () => {
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
-      console.log('🔌 Connected to Refuctor Dashboard');
       setConnected(true);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('🔌 Disconnected from Refuctor Dashboard');
       setConnected(false);
     });
 
     newSocket.on('debt-update', (data) => {
-      console.log('📊 Debt update received:', data.type);
       if (data.type === 'scan-complete') {
         setDebtData(data.data);
         setLastScan(data.timestamp);
@@ -98,7 +95,6 @@ const App = () => {
         'nuclear': 'Complete debt elimination'
       };
       
-      console.log(`🔧 ${fixActions[fixType]} initiated...`);
       
       const response = await fetch('/api/debt/fix', {
         method: 'POST',
@@ -109,15 +105,11 @@ const App = () => {
       });
       
       const data = await response.json();
-      console.log('🔧 Fix completed:', data.message);
       
       // Special handling for different fix types
       if (fixType === 'ai-help') {
-        // TODO: Open AI assistance modal
-        console.log('🤖 AI Collection Agency dispatched');
       } else if (fixType === 'schedule') {
         // TODO: Open debt payment scheduler
-        console.log('💰 Debt refinancing options prepared');
       }
       
       // Refresh data after fix
@@ -130,8 +122,6 @@ const App = () => {
   // Auto-fix integration handlers
   const handleFileSelect = async (filePath) => {
     try {
-      console.log(`📂 Opening file: ${filePath}`);
-      // TODO: Implement file viewer integration
       alert(`File selected: ${filePath}\nFile viewer integration coming soon!`);
     } catch (error) {
       console.error('💥 File selection failed:', error);
@@ -140,7 +130,6 @@ const App = () => {
 
   const handleDebtItemClick = async (filePath, action) => {
     try {
-      console.log(`🔧 Debt item action: ${action} on ${filePath}`);
       
       if (action === 'auto-fix') {
         // Trigger auto-fix for specific file
@@ -156,7 +145,6 @@ const App = () => {
         });
         
         const data = await response.json();
-        console.log('🔧 File-specific fix completed:', data.message);
         
         // Refresh debt data after fix
         setTimeout(() => triggerScan(), 1000);
@@ -175,7 +163,6 @@ const App = () => {
         });
         
         const data = await response.json();
-        console.log(`🔧 ${action} fixes completed:`, data.message);
         
         // Refresh debt data after fix
         setTimeout(() => triggerScan(), 1000);

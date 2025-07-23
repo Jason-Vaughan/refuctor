@@ -249,16 +249,13 @@ class SnarkySpellHandler {
       ignore: []
     };
 
-    console.log('\n🎯 SNARKY LANGUAGE DETECTIVE WORK');
     console.log('='.repeat(50));
 
     // Handle obvious cases first
     if (analysis.definiteTypos.length > 0) {
       console.log(`\n🔧 OBVIOUS TYPOS (${analysis.definiteTypos.length}):`);
       analysis.definiteTypos.forEach(typo => {
-        console.log(`   ${typo.word} in ${typo.file}:${typo.line}`);
       });
-      console.log('   💡 These look like genuine typos. Fix them?');
       
       // In a real CLI, you'd use inquirer or similar for prompts
       // For now, we'll return the analysis for the calling code to handle
@@ -270,7 +267,6 @@ class SnarkySpellHandler {
       analysis.likelySnarky.forEach(snarky => {
         console.log(`   ${snarky.word} in ${snarky.file}:${snarky.line} (${Math.round(snarky.confidence * 100)}% confident)`);
       });
-      console.log('   💡 These look intentional. Add to project dictionary?');
       
       decisions.addToDictionary = analysis.likelySnarky.map(s => s.word);
     }
@@ -280,7 +276,6 @@ class SnarkySpellHandler {
       analysis.unsure.forEach(uncertain => {
         console.log(`   ${uncertain.word} in ${uncertain.file}:${uncertain.line} (${Math.round(uncertain.confidence * 100)}% confident)`);
       });
-      console.log('   💡 These need manual review.');
     }
 
     return decisions;

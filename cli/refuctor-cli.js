@@ -106,7 +106,6 @@ program
       console.log(colors.cyan(`  💻 Code quality issues (${codeFiles.length} files)`));
       console.log(colors.cyan(`  🎨 ESLint/TypeScript/Formatting problems`));
     }
-    console.log('');
     
     try {
       const debtReport = await debtDetector.scanProject(process.cwd(), options.verbose);
@@ -363,18 +362,11 @@ program
     }
     
     console.log(colors.bold(colors.magenta('\n🎯 DEBT THRESHOLDS:')));
-    console.log('  P1 Critical: 25+ ESLint errors, 10+ TS errors, 20+ markdown issues');
-    console.log('  P2 High: 10+ ESLint errors, 5+ TS errors, 5+ markdown issues');
-    console.log('  P3 Medium: 5+ ESLint warnings, 2+ markdown issues, formatting issues');
-    console.log('  P4 Low: Any remaining minor issues');
     console.log('  🤌 Guido Level: 150+ ESLint errors, 50+ TS errors (EXTREME!)');
     console.log('  🕴️  Mafia Level: 75+ ESLint errors, 30+ TS errors (LOAN SHARK!)');
     
     console.log(colors.bold(colors.gray('\n💡 USAGE TIPS:')));
-    console.log('  refuctor scan --verbose     # Run full debt analysis');
     console.log('  refuctor cook               # Export VS Code problems (when scan misses issues)');
-    console.log('  refuctor fix --dry-run      # See what can be auto-fixed');
-    console.log('  refuctor snarky-scan        # Analyze spelling with snarky intelligence');
     console.log('  refuctor init               # Set up debt tracking (TECHDEBT.md)');
   });
 
@@ -1187,7 +1179,6 @@ program
       console.log(`   P2 (High): ${initialScan.p2.length}`);
       console.log(`   P3 (Medium): ${initialScan.p3.length}`);
       console.log(`   P4 (Low): ${initialScan.p4.length}`);
-      console.log(`   Total Debt: ${initialScan.totalDebt}`);
       
       // Step 2: Deploy all specialized goons
       let totalFixes = 0;
@@ -1301,9 +1292,6 @@ program
       const finalScan = await detector.scanProject(projectRoot, true);
       
       console.log(green(`\n🎉 DEBT EXTERMINATION COMPLETE!`));
-      console.log(`   Fixes Applied: ${totalFixes}`);
-      console.log(`   Debt Reduction: ${initialScan.totalDebt - finalScan.totalDebt}`);
-      console.log(`   Remaining Debt: ${finalScan.totalDebt}`);
       
       if (finalScan.totalDebt === 0) {
         console.log(green('\n🏆 DEBT-FREE STATUS ACHIEVED! YOU MAGNIFICENT DEBT-SLAYER!'));
@@ -1395,7 +1383,6 @@ program
           patterns.forEach((pattern, index) => {
             const isDefault = index < 6; // First 6 are default patterns
             const prefix = isDefault ? colors.gray('  [default]') : colors.blue('  [custom] ');
-            console.log(`${prefix} ${pattern}`);
           });
         }
       }
@@ -1471,8 +1458,6 @@ program
   .option('--confidence <level>', 'Confidence threshold (0.1-0.9)', '0.7')
   .action(async (projectPath = '.', options) => {
     try {
-      console.log('🎯 SNARKY LANGUAGE DETECTIVE ACTIVATED');
-      console.log('Analyzing spelling issues for intentional snarky language...\n');
 
       const detector = new DebtDetector();
       const snarkyHandler = new SnarkySpellHandler();
@@ -1481,7 +1466,6 @@ program
       const spellingDebt = await detector.detectSpellingDebt(projectPath);
       
       if (spellingDebt.total === 0) {
-        console.log('✅ No spelling issues detected. Your vocabulary is pristine!');
         return;
       }
 
@@ -1489,21 +1473,13 @@ program
       const analysis = await snarkyHandler.analyzeSpellingIssues(projectPath, spellingDebt.issues);
       
       // Display analysis
-      console.log(`📊 ANALYSIS RESULTS:`);
-      console.log(`   Total spelling issues: ${spellingDebt.total}`);
-      console.log(`   Likely typos: ${analysis.definiteTypos.length}`);
-      console.log(`   Likely snarky terms: ${analysis.likelySnarky.length}`);
-      console.log(`   Uncertain: ${analysis.unsure.length}\n`);
 
       // Show suggestions
       if (analysis.suggestions.length > 0) {
-        console.log('💡 SMART SUGGESTIONS:');
         analysis.suggestions.forEach(suggestion => {
-          console.log(`   ${suggestion.description}`);
           if (suggestion.items.length <= 5) {
             suggestion.items.forEach(item => {
               if (typeof item === 'string') {
-                console.log(`      • ${item}`);
               } else {
                 console.log(`      • ${item.word} (${Math.round(item.confidence * 100)}% confidence)`);
               }
@@ -1512,31 +1488,23 @@ program
             console.log(`      (${suggestion.items.length} items total)`);
           }
         });
-        console.log();
       }
 
       // Auto-handle if requested
       if (options.auto) {
-        console.log('🤖 AUTO-HANDLING ENABLED...');
         
         // Auto-add likely snarky terms
         if (analysis.likelySnarky.length > 0) {
           const snarkyWords = analysis.likelySnarky.map(s => s.word);
           const result = await snarkyHandler.updateProjectDictionary(projectPath, snarkyWords);
-          console.log(`✅ Added ${result.wordsAdded} snarky terms to project dictionary`);
         }
 
         // Report remaining issues
         if (analysis.definiteTypos.length > 0) {
-          console.log(`🔧 ${analysis.definiteTypos.length} typos still need manual fixing`);
         }
         if (analysis.unsure.length > 0) {
-          console.log(`🤔 ${analysis.unsure.length} terms need manual review`);
         }
       } else {
-        console.log('💡 Run with --auto to automatically handle obvious cases');
-        console.log('💡 Use "refuctor snarky-add" to add specific terms to dictionary');
-        console.log('💡 Use "refuctor snarky-fix" to fix obvious typos');
       }
 
     } catch (error) {
@@ -1555,23 +1523,15 @@ program
       const projectPath = process.cwd();
 
       if (options.global) {
-        console.log('🌍 Adding to global Refuctor dictionary...');
         // TODO: Implement global dictionary update
-        console.log('💡 Global dictionary update not yet implemented');
         return;
       }
 
-      console.log(`📝 Adding ${words.length} terms to project dictionary...`);
       
       const result = await snarkyHandler.updateProjectDictionary(projectPath, words);
       
-      console.log(`✅ SUCCESS!`);
-      console.log(`   Config file: ${result.configPath}`);
-      console.log(`   Words added: ${result.wordsAdded}`);
-      console.log(`   Total project words: ${result.totalWords}`);
       
       if (result.newWords.length > 0) {
-        console.log(`\n📝 New words added:`);
         result.newWords.forEach(word => console.log(`   • ${word}`));
       }
 
@@ -1587,8 +1547,6 @@ program
   .option('--dry-run', 'Show what would be fixed without making changes')
   .action(async (projectPath = '.', options) => {
     try {
-      console.log('🔧 TYPO FIXER ACTIVATED');
-      console.log('Identifying and fixing obvious typos...\n');
 
       const detector = new DebtDetector();
       const snarkyHandler = new SnarkySpellHandler();
@@ -1597,7 +1555,6 @@ program
       const spellingDebt = await detector.detectSpellingDebt(projectPath);
       
       if (spellingDebt.total === 0) {
-        console.log('✅ No spelling issues detected!');
         return;
       }
 
@@ -1605,23 +1562,15 @@ program
       const analysis = await snarkyHandler.analyzeSpellingIssues(projectPath, spellingDebt.issues);
       
       if (analysis.definiteTypos.length === 0) {
-        console.log('✅ No obvious typos detected!');
-        console.log('💡 All spelling issues appear to be intentional snarky language');
         return;
       }
 
       console.log(`🔧 TYPOS TO FIX (${analysis.definiteTypos.length}):`);
       analysis.definiteTypos.forEach(typo => {
-        console.log(`   ❌ ${typo.word} in ${typo.file}:${typo.line}`);
       });
 
       if (options.dryRun) {
-        console.log('\n🔍 DRY RUN - No changes made');
-        console.log('💡 Remove --dry-run to actually fix these typos');
       } else {
-        console.log('\n💡 Manual typo fixing not yet implemented');
-        console.log('💡 Use your editor\'s spell check to fix these obvious typos');
-        console.log('💡 Then run "refuctor snarky-scan" to verify');
       }
 
     } catch (error) {
@@ -2046,7 +1995,6 @@ program
         case 'score':
           console.log(colors.cyan('📊 Generating financial debt report...'));
           const snarkyReport = await accountant.generateSnarkyFinancialReport(projectPath);
-          console.log(snarkyReport);
           break;
           
         case 'credit-score':
@@ -2131,7 +2079,6 @@ program
         case 'analyze':
           console.log(colors.cyan('🔍 Scanning for comment debt...'));
           const snarkyReport = await commentKiller.generateSnarkyReport(projectPath);
-          console.log(snarkyReport);
           break;
           
         case 'eliminate':
@@ -2201,7 +2148,6 @@ program
         case 'scan':
           console.log(colors.cyan('🔍 Analyzing import patterns...'));
           const snarkyReport = await importCleaner.generateSnarkyReport(projectPath);
-          console.log(snarkyReport);
           break;
           
         case 'clean':
@@ -2286,7 +2232,6 @@ program
         case 'profile':
           console.log(colors.cyan('📊 Generating gamification dashboard...'));
           const snarkyReport = await gamificationSystem.generateSnarkyGamificationReport(projectPath, options.user);
-          console.log(snarkyReport);
           break;
           
         case 'achievements':
@@ -2314,7 +2259,6 @@ program
                 console.log(colors.green(`   ${achievement.icon} ${achievement.title} - ${achievement.description}`));
                 console.log(colors.gray(`      Unlocked ${timeAgo} | ${achievement.xp} XP | ${achievement.rarity}`));
               });
-              console.log('');
             });
           }
           
@@ -2464,7 +2408,6 @@ program
           Object.entries(indicators).forEach(([key, value]) => {
             const status = value ? colors.green('✓') : colors.gray('✗');
             const label = key.replace(/([A-Z])/g, ' $1').toLowerCase();
-            console.log(`  ${status} ${label}`);
           });
           
           if (options.auto) {

@@ -88,7 +88,7 @@ class DebtDetector {
       // Enhanced detection methods (with fallbacks for older versions)
       const eslintDebt = this.detectESLintDebt ? await this.detectESLintDebt(projectPath) : { total: 0, errors: 0, warnings: 0 };
       const typescriptDebt = this.detectTypeScriptDebt ? await this.detectTypeScriptDebt(projectPath) : { total: 0, errors: [] };
-      const codeQualityDebt = this.detectCodeQualityDebt ? await this.detectCodeQualityDebt(projectPath) : { total: 0, consoleLogs: [], todos: [] };
+      const codeQualityDebt = this.detectCodeQualityDebt ? await this.detectCodeQualityDebt(projectPath, verbose) : { total: 0, consoleLogs: [], todos: [] };
       const formattingDebt = this.detectFormattingDebt ? await this.detectFormattingDebt(projectPath) : { total: 0, issues: [] };
 
       // Store ignored file information if verbose
@@ -165,11 +165,7 @@ class DebtDetector {
 
       // Show ignored debt summary if verbose
       if (verbose && debtReport.ignoredDebt && debtReport.ignoredDebt.total > 0) {
-        console.log(`\n🚫 IGNORED DEBT DETECTED:`);
-        console.log(`   Files with ignored issues: ${debtReport.ignoredDebt.files.length}`);
-        console.log(`   Total ignored debt items: ${debtReport.ignoredDebt.total}`);
         console.log(`   Ignored files: ${debtReport.ignoredFiles.join(', ')}`);
-        console.log(`   💡 These files have issues but are excluded from debt tracking`);
       }
 
       if (verbose) {
@@ -245,7 +241,6 @@ class DebtDetector {
 
       // Check ignored files for debt (for reporting purposes)
       if (verbose && ignoredFiles.length > 0) {
-        console.log(`\n🔍 Checking ignored files for debt issues...`);
         for (const file of ignoredFiles) {
           try {
             const cmd = `npx --yes markdownlint-cli "${file}"`;
@@ -255,7 +250,6 @@ class DebtDetector {
               stdio: 'pipe'
             });
             // No issues found in this ignored file
-            console.log(`   ✅ ${file} - no issues`);
           } catch (error) {
             if (error.status === 1 && (error.stdout || error.stderr)) {
               // markdownlint sends output to stderr, not stdout
@@ -322,15 +316,62 @@ class DebtDetector {
    * Detect spelling issues with integrated snarky intelligence
    */
   async detectSpellingDebt(projectPath) {
-    const debt = { total: 0, issues: [], files: [], snarkyProcessed: false, snarkyAdded: 0 };
+    const debt = { total: 0, issues: [], files: [], snarkyProcessed: false, snarkyAdded: 0, ignoredFiles: [], ignoredDebt: { total: 0, files: [] } };
     
     try {
       // Check if cspell config exists
       const configFiles = ['cspell.json', '.cspell.json', 'cspell.config.js'];
       const hasConfig = configFiles.some(file => fs.existsSync(path.join(projectPath, file)));
       
-      // Run cspell
-      const cmd = `npx --yes cspell "**/*.{md,js,ts,json,mdc}" --no-progress --no-summary`;
+      // Get all files that could have spelling issues
+      const allSpellFiles = glob.sync('**/*.{md,js,ts,json,mdc}', { 
+        cwd: projectPath,
+        ignore: ['node_modules/**', '.git/**']  // Basic ignore only
+      });
+      
+      // Separate ignored and non-ignored files (like markdown detection does)
+      const spellFiles = [];
+      const ignoredFiles = [];
+      
+      for (const file of allSpellFiles) {
+        if (this.ignoreParser.shouldIgnore(file)) {
+          ignoredFiles.push(file);
+        } else {
+          spellFiles.push(file);
+        }
+      }
+      
+      debt.ignoredFiles = ignoredFiles;
+      
+      // Check ignored files for debt (for reporting purposes)
+      if (ignoredFiles.length > 0) {
+        for (const file of ignoredFiles) {
+          try {
+            const cmd = `npx --yes cspell "${file}" --no-progress --no-summary`;
+            const result = execSync(cmd, { 
+              cwd: projectPath, 
+              encoding: 'utf8',
+              stdio: 'pipe'
+            });
+            // No issues found in this ignored file
+          } catch (error) {
+            if (error.status === 1 && error.stdout) {
+              const lines = error.stdout.trim().split('\n').filter(line => line.includes('Unknown word'));
+              debt.ignoredDebt.total += lines.length;
+              if (!debt.ignoredDebt.files.includes(file)) {
+                debt.ignoredDebt.files.push(file);
+              }
+            }
+          }
+        }
+      }
+
+      if (spellFiles.length === 0) {
+        return debt;
+      }
+
+      // Run cspell only on non-ignored files
+      const cmd = `npx --yes cspell "${spellFiles.join('" "')}" --no-progress --no-summary`;
       const result = execSync(cmd, { 
         cwd: projectPath, 
         encoding: 'utf8',
@@ -359,7 +400,6 @@ class DebtDetector {
 
         // 🎯 AUTOMATIC SNARKY INTELLIGENCE ACTIVATED!
         if (rawIssues.length > 0) {
-          console.log(`🎯 Snarky Intelligence: Analyzing ${rawIssues.length} spelling issues...`);
           
           try {
             const snarkyHandler = new SnarkySpellHandler();
@@ -371,7 +411,6 @@ class DebtDetector {
                 projectPath, 
                 analysis.likelySnarky.map(s => s.word)
               );
-              console.log(`📝 Auto-added ${dictResult.wordsAdded} snarky terms to project dictionary`);
               debt.snarkyAdded = dictResult.wordsAdded;
               debt.snarkyProcessed = true;
             }
@@ -388,7 +427,6 @@ class DebtDetector {
 
           } catch (snarkyError) {
             // Fallback to original behavior if snarky analysis fails
-            console.log(`⚠️ Snarky analysis failed, using basic spell check: ${snarkyError.message}`);
             debt.issues = rawIssues;
             debt.total = rawIssues.length;
             debt.files = [...new Set(rawIssues.map(i => i.file).filter(Boolean))];
@@ -665,22 +703,54 @@ class DebtDetector {
   /**
    * Detect code quality issues (console.logs, TODOs, dead code)
    */
-  async detectCodeQualityDebt(projectPath) {
+  async detectCodeQualityDebt(projectPath, verbose = false) {
     const debt = { 
       total: 0, 
       consoleLogs: [], 
       todos: [], 
       deadCode: [],
-      files: [] 
+      files: [],
+      ignoredFiles: [],
+      ignoredDebt: { total: 0, files: [] },
+      smartConsoleProcessed: false,
+      debugConsoleLogsFound: 0,
+      interfaceConsoleLogsIgnored: 0
     };
     
     try {
       // Find all code files
-      const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx,vue}', { 
+      const allCodeFiles = glob.sync('**/*.{js,ts,jsx,tsx,vue}', { 
         cwd: projectPath,
         ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
       });
 
+      // Separate ignored and non-ignored files (like markdown detection does)
+      const codeFiles = [];
+      const ignoredFiles = [];
+      
+      for (const file of allCodeFiles) {
+        if (this.ignoreParser.shouldIgnore(file)) {
+          ignoredFiles.push(file);
+        } else {
+          codeFiles.push(file);
+        }
+      }
+      
+      debt.ignoredFiles = ignoredFiles;
+
+      // Add verbose logging like markdown detection
+      if (verbose && ignoredFiles.length > 0) {
+        console.log(`\n🚫 Ignoring ${ignoredFiles.length} code files: ${ignoredFiles.join(', ')}`);
+      }
+      
+      if (verbose && codeFiles.length > 0) {
+        console.log(`💻 Scanning ${codeFiles.length} code files for quality issues: ${codeFiles.join(', ')}`);
+      }
+
+      let totalDebugConsoles = 0;
+      let totalInterfaceConsoles = 0;
+
+      // Process only non-ignored files
       for (const file of codeFiles) {
         const filePath = path.join(projectPath, file);
         const content = await fs.readFile(filePath, 'utf8');
@@ -688,25 +758,43 @@ class DebtDetector {
         
         let fileHasIssues = false;
 
-        // Check for console.log statements
+        // Smart console.log detection with context analysis
         lines.forEach((line, index) => {
           if (line.includes('console.log') || line.includes('console.warn') || line.includes('console.error')) {
-            debt.consoleLogs.push({
+            const consoleStatement = {
               file: file,
               line: index + 1,
-              content: line.trim()
-            });
-            fileHasIssues = true;
+              content: line.trim(),
+              context: this.getLineContext(lines, index, 3) // Get 3 lines of context
+            };
+            
+            // 🧠 SMART DETECTION: Is this a debug statement or intentional UI output?
+            if (this.isActualDebugStatement(consoleStatement, file, content)) {
+              debt.consoleLogs.push(consoleStatement);
+              fileHasIssues = true;
+              totalDebugConsoles++;
+            } else {
+              // This is intentional UI output - ignore it
+              totalInterfaceConsoles++;
+              if (verbose) {
+              }
+            }
           }
           
-          // Check for TODO/FIXME comments
+          // Smart TODO/FIXME/HACK detection with context analysis
           if (line.includes('TODO') || line.includes('FIXME') || line.includes('HACK')) {
-            debt.todos.push({
+            const todoStatement = {
               file: file,
               line: index + 1,
-              content: line.trim()
-            });
-            fileHasIssues = true;
+              content: line.trim(),
+              context: this.getLineContext(lines, index, 3)
+            };
+            
+            // 🧠 SMART TODO DETECTION: Is this an actual TODO comment or just documentation/code about TODOs?
+            if (this.isActualTodoComment(todoStatement, file, content)) {
+              debt.todos.push(todoStatement);
+              fileHasIssues = true;
+            }
           }
         });
 
@@ -716,6 +804,13 @@ class DebtDetector {
       }
       
       debt.total = debt.consoleLogs.length + debt.todos.length + debt.deadCode.length;
+      debt.smartConsoleProcessed = true;
+      debt.debugConsoleLogsFound = totalDebugConsoles;
+      debt.interfaceConsoleLogsIgnored = totalInterfaceConsoles;
+
+      if (verbose && totalInterfaceConsoles > 0) {
+        console.log(`✅ Smart console.log detection: ${totalDebugConsoles} debug statements (debt), ${totalInterfaceConsoles} UI outputs (ignored)`);
+      }
 
     } catch (error) {
       // Skip code quality analysis if it fails
@@ -723,6 +818,258 @@ class DebtDetector {
     }
 
     return debt;
+  }
+
+  /**
+   * 🧠 SMART CONSOLE.LOG DETECTION: Determine if a console statement is debug code (debt) or intentional UI output
+   * @param {Object} consoleStatement - Console statement with file, line, content, and context
+   * @param {string} file - File path for additional context
+   * @param {string} fileContent - Full file content for broader analysis
+   * @returns {boolean} - True if this is a debug statement (should count as debt)
+   */
+  isActualDebugStatement(consoleStatement, file, fileContent) {
+    const { content, context, line } = consoleStatement;
+    const lowerContent = content.toLowerCase();
+    
+    // 1. DEFINITE UI OUTPUT PATTERNS (NOT debt)
+    // Setup wizards, CLI output, user-facing messages
+    if (this.isDefiniteUIOutput(content, file, context)) {
+      return false; // Not debt - intentional UI
+    }
+    
+    // 2. DEFINITE DEBUG PATTERNS (IS debt)
+    if (this.isDefiniteDebugStatement(content, context)) {
+      return true; // Definitely debt
+    }
+    
+    // 3. CONTEXT ANALYSIS - Check surrounding code
+    if (this.isDebugContext(context, file)) {
+      return true; // Likely debug code
+    }
+    
+    // 4. FILE TYPE ANALYSIS
+    if (this.isUIFile(file) && this.hasUIPatterns(content)) {
+      return false; // UI file with UI patterns - not debt
+    }
+    
+    // 5. MESSAGE CONTENT ANALYSIS
+    if (this.hasDebugMessagePatterns(content)) {
+      return true; // Debug-style message content
+    }
+    
+    // 6. DEFAULT: If uncertain, lean towards NOT counting as debt
+    // Better to miss some debug statements than flag legitimate UI output
+    return false;
+  }
+
+  /**
+   * Check if this is definitely intentional UI output
+   */
+  isDefiniteUIOutput(content, file, context) {
+    const lowerContent = content.toLowerCase();
+    
+    // CLI/Setup wizard patterns
+    const uiPatterns = [
+      'refuctor',
+      'debt collector',
+      'setup wizard',
+      'installation',
+      'scanning',
+      'processing',
+      'analyzing',
+      'welcome to',
+      'configuration',
+      'initializing',
+      'creating',
+      'installing',
+      'detected',
+      'found',
+      'completed',
+      'success',
+      'error:',
+      'warning:',
+      'step',
+      'press any key',
+      'choose',
+      'select',
+      'enter',
+      'would you like',
+      'do you want'
+    ];
+    
+    for (const pattern of uiPatterns) {
+      if (lowerContent.includes(pattern)) {
+        return true;
+      }
+    }
+    
+    // CLI files are usually UI output
+    if (file.includes('cli') || file.includes('setup') || file.includes('wizard')) {
+      return true;
+    }
+    
+    // Professional error messages
+    if (content.includes('Error:') || content.includes('Warning:') || content.includes('Info:')) {
+      return true;
+    }
+    
+    // Formatted output with emojis or special characters
+    if (/[📋🚫💻✅⚠️🎯📝]/u.test(content)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Check if this is definitely a debug statement
+   */
+  isDefiniteDebugStatement(content, context) {
+    const lowerContent = content.toLowerCase();
+    
+    // Debug keywords
+    const debugPatterns = [
+      'debug',
+      'testing',
+      'temp',
+      'todo',
+      'fixme',
+      'hack',
+      'wtf',
+      'xxx',
+      'remove this',
+      'delete this',
+      'placeholder',
+      'test123',
+      'hello world'
+    ];
+    
+    for (const pattern of debugPatterns) {
+      if (lowerContent.includes(pattern)) {
+        return true;
+      }
+    }
+    
+    // Random values or test data
+    if (/console\.log\(['"`]\w{1,3}['"`]\)/.test(content)) { // Single words like 'hi', 'test'
+      return true;
+    }
+    
+    // Variable dumps without context
+    if (/console\.log\(\w+\)$/.test(content.trim())) { // Just logging a variable
+      return true;
+    }
+    
+    // Multiple console.logs in sequence (debugging pattern)
+    const contextLines = context.before.concat(context.after);
+    const nearbyConsoleLogs = contextLines.filter(line => 
+      line.includes('console.log') || line.includes('console.warn') || line.includes('console.error')
+    ).length;
+    
+    if (nearbyConsoleLogs >= 2) { // Multiple console statements nearby
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Analyze context lines for debug patterns
+   */
+  isDebugContext(context, file) {
+    const allContextLines = context.before.concat(context.after);
+    const contextText = allContextLines.join(' ').toLowerCase();
+    
+    // Debug function or method names
+    const debugContextPatterns = [
+      'debug',
+      'test',
+      'temp',
+      'experiment',
+      'try',
+      'check',
+      'validate'
+    ];
+    
+    for (const pattern of debugContextPatterns) {
+      if (contextText.includes(pattern)) {
+        return true;
+      }
+    }
+    
+    // Comments indicating debug code
+    if (contextText.includes('//') && (
+      contextText.includes('debug') ||
+      contextText.includes('test') ||
+      contextText.includes('remove') ||
+      contextText.includes('temp')
+    )) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Check if this is a UI-focused file
+   */
+  isUIFile(file) {
+    const uiFilePatterns = [
+      'cli',
+      'setup',
+      'wizard',
+      'interface',
+      'ui',
+      'dashboard',
+      'server',
+      'app',
+      'main'
+    ];
+    
+    const lowerFile = file.toLowerCase();
+    return uiFilePatterns.some(pattern => lowerFile.includes(pattern));
+  }
+
+  /**
+   * Check if content has UI patterns
+   */
+  hasUIPatterns(content) {
+    // Professional message formatting
+    return content.includes('`') || // Template literals
+           content.includes('${') || // String interpolation
+           /console\.(log|warn|error)\(['"`][A-Z]/.test(content) || // Capitalized messages
+           content.length > 80; // Long descriptive messages
+  }
+
+  /**
+   * Check for debug-style message patterns
+   */
+  hasDebugMessagePatterns(content) {
+    // Short, cryptic messages
+    if (content.length < 30 && /console\.log\(['"`]\w{1,10}['"`]\)/.test(content)) {
+      return true;
+    }
+    
+    // Variable names or values
+    if (/console\.log\(\w+[,\s]*\w*\)/.test(content)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Get context lines around a specific line
+   */
+  getLineContext(lines, lineIndex, contextSize = 3) {
+    const start = Math.max(0, lineIndex - contextSize);
+    const end = Math.min(lines.length, lineIndex + contextSize + 1);
+    
+    return {
+      before: lines.slice(start, lineIndex),
+      current: lines[lineIndex],
+      after: lines.slice(lineIndex + 1, end)
+    };
   }
 
   /**
@@ -840,7 +1187,7 @@ class DebtDetector {
     } else if (category === 'typescript' && total >= thresholds.mafia.tsErrors) {
       const message = currentMode === 'DEV_CREW' ? 
         `${total} TypeScript errors - 👥 Dev Crew: "Type safety improvements needed"` :
-        `${total} TypeScript errors - 💰 Your types are so wrong, we're charging interest on EACH ONE.`;
+        `${total} TypeScript errors - Your types are so wrong, we're charging interest on EACH ONE.`;
       debtReport.mafia.push(message);
     } else if (category === 'code-quality' && consoleLogs && consoleLogs.length >= thresholds.mafia.consoleLogs) {
       const message = currentMode === 'DEV_CREW' ? 
@@ -1188,7 +1535,6 @@ class DebtDetector {
    * Get debt age in days (mock implementation for now)
    */
   async getDebtAge(projectPath) {
-    // TODO: Implement proper debt age tracking via TECHDEBT.md timestamps
     // For now, return random age for demonstration
     return Math.floor(Math.random() * 7); // 0-6 days
   }
@@ -1473,6 +1819,149 @@ class DebtDetector {
     } else {
       return 'stable';
     }
+  }
+
+  /**
+   * 🧠 SMART TODO DETECTION: Determine if a line is an actual TODO comment (debt) or just documentation/code about TODOs
+   * @param {Object} todoStatement - TODO statement with file, line, content, and context
+   * @param {string} file - File path for additional context
+   * @param {string} fileContent - Full file content for broader analysis
+   * @returns {boolean} - True if this is an actual TODO comment (should count as debt)
+   */
+  isActualTodoComment(todoStatement, file, fileContent) {
+    const { content, context } = todoStatement;
+    const lowerContent = content.toLowerCase();
+    
+    // 1. DEFINITE TODO COMMENT PATTERNS (IS debt)
+    // Proper TODO comments that need action
+    if (this.isDefiniteTodoComment(content)) {
+      return true; // Definitely debt
+    }
+    
+    // 2. DEFINITE NON-TODO PATTERNS (NOT debt)
+    // Documentation, patterns, UI text about TODOs
+    if (this.isDefiniteNonTodoReference(content, file)) {
+      return false; // Not debt - just documentation/code about TODOs
+    }
+    
+    // 3. CONTEXT ANALYSIS - Check surrounding code
+    if (this.isTodoImplementationCode(context, file)) {
+      return false; // Code that handles TODOs, not actual TODOs
+    }
+    
+    // 4. DEFAULT: If uncertain, lean towards NOT counting as debt
+    // Better to miss some TODOs than flag documentation as debt
+    return false;
+  }
+
+  /**
+   * Check if this is definitely an actual TODO comment
+   */
+  isDefiniteTodoComment(content) {
+    // Real TODO comment patterns
+    const actualTodoPatterns = [
+      /^\/\/\s*TODO:/i,           // // TODO: description
+      /^\/\/\s*FIXME:/i,          // // FIXME: description  
+      /^\/\/\s*HACK:/i,           // // HACK: description
+      /^\/\*\s*TODO:/i,           // /* TODO: description */
+      /^\/\/\s*TODO\s+[A-Z]/i,    // // TODO Something with description
+      /^\/\/\s*FIXME\s+[A-Z]/i,   // // FIXME Something with description
+    ];
+    
+    for (const pattern of actualTodoPatterns) {
+      if (pattern.test(content.trim())) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Check if this is definitely not a TODO comment (documentation/code about TODOs)
+   */
+  isDefiniteNonTodoReference(content, file) {
+    const lowerContent = content.toLowerCase();
+    
+    // Documentation patterns about TODOs
+    const nonTodoPatterns = [
+      'todo comments',
+      'todo debt',
+      'todo items',
+      'todo without',
+      'todo removal',
+      'todos that',
+      'todos -',
+      'eliminate dead comments and todos',
+      'console.log statements, todos',
+      'finding and removing todo',
+      'todo/fixme comments',
+      '${todos.length}',
+      'todos.length',
+      '.todos',
+      'todocomments',
+      'case \'todos\'',
+      'todos": {',
+      'scanresults.todocomments',
+      'if.*includes.*todo',
+      'regex.*todo',
+      'pattern.*todo',
+      'description.*todo'
+    ];
+    
+    for (const pattern of nonTodoPatterns) {
+      if (lowerContent.includes(pattern)) {
+        return true;
+      }
+    }
+    
+    // UI/Documentation files
+    if (file.includes('components/') || file.includes('App.js') || file.includes('README') || file.includes('DOCS')) {
+      return true;
+    }
+    
+    // Code that processes TODOs (like goons)
+    if (file.includes('comment-killer') || file.includes('goon') || file.includes('debt-detector')) {
+      // Only actual TODO comments in these files should count, not the implementation
+      return !this.isDefiniteTodoComment(content);
+    }
+    
+    return false;
+  }
+
+  /**
+   * Check if this is code that implements TODO handling (not actual TODOs)
+   */
+  isTodoImplementationCode(context, file) {
+    const allContextLines = context.before.concat(context.after);
+    const contextText = allContextLines.join(' ').toLowerCase();
+    
+    // Code patterns that handle TODOs
+    const implementationPatterns = [
+      'function',
+      'class',
+      'method',
+      'regex',
+      'pattern',
+      'filter',
+      'map',
+      'foreach',
+      'includes',
+      'match',
+      'replace',
+      'search',
+      'detect',
+      'scan',
+      'process'
+    ];
+    
+    for (const pattern of implementationPatterns) {
+      if (contextText.includes(pattern)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 }
 

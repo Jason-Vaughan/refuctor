@@ -30,23 +30,17 @@ class SetupWizard {
    * @returns {Object} Setup results
    */
   async runSetupWizard(projectPath, options = {}) {
-    console.log('\n🔍 STEP 1: Project Analysis');
     this.projectAnalysis = await this.analyzeProject(projectPath);
     this.displayProjectAnalysis();
 
-    console.log('\n🏗️  STEP 2: Configuration Generation');
     await this.generateConfigurations(projectPath, options);
 
-    console.log('\n📝 STEP 3: Spell Check Setup');
     await this.setupSpellChecking(projectPath, options);
 
-    console.log('\n🚫 STEP 4: Debt Ignore Setup');
     await this.setupDebtIgnore(projectPath, options);
 
-    console.log('\n💻 STEP 5: IDE Integration');
     await this.setupIDEIntegration(projectPath, options);
 
-    console.log('\n📊 STEP 6: TECHDEBT.md Initialization');
     await this.setupTechDebtTracking(projectPath, options);
 
     return this.setupResults;
@@ -205,16 +199,10 @@ class SetupWizard {
   displayProjectAnalysis() {
     const analysis = this.projectAnalysis;
     
-    console.log(`   📋 Project: ${analysis.projectName}`);
-    console.log(`   🏗️  Type: ${analysis.projectType}`);
     console.log(`   📁 Files: ${analysis.files.total} total (${analysis.files.code.length} code, ${analysis.files.docs.length} docs)`);
     console.log(`   💬 Languages: ${analysis.languages.join(', ') || 'None detected'}`);
     console.log(`   🚀 Frameworks: ${analysis.frameworks.join(', ') || 'None detected'}`);
     console.log(`   🔧 Build Tools: ${analysis.buildTools.join(', ') || 'None detected'}`);
-    console.log(`   ⚙️  Config Files: ${analysis.configs.length} detected`);
-    console.log(`   📦 Package.json: ${analysis.hasPackageJson ? '✅' : '❌'}`);
-    console.log(`   📝 README: ${analysis.hasReadme ? '✅' : '❌'}`);
-    console.log(`   🔗 Git: ${analysis.hasGit ? '✅' : '❌'}`);
   }
 
   /**
@@ -239,16 +227,12 @@ class SetupWizard {
         const projectSpecificWords = this.generateProjectSpecificWords();
         await spellHandler.updateProjectDictionary(projectPath, projectSpecificWords);
         
-        console.log('   ✅ Created cspell.json with project-specific dictionary');
-        console.log(`   📝 Added ${projectSpecificWords.length} project-specific terms`);
         this.setupResults.spellCheckSetup = true;
         this.setupResults.configsGenerated.push('cspell.json');
       } else {
-        console.log('   ⚠️  cspell.json already exists - skipping');
       }
       
     } catch (error) {
-      console.log(`   ❌ Spell check setup failed: ${error.message}`);
     }
   }
 
@@ -270,16 +254,12 @@ class SetupWizard {
         
         await fs.writeFile(ignoreFilePath, combinedPatterns, 'utf8');
         
-        console.log('   ✅ Created .debtignore with project-specific patterns');
-        console.log(`   🚫 Added ${projectPatterns.length} project-specific ignore patterns`);
         this.setupResults.debtIgnoreCreated = true;
         this.setupResults.configsGenerated.push('.debtignore');
       } else {
-        console.log('   ⚠️  .debtignore already exists - skipping');
       }
       
     } catch (error) {
-      console.log(`   ❌ Debt ignore setup failed: ${error.message}`);
     }
   }
 
@@ -292,16 +272,12 @@ class SetupWizard {
       const workspaceFile = glob.sync('*.code-workspace', { cwd: projectPath })[0];
       
       if (workspaceFile) {
-        console.log(`   ✅ Detected Cursor workspace: ${workspaceFile}`);
         console.log('   💻 IDE integration ready (workspace detected)');
         this.setupResults.workspaceConfigured = true;
       } else {
-        console.log('   ⚠️  No Cursor workspace detected');
-        console.log('   💡 Consider creating a .code-workspace file for optimal IDE integration');
       }
       
     } catch (error) {
-      console.log(`   ❌ IDE integration setup failed: ${error.message}`);
     }
   }
 
@@ -316,15 +292,11 @@ class SetupWizard {
         // Enhance the TECHDEBT.md with project-specific context
         await this.enhanceTechDebtWithContext(projectPath);
         
-        console.log('   ✅ TECHDEBT.md created with project-specific context');
-        console.log(`   📊 Initialized for ${this.projectAnalysis.projectType} project`);
         this.setupResults.techDebtCreated = true;
       } else if (result.exists) {
-        console.log('   ⚠️  TECHDEBT.md already exists - skipping');
       }
       
     } catch (error) {
-      console.log(`   ❌ TECHDEBT.md setup failed: ${error.message}`);
     }
   }
 

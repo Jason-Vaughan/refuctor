@@ -29,7 +29,6 @@ const App = () => {
   const fetchFinancialMetrics = async () => {
     if (loadingFinancials) return;
     
-    console.log('🔄 Fetching financial metrics...');
     setLoadingFinancials(true);
     try {
       const response = await fetch('/api/financial/metrics');
@@ -37,7 +36,6 @@ const App = () => {
         const data = await response.json();
         if (data.success) {
           setFinancialMetrics(data.data);
-          console.log('✅ SSOT Financial metrics loaded successfully!');
         }
       }
     } catch (error) {
@@ -157,17 +155,14 @@ const App = () => {
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
-      console.log('🔌 Connected to Refuctor Dashboard');
       setConnected(true);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('🔌 Disconnected from Refuctor Dashboard');
       setConnected(false);
     });
 
     newSocket.on('debt-update', (data) => {
-      console.log('📊 Debt update received:', data.type);
       if (data.type === 'scan-complete') {
         setDebtData(data.data);
         setLastScan(data.timestamp);
@@ -229,7 +224,6 @@ const App = () => {
 
   const triggerFix = async (fixType) => {
     try {
-      console.log(`🔧 ${fixType} fix initiated...`);
       
       const response = await fetch('/api/debt/fix', {
         method: 'POST',
@@ -240,7 +234,6 @@ const App = () => {
       });
       
       const data = await response.json();
-      console.log('🔧 Fix completed:', data.message);
       
       // Refresh data after fix
       setTimeout(() => {
@@ -299,7 +292,6 @@ const App = () => {
         await fetchCurrentMode();
         await fetchFinancialMetrics();
         await loadDashboardData();
-        console.log('✅ Mode switched to:', result.data.modeConfig.name);
       } else {
         console.error('Failed to switch mode:', result.error);
       }

@@ -6,7 +6,7 @@ import {
   CommentKiller, 
   ImportCleaner, 
   Fixer 
-} from '@puberty-labs/refuctor-core';
+} from '@puberty-labs/refuctor';
 
 /**
  * Refuctor Cursor Extension
@@ -21,7 +21,6 @@ let afterDarkClickCount = 0;
 let isAfterDarkMode = false;
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('🏦 Refuctor Extension: The Debt Collector is now active!');
   
   // Initialize core components
   initializeRefuctorCore();
@@ -757,5 +756,4 @@ class RefuctorCodeLensProvider implements vscode.CodeLensProvider {
 }
 
 export function deactivate() {
-  console.log('🏦 Refuctor Extension: The Debt Collector is now deactivated');
 } 

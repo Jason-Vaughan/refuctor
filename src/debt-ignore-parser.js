@@ -36,7 +36,6 @@ class DebtIgnoreParser {
         const content = await fs.readFile(ignoreFilePath, 'utf8');
         const customPatterns = this.parseIgnoreFile(content);
         this.patterns.push(...customPatterns);
-        console.log(`Loaded ${customPatterns.length} custom debt ignore patterns`);
       } catch (error) {
         console.warn(`Warning: Could not read ${this.ignoreFileName}: ${error.message}`);
       }

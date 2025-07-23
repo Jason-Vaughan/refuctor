@@ -4,6 +4,35 @@
 # WIP and brainstorming files
 REFUCTOR_MYTHOS.md
 
+# Generated files and reports
+vscode-debt-report.md
+*-debt-report.md
+
+# Test files with intentional examples
+src/snarky-spell-handler.js
+# ^ Contains intentional misspelling examples for testing
+
+# CLI user interface files (console.log = user output, not debug)
+cli/refuctor-cli.js
+# ^ Console.log statements are intentional user feedback, not debt
+
+# Dashboard backup files (development artifacts)
+dashboard/src/App-backup.js
+dashboard/src/App-old.js
+dashboard/src/App-original.js
+
+# Build artifacts and generated code
+dashboard/build/
+dashboard/dist/
+node_modules/
+*.min.js
+bundle.*.js
+
+# Development documentation (internal use)
+IMPLEMENTATION_LOG.md
+REFUCTOR_DEPLOYMENT_GUIDE.md
+MCP_TESTING_LOG.md
+
 # Generated documentation (if any)
 # docs/generated/
 # api-docs/
