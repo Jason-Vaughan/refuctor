@@ -210,8 +210,6 @@ class DebtDetector {
    */
   async detectMarkdownDebt(projectPath, verbose = false) {
     const debt = { total: 0, issues: [], files: [], ignoredFiles: [], ignoredDebt: { total: 0, files: [] } };
-    
-    try {
       const allMarkdownFiles = glob.sync('**/*.{md,mdc}', { 
         cwd: projectPath,
         ignore: ['node_modules/**', '.git/**']  // Basic ignore only
@@ -304,10 +302,6 @@ class DebtDetector {
           throw error;
         }
       }
-
-    } catch (error) {
-      throw error;
-    }
 
     return debt;
   }
@@ -555,25 +549,40 @@ class DebtDetector {
       const configFiles = ['.eslintrc.js', '.eslintrc.json', '.eslintrc.yml', 'eslint.config.js'];
       const hasConfig = configFiles.some(file => fs.existsSync(path.join(projectPath, file)));
       
-      // Check for JS/TS files
+      // Check for JS/TS files (properly exclude ALL node_modules)
       const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { 
         cwd: projectPath,
-        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+        ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', 'coverage/**']
       });
       
       if (codeFiles.length === 0) {
         return debt; // No code files to lint
       }
 
-      // Run ESLint
-      const cmd = `npx --yes eslint ${codeFiles.join(' ')} --format json`;
-      const result = execSync(cmd, { 
-        cwd: projectPath, 
-        encoding: 'utf8',
-        stdio: 'pipe'
-      });
+      // Run ESLint using directory patterns (more efficient than listing thousands of files)
+      // Use --max-warnings 0 to ensure warnings trigger exit code 1 for proper error handling
+      const cmd = `npx --yes eslint "src/**/*.{js,ts,jsx,tsx}" "cli/**/*.{js,ts,jsx,tsx}" --format json --max-warnings 0`;
+      
+      let eslintOutput;
+      try {
+        eslintOutput = execSync(cmd, { 
+          cwd: projectPath, 
+          encoding: 'utf8',
+          stdio: 'pipe',
+          maxBuffer: 10 * 1024 * 1024 // 10MB buffer to handle large ESLint output
+        });
+      } catch (error) {
+        // ESLint found issues (exit code 1) - get output from error.stdout
+        if (error.status === 1 && error.stdout) {
+          eslintOutput = error.stdout;
+        } else {
+          // Real error (missing ESLint, config issues, etc.)
+          throw error;
+        }
+      }
 
-      const eslintResults = JSON.parse(result);
+      // Parse ESLint JSON results (whether from success or error.stdout)
+      const eslintResults = JSON.parse(eslintOutput);
       
       for (const fileResult of eslintResults) {
         if (fileResult.messages.length > 0) {
@@ -601,40 +610,9 @@ class DebtDetector {
       debt.total = debt.errors + debt.warnings;
 
     } catch (error) {
-      // ESLint not available or no config - try basic syntax check
-      if (error.status === 1 && error.stdout) {
-        try {
-          const eslintResults = JSON.parse(error.stdout);
-          
-          for (const fileResult of eslintResults) {
-            if (fileResult.messages.length > 0) {
-              debt.files.push(fileResult.filePath);
-              
-              for (const message of fileResult.messages) {
-                debt.issues.push({
-                  file: fileResult.filePath,
-                  line: message.line,
-                  column: message.column,
-                  severity: message.severity,
-                  rule: message.ruleId,
-                  message: message.message
-                });
-                
-                if (message.severity === 2) {
-                  debt.errors++;
-                } else {
-                  debt.warnings++;
-                }
-              }
-            }
-          }
-          
-          debt.total = debt.errors + debt.warnings;
-        } catch (parseError) {
-          // If we can't parse, skip ESLint analysis
-          debt.total = 0;
-        }
-      }
+      // ESLint not available, config issues, or other real errors
+      console.warn(`ESLint detection failed: ${error.message}`);
+      debt.total = 0;
     }
 
     return debt;
@@ -777,6 +755,7 @@ class DebtDetector {
               // This is intentional UI output - ignore it
               totalInterfaceConsoles++;
               if (verbose) {
+                console.log(`   ℹ️  Interface console.log detected (ignored): ${consoleStatement.content}`);
               }
             }
           }
@@ -914,7 +893,8 @@ class DebtDetector {
     }
     
     // Formatted output with emojis or special characters
-    if (/[📋🚫💻✅⚠️🎯📝]/u.test(content)) {
+    const emojiPattern = /[\u{1F4CB}\u{1F6AB}\u{1F4BB}\u{2705}\u{26A0}\u{1F3AF}\u{1F4DD}]/u;
+    if (emojiPattern.test(content)) {
       return true;
     }
     
@@ -1751,7 +1731,7 @@ class DebtDetector {
       const priority = data.severity;
       
       hotspots.push({
-        file: file.replace(/^.*[\\\/]/, ''), // Get filename only
+        file: file.replace(/^.*[\\//]/, ''), // Get filename only
         fullPath: file,
         debtCount: data.count,
         priority: priority,

@@ -29,7 +29,7 @@ const colors = {
 };
 
 // Extract color functions for easier use
-const { red, green, yellow, blue, magenta, cyan, gray, white, bold } = colors;
+const { red, green, yellow, magenta, cyan, gray } = colors;
 
 const program = new Command();
 
@@ -572,7 +572,6 @@ program
     console.log(colors.gray('Applying safe automated fixes to eliminate debt...\n'));
     
     try {
-      const projectRoot = process.cwd();
       let totalFixes = 0;
       
       // Always fix markdown (safe and proven)
@@ -640,12 +639,6 @@ program
       
       // Step 2: Session Summary
       console.log(colors.cyan('\n📊 STEP 2: Session Summary Generation'));
-      const sessionData = {
-        timestamp: new Date().toISOString(),
-        debtStatus: options.skipDebtScan ? 'skipped' : 'scanned',
-        filesModified: 'detected via git status',
-        recommendations: []
-      };
       
       // Future: Add more comprehensive session analysis
       console.log(colors.green('   ✅ Session data collected'));
@@ -1479,8 +1472,7 @@ program
         analysis.suggestions.forEach(suggestion => {
           if (suggestion.items.length <= 5) {
             suggestion.items.forEach(item => {
-              if (typeof item === 'string') {
-              } else {
+              if (typeof item !== 'string') {
                 console.log(`      • ${item.word} (${Math.round(item.confidence * 100)}% confidence)`);
               }
             });
@@ -1501,10 +1493,16 @@ program
 
         // Report remaining issues
         if (analysis.definiteTypos.length > 0) {
+          // TODO: Implement auto-fix for definite typos
+          console.log(colors.yellow(`   📝 Found ${analysis.definiteTypos.length} definite typos (auto-fix coming soon)`));
         }
         if (analysis.unsure.length > 0) {
+          // TODO: Implement handling for uncertain cases
+          console.log(colors.gray(`   ❓ Found ${analysis.unsure.length} uncertain items (manual review needed)`));
         }
       } else {
+        // TODO: Implement interactive mode for manual review
+        console.log(colors.cyan('   💡 Use --auto flag for automatic snarky term handling'));
       }
 
     } catch (error) {
@@ -1567,10 +1565,15 @@ program
 
       console.log(`🔧 TYPOS TO FIX (${analysis.definiteTypos.length}):`);
       analysis.definiteTypos.forEach(typo => {
+        console.log(`   📝 ${typo.word} → ${typo.suggestion || 'manual review needed'}`);
       });
 
       if (options.dryRun) {
+        console.log(colors.cyan('   🔍 Dry run mode - no files will be modified'));
+        console.log(colors.gray('   💡 Remove --dry-run flag to apply fixes'));
       } else {
+        // TODO: Implement actual typo fixing
+        console.log(colors.yellow('   ⚠️  Actual typo fixing implementation coming soon'));
       }
 
     } catch (error) {
@@ -1992,12 +1995,13 @@ program
       
       switch (action) {
         case 'report':
-        case 'score':
+        case 'score': {
           console.log(colors.cyan('📊 Generating financial debt report...'));
           const snarkyReport = await accountant.generateSnarkyFinancialReport(projectPath);
           break;
+        }
           
-        case 'credit-score':
+        case 'credit-score': {
           console.log(colors.cyan('📈 Calculating developer credit score...'));
           const creditData = await accountant.calculateCreditScore(projectPath);
           
@@ -2013,8 +2017,9 @@ program
             console.log(colors.blue(`   Patterns: ${creditData.breakdown.patterns}/100`));
           }
           break;
+        }
           
-        case 'payment':
+        case 'payment': {
           if (!options.paymentPlan) {
             console.log(colors.yellow('💡 Use --payment-plan to see debt payment recommendations'));
             return;
@@ -2034,6 +2039,7 @@ program
             });
           }
           break;
+        }
           
         default:
           console.log(colors.red(`Unknown accountant action: ${action}`));
@@ -2076,13 +2082,14 @@ program
       
       switch (action) {
         case 'scan':
-        case 'analyze':
+        case 'analyze': {
           console.log(colors.cyan('🔍 Scanning for comment debt...'));
           const snarkyReport = await commentKiller.generateSnarkyReport(projectPath);
           break;
+        }
           
         case 'eliminate':
-        case 'clean':
+        case 'clean': {
           console.log(colors.red('💀 Initiating comment elimination protocol...'));
           const eliminationResult = await commentKiller.eliminateCommentDebt(projectPath, {
             removeTodos: options.removeTodos,
@@ -2109,6 +2116,7 @@ program
             });
           }
           break;
+        }
           
         default:
           console.log(colors.red(`Unknown comment killer action: ${action}`));
@@ -2145,13 +2153,14 @@ program
       
       switch (action) {
         case 'analyze':
-        case 'scan':
+        case 'scan': {
           console.log(colors.cyan('🔍 Analyzing import patterns...'));
           const snarkyReport = await importCleaner.generateSnarkyReport(projectPath);
           break;
+        }
           
         case 'clean':
-        case 'optimize':
+        case 'optimize': {
           console.log(colors.blue('🧹 Initiating import cleanup...'));
           const cleanupResult = await importCleaner.cleanUnusedImports(projectPath, {
             removeUnused: options.removeUnused,
@@ -2180,8 +2189,9 @@ program
             });
           }
           break;
+        }
           
-        case 'circular':
+        case 'circular': {
           console.log(colors.yellow('🔄 Analyzing circular dependencies...'));
           const analysis = await importCleaner.analyzeImports(projectPath);
           
@@ -2197,6 +2207,7 @@ program
             console.log(colors.yellow('\n💡 Circular dependencies require manual refactoring to resolve.'));
           }
           break;
+        }
           
         default:
           console.log(colors.red(`Unknown import cleaner action: ${action}`));

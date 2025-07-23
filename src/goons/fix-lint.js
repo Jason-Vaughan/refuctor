@@ -1,4 +1,3 @@
-const fs = require('fs-extra');
 const path = require('path');
 const { execSync } = require('child_process');
 const glob = require('glob');
@@ -284,7 +283,9 @@ class FixLintGoon {
     console.log(`⏱️  Duration: ${Math.round(report.duration / 1000)}s`);
     
     if (report.totalFixesApplied === 0 && report.totalFilesProcessed > 0) {
+      console.log('🏆 Your code is pristine! No lint fixes needed (shocking, really).');
     } else if (report.totalFixesApplied > 0) {
+      console.log(`💰 Cleaned up ${report.totalFixesApplied} lint violations. Your code just got less embarrassing!`);
     }
 
     // Show breakdown by type
@@ -293,9 +294,12 @@ class FixLintGoon {
     }
 
     if (report.errors.length > 0) {
+      console.log(`⚠️  ${report.errors.length} lint errors couldn't be auto-fixed (manual labor required):`);
       report.errors.slice(0, 5).forEach(error => {
+        console.log(`   💥 ${error.file}: ${error.message}`);
       });
       if (report.errors.length > 5) {
+        console.log(`   ... and ${report.errors.length - 5} more issues (it's worse than we thought)`);
       }
     }
 

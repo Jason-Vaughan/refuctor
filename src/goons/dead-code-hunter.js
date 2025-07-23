@@ -59,12 +59,14 @@ class DeadCodeHunter {
     } = options;
     
     if (showProgress) {
+      console.log('🔍 Starting dead code analysis...');
     }
     
     // Phase 1: Build code database
     await this.buildCodeDatabase(projectPath, includeTestFiles);
     
     if (showProgress) {
+      console.log('📊 Analyzing usage patterns...');
     }
     
     // Phase 2: Analyze usage patterns
@@ -74,6 +76,7 @@ class DeadCodeHunter {
     const removalPlan = this.generateRemovalPlan(deadCodeResults, aggressive);
     
     if (showProgress) {
+      console.log(`💀 Found ${removalPlan.totalItems} dead code items`);
     }
     
     let executionResults = null;
@@ -478,6 +481,19 @@ class DeadCodeHunter {
   async removeDeadCode(item) {
     // This is a simplified implementation
     // In a real scenario, you'd want more sophisticated AST manipulation
+    
+    if (!item || !item.file || !item.location) {
+      throw new Error('Invalid dead code item provided');
+    }
+    
+    // TODO: Implement AST-based code removal
+    console.log(`🗑️  Would remove ${item.type} "${item.name}" from ${item.file}:${item.location.line}`);
+    
+    return {
+      success: false,
+      message: 'Dead code removal not yet implemented - requires AST manipulation',
+      item
+    };
   }
 
   /**

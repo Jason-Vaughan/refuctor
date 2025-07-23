@@ -28,6 +28,9 @@ node_modules/
 *.min.js
 bundle.*.js
 
+# Extensions directory (causes buffer overflow due to massive node_modules)
+extensions/
+
 # Development documentation (internal use)
 IMPLEMENTATION_LOG.md
 REFUCTOR_DEPLOYMENT_GUIDE.md

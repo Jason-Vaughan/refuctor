@@ -18,11 +18,11 @@ class CommentKiller {
   constructor() {
     this.ignoreParser = new DebtIgnoreParser();
     this.patterns = {
-      todoComments: /(?:\/\/|\/\*|\#|<!--)\s*(?:TODO|FIXME|HACK|XXX|BUG)\s*:?\s*(.+?)(?:\*\/|-->|$)/gi,
-      debugComments: /(?:\/\/|\/\*|\#|<!--)\s*(?:DEBUG|TEMP|TESTING|REMOVE)\s*:?\s*(.+?)(?:\*\/|-->|$)/gi,
-      commentedCode: /^\s*(?:\/\/|\/\*|\#|<!--)\s*(?:console\.|print\(|debugger|alert\(|import\s|require\(|function\s|class\s|const\s|let\s|var\s|if\s*\(|for\s*\(|while\s*\()/gm,
+      todoComments: /(?:\/\/|\/\*|#|<!--)\s*(?:TODO|FIXME|HACK|XXX|BUG)\s*:?\s*(.+?)(?:\*\/|-->|$)/gi,
+      debugComments: /(?:\/\/|\/\*|#|<!--)\s*(?:DEBUG|TEMP|TESTING|REMOVE)\s*:?\s*(.+?)(?:\*\/|-->|$)/gi,
+      commentedCode: /^\s*(?:\/\/|\/\*|#|<!--)\s*(?:console\.|print\(|debugger|alert\(|import\s|require\(|function\s|class\s|const\s|let\s|var\s|if\s*\(|for\s*\(|while\s*\()/gm,
       licenseHeader: /(?:\/\*[\s\S]*?copyright[\s\S]*?\*\/|\/\/.*copyright.*)/gi,
-      emptyComments: /^\s*(?:\/\/|\/\*|\#|<!--)\s*(?:\*\/|-->)?$/gm
+      emptyComments: /^\s*(?:\/\/|\/\*|#|<!--)\s*(?:\*\/|-->)?$/gm
     };
     
     this.supportedExtensions = ['.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.cpp', '.c', '.h', '.css', '.html', '.php', '.rb', '.go'];
@@ -141,7 +141,7 @@ class CommentKiller {
   }
 
   identifyCommentedCode(line) {
-    const trimmed = line.replace(/^\s*(?:\/\/|\/\*|\#|<!--)\s*/, '');
+    const trimmed = line.replace(/^\s*(?:\/\/|\/\*|#|<!--)\s*/, '');
     
     if (trimmed.includes('console.') || trimmed.includes('print(')) return 'Debug statement';
     if (trimmed.includes('import ') || trimmed.includes('require(')) return 'Import statement';
@@ -179,14 +179,7 @@ class CommentKiller {
    * Remove comment debt from project
    */
   async eliminateCommentDebt(projectPath, options = {}) {
-    const {
-      removeTodos = false,
-      removeDebugComments = true,
-      removeCommentedCode = true,
-      removeEmptyComments = true,
-      addLicenseHeaders = false,
-      dryRun = false
-    } = options;
+    const { dryRun = false } = options;
     
     const scanResults = await this.scanCommentDebt(projectPath);
     const removalPlan = this.createRemovalPlan(scanResults, options);

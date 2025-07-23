@@ -9,7 +9,6 @@
  * - Tree-shaking validation
  */
 
-const fs = require('fs-extra');
 const path = require('path');
 const glob = require('glob');
 const { DebtIgnoreParser } = require('../debt-ignore-parser');
@@ -59,7 +58,7 @@ class ImportCleaner {
    * @returns {Object} Import cleanup report
    */
   async eliminateDebt(projectPath = '.', options = {}) {
-    const { dryRun = true, aggressive = false, removeUnused = true } = options;
+    const { dryRun = true, removeUnused = true } = options;
     
     console.log(`🎯 Mode: ${dryRun ? 'DRY RUN (Preview)' : 'LIVE CLEANUP'}`);
     console.log(`📂 Target: ${path.resolve(projectPath)}\n`);
@@ -120,15 +119,24 @@ class ImportCleaner {
     console.log(`⏱️  Duration: ${Math.round(report.duration / 1000)}s`);
     
     if (report.totalIssuesFound === 0) {
+      console.log('🏆 Your imports are pristine! No dead weight detected (rare sight indeed).');
     } else {
+      console.log(`📦 Found ${report.totalIssuesFound} import debt issues that need elimination.`);
+      
+      if (analysis && analysis.unusedImports) {
+        console.log(`   💀 Unused imports: ${analysis.unusedImports.length}`);
+      }
       
       if (report.mode === 'dry-run') {
+        console.log('🔍 Dry run mode - showing what WOULD be cleaned (remove --dry-run to execute)');
       } else {
+        console.log('🧹 Cleaning up import mess... your bundle size will thank you!');
       }
     }
     
     // Show circular dependencies warning
     if (report.circularDependencies > 0) {
+      console.log(`🔄 WARNING: ${report.circularDependencies} circular dependencies detected! These require manual intervention.`);
     }
     
     if (report.errors.length > 0) {

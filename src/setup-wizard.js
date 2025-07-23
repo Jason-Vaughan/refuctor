@@ -1,6 +1,17 @@
 const fs = require('fs-extra');
 const path = require('path');
-const { execSync } = require('child_process');
+
+// Color utilities for console output
+const colors = {
+  red: (text) => `\x1b[31m${text}\x1b[0m`,
+  green: (text) => `\x1b[32m${text}\x1b[0m`,
+  yellow: (text) => `\x1b[33m${text}\x1b[0m`,
+  blue: (text) => `\x1b[34m${text}\x1b[0m`,
+  magenta: (text) => `\x1b[35m${text}\x1b[0m`,
+  cyan: (text) => `\x1b[36m${text}\x1b[0m`,
+  gray: (text) => `\x1b[90m${text}\x1b[0m`,
+  bold: (text) => `\x1b[1m${text}\x1b[0m`
+};
 const glob = require('glob');
 const moment = require('moment');
 const { techDebtManager } = require('./techdebt-manager');
@@ -230,9 +241,12 @@ class SetupWizard {
         this.setupResults.spellCheckSetup = true;
         this.setupResults.configsGenerated.push('cspell.json');
       } else {
+        console.log(colors.gray('   📝 Spell check setup skipped (cspell.json already exists)'));
       }
       
     } catch (error) {
+      console.error(colors.red(`❌ Spell check setup failed: ${error.message}`));
+      this.setupResults.errors.push(`Spell check setup: ${error.message}`);
     }
   }
 
@@ -257,9 +271,12 @@ class SetupWizard {
         this.setupResults.debtIgnoreCreated = true;
         this.setupResults.configsGenerated.push('.debtignore');
       } else {
+        console.log(colors.gray('   🚫 Debt ignore setup skipped (.debtignore already exists)'));
       }
       
     } catch (error) {
+      console.error(colors.red(`❌ Debt ignore setup failed: ${error.message}`));
+      this.setupResults.errors.push(`Debt ignore setup: ${error.message}`);
     }
   }
 
@@ -275,9 +292,12 @@ class SetupWizard {
         console.log('   💻 IDE integration ready (workspace detected)');
         this.setupResults.workspaceConfigured = true;
       } else {
+        console.log(colors.gray('   💻 IDE integration setup skipped (no workspace file found)'));
       }
       
     } catch (error) {
+      console.error(colors.red(`❌ IDE integration setup failed: ${error.message}`));
+      this.setupResults.errors.push(`IDE integration setup: ${error.message}`);
     }
   }
 
@@ -294,9 +314,12 @@ class SetupWizard {
         
         this.setupResults.techDebtCreated = true;
       } else if (result.exists) {
+        console.log(colors.gray('   📋 Tech debt tracking setup skipped (TECHDEBT.md already exists)'));
       }
       
     } catch (error) {
+      console.error(colors.red(`❌ Tech debt tracking setup failed: ${error.message}`));
+      this.setupResults.errors.push(`Tech debt tracking setup: ${error.message}`);
     }
   }
 
