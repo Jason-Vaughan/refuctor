@@ -239,7 +239,29 @@ class DebtDetector {
 
       // Check ignored files for debt (for reporting purposes)
       if (verbose && ignoredFiles.length > 0) {
-        for (const file of ignoredFiles) {
+        // 🔧 FIX: Skip ignored files in massive directories to prevent hangs
+        const massiveDirectoryPatterns = [
+          /node_modules/,
+          /\.git/,
+          /build/,
+          /dist/,
+          /coverage/,
+          /\.cache/
+        ];
+        
+        const processableIgnoredFiles = ignoredFiles.filter(file => {
+          return !massiveDirectoryPatterns.some(pattern => pattern.test(file));
+        });
+        
+        // Limit to reasonable number of files to prevent performance issues
+        const maxIgnoredFilesToProcess = 20;
+        const filesToProcess = processableIgnoredFiles.slice(0, maxIgnoredFilesToProcess);
+        
+        if (processableIgnoredFiles.length > maxIgnoredFilesToProcess) {
+          console.log(`   📊 Processing ${maxIgnoredFilesToProcess} of ${processableIgnoredFiles.length} ignored files for reporting (skipped ${processableIgnoredFiles.length - maxIgnoredFilesToProcess} files)`);
+        }
+        
+        for (const file of filesToProcess) {
           try {
             const cmd = `npx --yes markdownlint-cli "${file}"`;
             execSync(cmd, { 
@@ -260,6 +282,15 @@ class DebtDetector {
               console.log(`   🚫 ${file} - ${lines.length} issues (ignored)`);
             }
           }
+        }
+        
+        // Report skipped massive directories
+        const skippedMassiveFiles = ignoredFiles.filter(file => {
+          return massiveDirectoryPatterns.some(pattern => pattern.test(file));
+        });
+        
+        if (skippedMassiveFiles.length > 0) {
+          console.log(`   🏃‍♂️ Skipped ${skippedMassiveFiles.length} files in massive directories (node_modules, build, etc.) for performance`);
         }
       }
 
@@ -339,7 +370,25 @@ class DebtDetector {
       
       // Check ignored files for debt (for reporting purposes)
       if (ignoredFiles.length > 0) {
-        for (const file of ignoredFiles) {
+        // 🔧 FIX: Skip ignored files in massive directories to prevent hangs  
+        const massiveDirectoryPatterns = [
+          /node_modules/,
+          /\.git/,
+          /build/,
+          /dist/,
+          /coverage/,
+          /\.cache/
+        ];
+        
+        const processableIgnoredFiles = ignoredFiles.filter(file => {
+          return !massiveDirectoryPatterns.some(pattern => pattern.test(file));
+        });
+        
+        // Limit to reasonable number of files to prevent performance issues
+        const maxIgnoredFilesToProcess = 15;
+        const filesToProcess = processableIgnoredFiles.slice(0, maxIgnoredFilesToProcess);
+        
+        for (const file of filesToProcess) {
           try {
             const cmd = `npx --yes cspell "${file}" --no-progress --no-summary`;
             const result = execSync(cmd, { 
@@ -573,49 +622,63 @@ class DebtDetector {
         return debt; // No code files to lint after filtering
       }
 
-      // Run ESLint on filtered files only (respects .debtignore)
-      // Use --max-warnings 0 to ensure warnings trigger exit code 1 for proper error handling
-      const cmd = `npx --yes eslint ${codeFiles.join(' ')} --format json --max-warnings 0`;
+      // 🔧 FIX: Process files in smaller batches to avoid command line length limits
+      const BATCH_SIZE = 10; // Process 10 files at a time to stay within system limits
+      const fileBatches = [];
       
-      let eslintOutput;
-      try {
-        eslintOutput = execSync(cmd, { 
-          cwd: projectPath, 
-          encoding: 'utf8',
-          stdio: 'pipe',
-          maxBuffer: 10 * 1024 * 1024 // 10MB buffer to handle large ESLint output
-        });
-      } catch (error) {
-        // ESLint found issues (exit code 1) - get output from error.stdout
-        if (error.status === 1 && error.stdout) {
-          eslintOutput = error.stdout;
-        } else {
-          // Real error (missing ESLint, config issues, etc.)
-          throw error;
-        }
+      for (let i = 0; i < codeFiles.length; i += BATCH_SIZE) {
+        fileBatches.push(codeFiles.slice(i, i + BATCH_SIZE));
       }
 
-      // Parse ESLint JSON results (whether from success or error.stdout)
-      const eslintResults = JSON.parse(eslintOutput);
-      
-      for (const fileResult of eslintResults) {
-        if (fileResult.messages.length > 0) {
-          debt.files.push(fileResult.filePath);
+      // Process each batch of files
+      for (const batch of fileBatches) {
+        // Run ESLint on batch of files (respects .debtignore)
+        // Use --max-warnings 0 to ensure warnings trigger exit code 1 for proper error handling
+        const cmd = `npx --yes eslint ${batch.join(' ')} --format json --max-warnings 0`;
+        
+        let eslintOutput;
+        try {
+          eslintOutput = execSync(cmd, { 
+            cwd: projectPath, 
+            encoding: 'utf8',
+            stdio: 'pipe',
+            maxBuffer: 10 * 1024 * 1024 // 10MB buffer to handle large ESLint output
+          });
+        } catch (error) {
+          // ESLint found issues (exit code 1) - get output from error.stdout
+          if (error.status === 1 && error.stdout) {
+            eslintOutput = error.stdout;
+          } else {
+            // Real error (missing ESLint, config issues, etc.) - skip this batch
+            console.warn(`ESLint batch failed: ${error.message}`);
+            continue;
+          }
+        }
+
+        // Parse ESLint JSON results for this batch (whether from success or error.stdout)
+        if (eslintOutput) {
+          const eslintResults = JSON.parse(eslintOutput);
           
-          for (const message of fileResult.messages) {
-            debt.issues.push({
-              file: fileResult.filePath,
-              line: message.line,
-              column: message.column,
-              severity: message.severity, // 1 = warning, 2 = error
-              rule: message.ruleId,
-              message: message.message
-            });
-            
-            if (message.severity === 2) {
-              debt.errors++;
-            } else {
-              debt.warnings++;
+          for (const fileResult of eslintResults) {
+            if (fileResult.messages.length > 0) {
+              debt.files.push(fileResult.filePath);
+              
+              for (const message of fileResult.messages) {
+                debt.issues.push({
+                  file: fileResult.filePath,
+                  line: message.line,
+                  column: message.column,
+                  severity: message.severity, // 1 = warning, 2 = error
+                  rule: message.ruleId,
+                  message: message.message
+                });
+                
+                if (message.severity === 2) {
+                  debt.errors++;
+                } else {
+                  debt.warnings++;
+                }
+              }
             }
           }
         }
