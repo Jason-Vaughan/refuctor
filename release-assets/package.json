@@ -36,13 +36,13 @@
   ],
   "author": "Puberty Labs <dev@pubertylabs.com>",
   "license": "MIT",
-  "homepage": "https://github.com/puberty-labs/refuctor#readme",
+  "homepage": "https://github.com/Jason-Vaughan/refuctor#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/puberty-labs/refuctor.git"
+    "url": "git+https://github.com/Jason-Vaughan/refuctor.git"
   },
   "bugs": {
-    "url": "https://github.com/puberty-labs/refuctor/issues"
+    "url": "https://github.com/Jason-Vaughan/refuctor/issues"
   },
   "engines": {
     "node": ">=18.0.0",
