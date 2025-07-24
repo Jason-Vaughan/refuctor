@@ -3,7 +3,7 @@
 ## ✅ PUBLICATION STATUS
 
 ### 📦 NPM Package: **PUBLISHED** ✅
-- **Package**: `@puberty-labs/refuctor@1.0.2`
+- **Package**: `@puberty-labs/refuctor@1.0.4`
 - **Status**: Live on NPM
 - **Size**: 796.2 kB (30 files)
 - **Installation**: `npm install -g @puberty-labs/refuctor`
@@ -19,7 +19,7 @@
 
 ### 🐙 GitHub Release: **READY FOR CREATION** 🔄
 - **Assets**: All prepared in `release-assets/` directory
-- **Version**: v1.0.2
+- **Version**: v1.0.4
 - **Files**: README, package.json, VSIX, source archive
 - **Next**: Manual GitHub release creation
 

@@ -123,7 +123,7 @@
 ### **✅ COMPLETED PREPARATION:**
 
 - **Dashboard Build**: React build successful, responsive layout working
-- **Logo Configuration**: `https://github.com/Jason-Vaughan/puberty-labs-assets/blob/main/refuctor-logo.png?raw=true`
+- **Logo Configuration**: `https://raw.githubusercontent.com/Jason-Vaughan/puberty-labs-assets/refs/heads/main/refuctor-logo.png`
 - **README.md**: Updated with HTML logo sizing (`width="150" style="max-width: 100%;"`)
 - **Cursor Integration**: Documented MCP integration and extension availability
 - **Package.json**: Logo field added, ready for v1.0.0 publishing

@@ -1,8 +1,7 @@
 # Refuctor - The Debt Cleansing Syndicate
 
 <img
-src="https://github.com/Jason-Vaughan/puberty-labs-assets/blob/main/refuctor-log
-o.png?raw=true" alt="Refuctor Logo" width="150" style="max-width: 100%;">
+src="https://raw.githubusercontent.com/Jason-Vaughan/puberty-labs-assets/refs/heads/main/refuctor-logo.png" alt="Refuctor Logo" width="150" style="max-width: 100%;">
 
 > *"Because even your code deserves a fresh financial start."*
 
