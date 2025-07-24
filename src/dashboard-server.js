@@ -68,6 +68,9 @@ class DashboardServer {
         this.app.delete('/api/debt/ignore', this.handleRemoveIgnorePattern.bind(this));
         this.app.post('/api/debt/ignore/init', this.handleInitIgnoreFile.bind(this));
         
+        // NEW: Uncook the Books API
+        this.app.post('/api/debt/uncook', this.handleUncookBooks.bind(this));
+        
         // Health check
         this.app.get('/api/health', (req, res) => {
             res.json({ 
@@ -262,16 +265,22 @@ class DashboardServer {
                     breakdown: creditScore.breakdown,
                     projectContext: creditScore.projectContext,
                     maturityIndicators: creditScore.projectContext?.maturityIndicators || [],
-                    qualityIndicators: creditScore.projectContext?.qualityIndicators || {},
+                    qualityIndicators: {
+                        documentation: creditScore.projectContext?.qualityIndicators?.documentation || 0,
+                        architecture: creditScore.projectContext?.qualityIndicators?.architecture || 0,
+                        tooling: creditScore.projectContext?.qualityIndicators?.tooling || 0,
+                        testing: creditScore.projectContext?.qualityIndicators?.testing || 0,
+                        cicd: creditScore.projectContext?.qualityIndicators?.cicd || 0
+                    },
                     projectType: creditScore.projectContext?.projectType || 'unknown'
                 },
                 debtCostAnalysis: {
-                    estimatedHours: debtCostAnalysis.estimatedHours,
-                    estimatedCost: debtCostAnalysis.estimatedCost,
-                    compoundedCost: debtCostAnalysis.compoundedCost,
-                    interestAccrued: debtCostAnalysis.interestAccrued,
-                    contextInfo: debtCostAnalysis.contextInfo,
-                    breakdown: debtCostAnalysis.breakdown
+                    estimatedHours: debtCostAnalysis?.estimatedHours || 0,
+                    estimatedCost: debtCostAnalysis?.estimatedCost || 0,
+                    compoundedCost: debtCostAnalysis?.compoundedCost || 0,
+                    interestAccrued: debtCostAnalysis?.interestAccrued || 0,
+                    contextInfo: debtCostAnalysis?.contextInfo || {},
+                    breakdown: debtCostAnalysis?.breakdown || {}
                 },
                 debtStatus: {
                     summary: {
@@ -915,6 +924,58 @@ class DashboardServer {
                 success: false,
                 error: error.message,
                 message: 'Failed to create ignore file'
+            });
+        }
+    }
+
+    async handleUncookBooks(req, res) {
+        try {
+            const { mode = 'chunked', chunkSize = 10, maxChunks = 20, maxFiles = 25 } = req.body;
+            
+            // Emit progress update for real-time UI feedback
+            this.io.emit('uncook-progress', {
+                stage: 'starting',
+                message: '🍳 Starting un-cook operation...',
+                progress: 0
+            });
+            
+            const uncookOptions = {
+                chunkSize: parseInt(chunkSize),
+                maxChunks: parseInt(maxChunks),
+                maxFiles: parseInt(maxFiles)
+            };
+            
+            // Use the correct method name from accountant
+            const uncookResult = await this.accountant.uncookTheBooks(this.projectPath, uncookOptions);
+            
+            // Emit completion update
+            this.io.emit('uncook-progress', {
+                stage: 'complete',
+                message: '🎉 Un-cook operation complete!',
+                progress: 100,
+                result: uncookResult
+            });
+            
+            res.json({
+                success: true,
+                data: uncookResult,
+                message: `🍳 Books un-cooked successfully! Processed ${uncookResult.processed || 0} files in ${uncookResult.mode} mode.`
+            });
+        } catch (error) {
+            console.error('❌ Uncooking books failed:', error.message);
+            
+            // Emit error update
+            this.io.emit('uncook-progress', {
+                stage: 'error',
+                message: `❌ Un-cook failed: ${error.message}`,
+                progress: 0,
+                error: error.message
+            });
+            
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                message: 'Uncooking books failed. The accountant has fled to the Bahamas.'
             });
         }
     }

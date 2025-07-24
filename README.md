@@ -192,20 +192,21 @@ refuctor info
 ### **3. Launch Dashboard (Optional)**
 
 ```bash
-
-# Start real-time dashboard (basic monitoring)
-
+# Start real-time dashboard (opens automatically in browser)
 refuctor serve
 
 # Start without opening browser
-
 refuctor serve --no-browser
 
-# Open http://localhost:1947 for basic debt monitoring
+# Dashboard URL: http://localhost:1947
+# Shows YOUR project's debt data, trends, and hotspots
+```
 
-# Note: Dashboard is functional but still in development
-
-```text
+**Dashboard displays:**
+- 📊 **Live debt breakdown** for your project files
+- 🔥 **Top hotspots** with file-specific debt counts  
+- 📈 **Trend analysis** and debt history tracking
+- 🎯 **Interactive fixes** and priority management
 
 ### **4. Fix Issues**
 
@@ -254,6 +255,124 @@ refuctor cook --format csv
 - 📊 Exports everything to readable markdown with file breakdown
 - 🎯 Shows top problem files and recommended actions
 
+### **🔍 Un-Cook the Books (`refuctor uncook`)**
+
+The opposite of "cooking" - reveals what's really hiding in ignored files:
+
+```bash
+# Process ignored files in manageable chunks
+refuctor uncook
+
+# Customize processing
+refuctor uncook --chunks 5 --max-chunks 10 --max-files 25
+```
+
+**Processing Modes:**
+
+- **📦 Chunked Processing**: Fixed batch sizes (default 10 files/batch)
+- **🤝 Interactive Processing**: User controls each batch with continue/pause/stop
+- **🧠 Smart Prioritization**: AI picks most interesting files (READMEs → package.json → docs)
+
+**What Un-Cook Does:**
+
+- 🔍 Discovers ignored files in node_modules, build/, dist/, .cache/
+- 📊 Processes files in performance-safe chunks with timeout protection
+- 🎯 Finds hidden debt in typically ignored locations
+- 📋 Provides manageable reporting without overwhelming output
+- ⚡ Prevents buffer overflow issues with massive file processing
+
+**Perfect for auditing what's really in your project beyond the main source files.**
+
+### **🎯 Snarky Intelligence (`refuctor snarky-*`)**
+
+Advanced spelling analysis that distinguishes between actual typos and intentional snarky language:
+
+```bash
+# Analyze spelling issues with AI intelligence
+refuctor snarky-scan
+
+# Add legitimate snarky terms to project dictionary
+refuctor snarky-add "refuctor" "puberty-labs" "bitchuation"
+
+# Fix real typos while preserving snarky language
+refuctor snarky-fix
+```
+
+**What Snarky Intelligence Does:**
+- 🧠 AI-powered analysis distinguishes typos from intentional terminology
+- 📝 Automatically adds project-specific terms to dictionary
+- 🎯 Fixes genuine mistakes while preserving brand language
+- 💡 Learns from your project's terminology patterns
+
+### **⚙️ Mode Management (`refuctor mode`)**
+
+Configure debt classification to match your project type and team culture:
+
+```bash
+# Show current mode and available options
+refuctor mode
+
+# Switch to startup mode (high tolerance, fast development)
+refuctor mode startup
+
+# Switch to enterprise mode (strict standards)
+refuctor mode enterprise
+
+# Auto-detect best mode for your project
+refuctor mode auto-detect
+```
+
+**Available Modes:**
+- **🚀 STARTUP**: High tolerance, move fast and break things
+- **👥 DEV_CREW**: Balanced approach for development teams  
+- **🏢 ENTERPRISE**: Strict standards and comprehensive documentation
+- **🎓 LEARNING**: Educational feedback for skill development
+
+### **🎮 Gamification System (`refuctor gamification`)**
+
+Track your debt-elimination progress with achievements and streaks:
+
+```bash
+# View current progress and achievements
+refuctor gamification
+
+# Detailed achievement breakdown
+refuctor gamification --detailed
+
+# Team leaderboard (if available)
+refuctor gamification --leaderboard
+```
+
+### **📦 Dependency Management (`refuctor dependencies`)**
+
+Check for missing dependencies and get installation suggestions:
+
+```bash
+# Check for missing dependencies
+refuctor dependencies
+
+# Get specific installation commands for your project
+refuctor dependencies --install
+```
+
+### **🚫 Ignore Management (`refuctor ignore`)**
+
+Manage `.debtignore` patterns for files you want excluded from debt tracking:
+
+```bash
+# List current ignore patterns
+refuctor ignore list
+
+# Add new ignore pattern
+refuctor ignore add "*.generated.js"
+
+# Remove ignore pattern
+refuctor ignore remove "old-pattern"
+
+# Initialize .debtignore with common patterns
+refuctor ignore init
+```
+
 ---
 
 ## 📋 Available Commands
@@ -266,27 +385,42 @@ refuctor scan            # Scan for technical debt
 refuctor fix             # Auto-fix common issues
 refuctor serve           # Launch real-time dashboard
 refuctor info            # Show project analysis
-refuctor shame           # Generate humorous debt report
+refuctor status          # Show current debt status and trends
 refuctor wrap            # Session wrap protocol
 refuctor cook            # Export VS Code problems
-```text
+refuctor uncook          # Un-cook the books: audit ignored files
+```
+
+### **Advanced Commands**
+
+```bash
+refuctor snarky-scan     # Analyze spelling with snarky intelligence
+refuctor snarky-add      # Add snarky terms to dictionary
+refuctor snarky-fix      # Fix typos while preserving snarky language
+refuctor mode            # Manage debt classification mode
+refuctor ignore          # Manage .debtignore patterns
+refuctor dependencies    # Check missing dependencies
+refuctor mcp-server      # Start MCP server for AI integration
+```
 
 ### **Goon Commands (Specialized Tools)**
 
 ```bash
-refuctor goon fix-markdown     # Fix markdown linting issues
-refuctor goon clean-imports    # Remove unused imports
-refuctor goon comment-killer   # Remove dead comments
-refuctor goon accountant       # Generate credit score report
-refuctor goon fixer           # General purpose fixes
-```text
+refuctor goon            # Deploy all specialized goons
+refuctor accountant      # Developer credit rating (300-850)
+refuctor comment-killer  # Remove dead comments and TODOs  
+refuctor import-cleaner  # Eliminate unused imports
+refuctor exterminate     # AGGRESSIVE: Deploy all goons simultaneously
+refuctor gamification   # Track achievements and progress
+```
 
-### **Easter Eggs**
+### **Fun Commands**
 
 ```bash
-refuctor --bailmeout     # Motivational quotes
-refuctor shame           # Humorous debt shaming
-```text
+refuctor shame           # Generate humorous debt report
+refuctor guido           # Demonstrate MAFIA → Guido escalation
+refuctor bailmeout       # Emergency motivation quotes
+```
 
 ---
 

@@ -59,14 +59,12 @@ class DeadCodeHunter {
     } = options;
     
     if (showProgress) {
-      console.log('🔍 Starting dead code analysis...');
     }
     
     // Phase 1: Build code database
     await this.buildCodeDatabase(projectPath, includeTestFiles);
     
     if (showProgress) {
-      console.log('📊 Analyzing usage patterns...');
     }
     
     // Phase 2: Analyze usage patterns
@@ -76,7 +74,6 @@ class DeadCodeHunter {
     const removalPlan = this.generateRemovalPlan(deadCodeResults, aggressive);
     
     if (showProgress) {
-      console.log(`💀 Found ${removalPlan.totalItems} dead code items`);
     }
     
     let executionResults = null;

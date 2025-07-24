@@ -1427,9 +1427,50 @@ program
   .description(colors.green('🌐 Launch web dashboard for debt monitoring'))
   .option('-p, --port <port>', 'Port to run dashboard on', '1947')
   .option('--no-browser', 'Don\'t automatically open browser')
+  .option('-d, --daemon', 'Run dashboard in background (detached process)')
   .action(async (options) => {
     console.log(colors.bold(colors.green('\n🌐 REFUCTOR WEB DASHBOARD STARTING...')));
     console.log(colors.gray('Preparing debt monitoring interface...\n'));
+    
+    // Handle daemon mode
+    if (options.daemon) {
+      console.log(colors.yellow('🔄 Starting dashboard in background mode...'));
+      
+      const { spawn } = require('child_process');
+      const path = require('path');
+      
+             // Get the path to the standalone dashboard starter
+       const dashboardServerPath = path.join(__dirname, '../src/start-dashboard.js');
+      
+      // Spawn detached process
+      const dashboardProcess = spawn('node', [dashboardServerPath], {
+        detached: true,
+        stdio: 'ignore',
+        env: {
+          ...process.env,
+          REFUCTOR_PORT: options.port,
+          REFUCTOR_PROJECT_PATH: process.cwd(),
+          REFUCTOR_NO_BROWSER: options.browser === false ? 'true' : 'false'
+        }
+      });
+      
+      // Unref so parent can exit
+      dashboardProcess.unref();
+      
+      console.log(colors.bold(colors.cyan('🎉 DASHBOARD STARTED IN BACKGROUND!')));
+      console.log(colors.green(`🌐 URL: http://localhost:${options.port}`));
+      console.log(colors.yellow('📊 Process detached - dashboard running independently'));
+      console.log(colors.gray(`Process PID: ${dashboardProcess.pid}`));
+      console.log(colors.gray('To stop: pkill -f "dashboard-server.js"\n'));
+      
+      if (options.browser !== false) {
+        console.log(colors.blue('🚀 Opening dashboard in your browser...'));
+        const open = await import('open');
+        await open.default(`http://localhost:${options.port}`);
+      }
+      
+      return; // Exit immediately, leaving dashboard running
+    }
     
     try {
       const DashboardServer = require('../src/dashboard-server');

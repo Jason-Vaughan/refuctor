@@ -123,19 +123,16 @@ class ImportCleaner {
     } else {
       
       if (analysis && analysis.unusedImports) {
-        console.log(`   💀 Unused imports: ${analysis.unusedImports.length}`);
       }
       
       if (report.mode === 'dry-run') {
         console.log('🔍 Dry run mode - showing what WOULD be cleaned (remove --dry-run to execute)');
       } else {
-        console.log('🧹 Cleaning up import mess... your bundle size will thank you!');
       }
     }
     
     // Show circular dependencies warning
     if (report.circularDependencies > 0) {
-      console.log(`🔄 WARNING: ${report.circularDependencies} circular dependencies detected! These require manual intervention.`);
     }
     
     if (report.errors.length > 0) {

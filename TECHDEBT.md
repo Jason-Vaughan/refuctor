@@ -12,11 +12,15 @@ priority, and accountability.
 
 ### P1 - Critical (Fix Immediately)
 
-No critical debt items - ready for development!
+No critical debt items - ready for NPM publication! 🚀
 
 ### P2 - High (Fix This Session)
 
-No P2 debt items - files with violations are intentionally debt-ignored.
+**NEXT SESSION PRE-NPM PRIORITIES:**
+- **Quick Scan Implementation**: Add `refuctor scan --quick` for 30-second evaluation
+- **Documentation Enhancement**: Integrate BiTCH feedback for fresh user experience  
+- **Error Handling**: Add troubleshooting section to main README
+- **NPM Publication**: Final package release with all dashboard fixes verified
 
 ### P3 - Medium (Fix Next Session)
 

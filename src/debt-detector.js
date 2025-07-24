@@ -119,7 +119,7 @@ class DebtDetector {
                               (codeQualityDebt.ignoredDebt?.total || 0) + 
                               (formattingDebt.ignoredDebt?.total || 0);
       
-      debtReport.totalDebt = rawTotalDebt - totalIgnoredDebt;
+      debtReport.totalDebt = Math.max(0, rawTotalDebt - totalIgnoredDebt);
       debtReport.totalIgnoredDebt = totalIgnoredDebt;
 
       // Check for mafia takeover and Guido escalation

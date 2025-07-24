@@ -244,6 +244,36 @@ const App = () => {
     }
   };
 
+  const triggerUncook = async (mode = 'chunked') => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch('/api/debt/uncook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          mode: mode,
+          chunkSize: 10,
+          maxChunks: 20,
+          maxFiles: 25
+        })
+      });
+      
+      const data = await response.json();
+      
+      // Refresh data after uncook
+      setTimeout(() => {
+        triggerScan();
+      }, 2000);
+    } catch (error) {
+      console.error('💥 Uncook failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Mode management functions (SSOT)
   const fetchCurrentMode = async () => {
     setLoadingMode(true);
@@ -381,7 +411,8 @@ const App = () => {
     fix: "Automatically fixes safe, low-risk technical debt items that can be resolved without human intervention. This includes spelling corrections, import organization, and basic formatting issues. Perfect for quick wins and instant debt reduction.",
     refinance: "Restructures your technical debt by prioritizing fixes, creating payment schedules, and organizing debt into manageable chunks. This helps you tackle debt systematically rather than being overwhelmed by the total amount.",
     collectors: "Deploys AI-powered assistance to help resolve complex technical debt that requires human judgment. The AI Collection Agency provides intelligent suggestions and automated refactoring for challenging debt items.",
-    bankruptcy: "The nuclear option - performs aggressive debt elimination including major refactoring, dependency updates, and structural changes. Use with caution as this can make significant changes to your codebase. Always backup first!"
+    bankruptcy: "The nuclear option - performs aggressive debt elimination including major refactoring, dependency updates, and structural changes. Use with caution as this can make significant changes to your codebase. Always backup first!",
+    uncook: "Un-cook the books by processing ignored files in manageable chunks. Reveals hidden debt in node_modules, build directories, and other typically ignored locations. Choose from chunked, interactive, or smart processing modes to audit what's really hiding in your ignored files."
   };
 
   if (loading) {
@@ -689,6 +720,20 @@ const App = () => {
               </button>
 
               <button 
+                className="control-button uncook-button"
+                onClick={() => triggerUncook('chunked')}
+                disabled={loading}
+                onMouseEnter={(e) => showTooltip(e, tooltipContent.uncook)}
+                onMouseLeave={hideTooltip}
+              >
+                <div className="button-icon">🍳</div>
+                <div className="button-text">
+                  <div className="button-title">UN-COOK THE BOOKS</div>
+                  <div className="button-subtitle">Audit ignored files</div>
+                </div>
+              </button>
+
+              <button 
                 className="control-button bankruptcy-button"
                 onClick={() => triggerFix('nuclear')}
                 disabled={loading}
@@ -699,6 +744,20 @@ const App = () => {
                 <div className="button-text">
                   <div className="button-title">FILE FOR BANKRUPTCY</div>
                   <div className="button-subtitle">Nuclear option - complete reset</div>
+                </div>
+              </button>
+
+              <button 
+                className="control-button uncook-button"
+                onClick={() => triggerUncook('chunked')}
+                disabled={loading}
+                onMouseEnter={(e) => showTooltip(e, tooltipContent.uncook)}
+                onMouseLeave={hideTooltip}
+              >
+                <div className="button-icon">🍳</div>
+                <div className="button-text">
+                  <div className="button-title">UN-COOK THE BOOKS</div>
+                  <div className="button-subtitle">Audit ignored files</div>
                 </div>
               </button>
             </div>

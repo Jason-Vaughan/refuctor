@@ -285,7 +285,6 @@ class FixLintGoon {
     if (report.totalFixesApplied === 0 && report.totalFilesProcessed > 0) {
       console.log('🏆 Your code is pristine! No lint fixes needed (shocking, really).');
     } else if (report.totalFixesApplied > 0) {
-      console.log(`💰 Cleaned up ${report.totalFixesApplied} lint violations. Your code just got less embarrassing!`);
     }
 
     // Show breakdown by type

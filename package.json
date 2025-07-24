@@ -94,6 +94,7 @@
     "src/",
     "cli/",
     "templates/",
+    "dashboard/build/",
     "README.md",
     "package.json"
   ],

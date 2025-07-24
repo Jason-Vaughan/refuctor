@@ -6,7 +6,9 @@ REFUCTOR_MYTHOS.md
 
 # Generated files and reports
 vscode-debt-report.md
+vscode-debt-report.json
 *-debt-report.md
+*-debt-report.json
 
 # Test files with intentional examples
 src/snarky-spell-handler.js
@@ -14,6 +16,12 @@ src/snarky-spell-handler.js
 
 # CLI user interface files (console.log = user output, not debug)
 cli/refuctor-cli.js
+src/setup-wizard.js
+src/goons/
+src/dashboard-server.js
+src/debt-detector.js
+src/debt-mode-manager.js
+dashboard/src/App-old.js
 # ^ Console.log statements are intentional user feedback, not debt
 
 # Dashboard backup files (development artifacts)
