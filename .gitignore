@@ -314,3 +314,12 @@ local.properties
 .worksheet
 
 # WIP/Brainstorming files are now handled by .debtignore 
+
+# Refuctor Release Assets (Large Files)
+release-assets/*.tar.gz
+release-assets/*.vsix
+extensions/**/*.vsix
+*.vsix
+
+# Large development artifacts
+vscode-debt-report.json 
