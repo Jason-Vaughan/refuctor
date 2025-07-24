@@ -91,9 +91,17 @@ program
     const projectPath = process.cwd();
     console.log(colors.bold(colors.blue('🔍 SCANNING FOR:')));
     
-    // Quick file count analysis
-    const mdFiles = glob.sync('**/*.{md,mdc}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
-    const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
+    // Quick file count analysis with .debtignore respect
+    const { DebtIgnoreParser } = require('../src/debt-ignore-parser');
+    const debtIgnore = new DebtIgnoreParser();
+    await debtIgnore.loadIgnorePatterns(projectPath);
+    
+    // Get all files and filter by .debtignore
+    const allMdFiles = glob.sync('**/*.{md,mdc}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
+    const allCodeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { cwd: projectPath, ignore: ['node_modules/**', '.git/**'] });
+    
+    const mdFiles = allMdFiles.filter(file => !debtIgnore.shouldIgnore(file));
+    const codeFiles = allCodeFiles.filter(file => !debtIgnore.shouldIgnore(file));
     const hasPackageJson = fs.existsSync(path.join(projectPath, 'package.json'));
     
     console.log(colors.cyan(`  📄 Markdown issues (${mdFiles.length} files)`));

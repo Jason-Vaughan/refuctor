@@ -542,26 +542,40 @@ class DebtDetector {
    * Detect ESLint issues (JavaScript/TypeScript code quality)
    */
   async detectESLintDebt(projectPath) {
-    const debt = { total: 0, errors: 0, warnings: 0, issues: [], files: [] };
+    const debt = { total: 0, errors: 0, warnings: 0, issues: [], files: [], ignoredFiles: [], ignoredDebt: { total: 0, files: [] } };
     
     try {
       // Check if ESLint config exists
       const configFiles = ['.eslintrc.js', '.eslintrc.json', '.eslintrc.yml', 'eslint.config.js'];
       const hasConfig = configFiles.some(file => fs.existsSync(path.join(projectPath, file)));
       
-      // Check for JS/TS files (properly exclude ALL node_modules)
-      const codeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { 
+      // Get all JS/TS files with basic ignore only (like other detection methods)
+      const allCodeFiles = glob.sync('**/*.{js,ts,jsx,tsx}', { 
         cwd: projectPath,
-        ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', 'coverage/**']
+        ignore: ['node_modules/**', '.git/**']  // Basic ignore only
       });
       
+      // Separate ignored and non-ignored files (like markdown/spelling detection)
+      const codeFiles = [];
+      const ignoredFiles = [];
+      
+      for (const file of allCodeFiles) {
+        if (this.ignoreParser.shouldIgnore(file)) {
+          ignoredFiles.push(file);
+        } else {
+          codeFiles.push(file);
+        }
+      }
+      
+      debt.ignoredFiles = ignoredFiles;
+      
       if (codeFiles.length === 0) {
-        return debt; // No code files to lint
+        return debt; // No code files to lint after filtering
       }
 
-      // Run ESLint using directory patterns (more efficient than listing thousands of files)
+      // Run ESLint on filtered files only (respects .debtignore)
       // Use --max-warnings 0 to ensure warnings trigger exit code 1 for proper error handling
-      const cmd = `npx --yes eslint "src/**/*.{js,ts,jsx,tsx}" "cli/**/*.{js,ts,jsx,tsx}" --format json --max-warnings 0`;
+      const cmd = `npx --yes eslint ${codeFiles.join(' ')} --format json --max-warnings 0`;
       
       let eslintOutput;
       try {
@@ -696,10 +710,10 @@ class DebtDetector {
     };
     
     try {
-      // Find all code files
+      // Find all code files (properly exclude ALL node_modules)
       const allCodeFiles = glob.sync('**/*.{js,ts,jsx,tsx,vue}', { 
         cwd: projectPath,
-        ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+        ignore: ['**/node_modules/**', '.git/**', 'dist/**', 'build/**', 'coverage/**']
       });
 
       // Separate ignored and non-ignored files (like markdown detection does)
