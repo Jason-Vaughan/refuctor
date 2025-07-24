@@ -3,7 +3,7 @@
   "displayName": "Refuctor - The Debt Collector",
   "description": "Real-time technical debt detection, credit scoring, and automated cleanup for Cursor IDE",
   "version": "1.0.0",
-  "publisher": "puberty-labs",
+  "publisher": "Puberty-Labs",
   "icon": "assets/refuctor-icon.png",
   "repository": {
     "type": "git",
