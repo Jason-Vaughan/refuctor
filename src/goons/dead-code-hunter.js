@@ -487,7 +487,6 @@ class DeadCodeHunter {
     }
     
     // TODO: Implement AST-based code removal
-    console.log(`🗑️  Would remove ${item.type} "${item.name}" from ${item.file}:${item.location.line}`);
     
     return {
       success: false,

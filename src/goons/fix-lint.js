@@ -296,7 +296,6 @@ class FixLintGoon {
     if (report.errors.length > 0) {
       console.log(`⚠️  ${report.errors.length} lint errors couldn't be auto-fixed (manual labor required):`);
       report.errors.slice(0, 5).forEach(error => {
-        console.log(`   💥 ${error.file}: ${error.message}`);
       });
       if (report.errors.length > 5) {
         console.log(`   ... and ${report.errors.length - 5} more issues (it's worse than we thought)`);

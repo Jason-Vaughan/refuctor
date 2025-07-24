@@ -1449,6 +1449,318 @@ class Accountant {
     
     return achievements;
   }
+
+  /**
+   * 🍳 UN-COOK THE BOOKS: Process ignored files in manageable chunks
+   * The opposite of "cooking" - we're being transparent about what's really in there
+   */
+  async uncookTheBooks(projectPath = '.', options = {}) {
+    console.log('🍳 UN-COOKING THE BOOKS');
+    console.log('Time to see what\'s really hiding in those ignored files...\n');
+    
+    // Load ignore patterns and find ignored files
+    const { DebtIgnoreParser } = require('../debt-ignore-parser');
+    const { DebtDetector } = require('../debt-detector');
+    const ignoreParser = new DebtIgnoreParser();
+    await ignoreParser.loadIgnorePatterns(projectPath);
+    
+    // Find all ignored files
+    const allFiles = require('glob').sync('**/*.{md,js,ts,json,txt}', { 
+      cwd: projectPath,
+      ignore: ['.git/**']
+    });
+    
+    const ignoredFiles = allFiles.filter(file => ignoreParser.shouldIgnore(file));
+    const massiveFiles = ignoredFiles.filter(file => 
+      /node_modules|build|dist|coverage|\.cache/.test(file)
+    );
+    
+    console.log(`📊 AUDIT DISCOVERY:`);
+    console.log(`   📁 Total ignored files: ${ignoredFiles.length}`);
+    console.log(`   🏗️  Massive directory files: ${massiveFiles.length}`);
+    console.log(`   📋 Regular ignored files: ${ignoredFiles.length - massiveFiles.length}\n`);
+    
+    if (massiveFiles.length === 0) {
+      console.log('🎉 No massive files to un-cook! Your books are surprisingly clean.');
+      return { processed: 0, issues: [], mode: 'none' };
+    }
+    
+    // Present processing options
+    const mode = await this.promptProcessingMode(massiveFiles.length);
+    
+    switch (mode) {
+      case 'chunked':
+        return await this.processChunked(massiveFiles, projectPath, options);
+      case 'interactive':
+        return await this.processInteractive(massiveFiles, projectPath, options);
+      case 'smart':
+        return await this.processSmart(massiveFiles, projectPath, options);
+      case 'cancel':
+        console.log('🚫 Un-cooking cancelled. The books remain cooked for now.');
+        return { processed: 0, issues: [], mode: 'cancelled' };
+    }
+  }
+
+  /**
+   * Present user with processing mode options
+   */
+  async promptProcessingMode(totalFiles) {
+    console.log('🍳 HOW WOULD YOU LIKE TO UN-COOK THESE BOOKS?');
+    console.log('');
+    console.log('1. 📦 CHUNKED PROCESSING');
+    console.log('   Process files in fixed batches (5-20 at a time)');
+    console.log('   Fast, predictable, no user intervention needed');
+    console.log('');
+    console.log('2. 🤝 INTERACTIVE PROCESSING');
+    console.log('   You control each batch - continue/pause/stop anytime');
+    console.log('   Full control, can review results between chunks');
+    console.log('');
+    console.log('3. 🧠 SMART PRIORITIZATION');
+    console.log('   AI picks the most interesting files first');
+    console.log('   READMEs → package.json → docs → skip junk');
+    console.log('');
+    console.log('4. 🚫 CANCEL');
+    console.log('   Keep the books cooked (skip this operation)');
+    console.log('');
+    
+    // For now, default to chunked since we can't do real prompts
+    // In a real implementation, you'd use inquirer.js or similar
+    console.log('🎯 AUTO-SELECTING: Chunked Processing (10 files/batch)');
+    console.log('   (In production, this would be an interactive prompt)\n');
+    
+    return 'chunked';
+  }
+
+  /**
+   * Mode 1: Chunked Processing - Fixed batch sizes
+   */
+  async processChunked(files, projectPath, options = {}) {
+    const chunkSize = options.chunkSize || 10;
+    const maxChunks = options.maxChunks || Math.ceil(files.length / chunkSize);
+    
+    console.log(`📦 CHUNKED PROCESSING: ${chunkSize} files per batch`);
+    console.log(`🎯 Processing ${Math.min(maxChunks * chunkSize, files.length)} of ${files.length} files\n`);
+    
+    const results = [];
+    const detector = new (require('../debt-detector').DebtDetector)();
+    
+    for (let i = 0; i < maxChunks && i * chunkSize < files.length; i++) {
+      const chunk = files.slice(i * chunkSize, (i + 1) * chunkSize);
+      
+      console.log(`📚 Un-cooking batch ${i + 1}/${maxChunks} (${chunk.length} files)...`);
+      
+      // Process chunk with timeout protection
+      try {
+        const chunkResults = await Promise.race([
+          this.processFileChunk(chunk, projectPath, detector),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Chunk timeout')), 30000)
+          )
+        ]);
+        
+        results.push(...chunkResults);
+        console.log(`   ✅ Batch ${i + 1} complete: ${chunkResults.length} issues found`);
+        
+      } catch (error) {
+        console.log(`   ⚠️  Batch ${i + 1} failed: ${error.message}`);
+      }
+      
+      // Brief pause between chunks
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    return this.summarizeResults(results, 'chunked', files.length);
+  }
+
+  /**
+   * Mode 2: Interactive Processing - User controls each step
+   */
+  async processInteractive(files, projectPath, options = {}) {
+    console.log(`🤝 INTERACTIVE PROCESSING`);
+    console.log(`You'll be prompted before each batch. Press Ctrl+C anytime to stop.\n`);
+    
+    // For demonstration, simulate interactive with auto-continue
+    // In production, this would prompt for real user input
+    const chunkSize = 8;
+    const results = [];
+    const detector = new (require('../debt-detector').DebtDetector)();
+    
+    for (let i = 0; i * chunkSize < files.length; i++) {
+      const chunk = files.slice(i * chunkSize, (i + 1) * chunkSize);
+      
+      console.log(`\n📋 NEXT BATCH: ${chunk.length} files from ${chunk[0]} to ${chunk[chunk.length - 1]}`);
+      console.log(`🎯 Simulating user choice: CONTINUE (in production, you'd choose y/n/q)`);
+      
+      // Process the chunk
+      try {
+        const chunkResults = await this.processFileChunk(chunk, projectPath, detector);
+        results.push(...chunkResults);
+        console.log(`   ✅ Found ${chunkResults.length} issues in this batch`);
+        
+      } catch (error) {
+        console.log(`   ⚠️  Batch failed: ${error.message}`);
+      }
+    }
+    
+    return this.summarizeResults(results, 'interactive', files.length);
+  }
+
+  /**
+   * Mode 3: Smart Prioritization - AI picks interesting files
+   */
+  async processSmart(files, projectPath, options = {}) {
+    console.log(`🧠 SMART PRIORITIZATION`);
+    console.log(`AI is selecting the most interesting files first...\n`);
+    
+    // Prioritize files by interest level
+    const prioritized = this.prioritizeFiles(files);
+    const maxFiles = options.maxFiles || 25; // Process top 25 most interesting
+    
+    console.log(`📊 SMART SELECTION RESULTS:`);
+    console.log(`   🏆 High priority: ${prioritized.high.length} files`);
+    console.log(`   📋 Medium priority: ${prioritized.medium.length} files`);
+    console.log(`   💤 Low priority: ${prioritized.low.length} files (skipped)`);
+    console.log(`   🎯 Processing top ${maxFiles} files\n`);
+    
+    const selectedFiles = [
+      ...prioritized.high,
+      ...prioritized.medium.slice(0, maxFiles - prioritized.high.length)
+    ].slice(0, maxFiles);
+    
+    const results = [];
+    const detector = new (require('../debt-detector').DebtDetector)();
+    
+    // Process in priority order
+    for (const file of selectedFiles) {
+      try {
+        console.log(`🔍 Analyzing: ${file}`);
+        const fileResult = await this.processFileChunk([file], projectPath, detector);
+        results.push(...fileResult);
+        
+      } catch (error) {
+        console.log(`   ⚠️  Failed: ${error.message}`);
+      }
+    }
+    
+    return this.summarizeResults(results, 'smart', files.length, selectedFiles.length);
+  }
+
+  /**
+   * Prioritize files by interest level
+   */
+  prioritizeFiles(files) {
+    const high = [];
+    const medium = [];
+    const low = [];
+    
+    for (const file of files) {
+      const fileName = file.toLowerCase();
+      
+      // High priority: READMEs, package.json, config files
+      if (fileName.includes('readme') || 
+          fileName.includes('package.json') ||
+          fileName.includes('config') ||
+          fileName.includes('license') ||
+          fileName.includes('changelog')) {
+        high.push(file);
+      }
+      // Medium priority: Documentation, TypeScript definitions
+      else if (fileName.includes('.md') || 
+               fileName.includes('.d.ts') ||
+               fileName.includes('doc') ||
+               fileName.includes('guide')) {
+        medium.push(file);
+      }
+      // Low priority: Minified files, generated code, deep dependencies
+      else {
+        low.push(file);
+      }
+    }
+    
+    return { high, medium, low };
+  }
+
+  /**
+   * Process a chunk of files for debt
+   */
+  async processFileChunk(files, projectPath, detector) {
+    const issues = [];
+    
+    for (const file of files) {
+      try {
+        const filePath = require('path').join(projectPath, file);
+        const exists = await require('fs-extra').pathExists(filePath);
+        
+        if (!exists) continue;
+        
+        // Simple debt detection on the file
+        const content = await require('fs-extra').readFile(filePath, 'utf8');
+        const lines = content.split('\n');
+        
+        // Look for common debt patterns
+        lines.forEach((line, index) => {
+          if (line.includes('TODO') || line.includes('FIXME') || line.includes('HACK')) {
+            issues.push({
+              file,
+              line: index + 1,
+              type: 'todo',
+              content: line.trim()
+            });
+          }
+          if (line.includes('console.log') && !line.includes('//')) {
+            issues.push({
+              file,
+              line: index + 1,
+              type: 'console',
+              content: line.trim()
+            });
+          }
+        });
+        
+      } catch (error) {
+        // Skip files that can't be processed
+      }
+    }
+    
+    return issues;
+  }
+
+  /**
+   * Summarize processing results
+   */
+  summarizeResults(results, mode, totalFiles, processedFiles = null) {
+    const processed = processedFiles || results.length;
+    
+    console.log(`\n🍳 UN-COOKING COMPLETE!`);
+    console.log(`📊 FINAL TALLY:`);
+    console.log(`   📁 Files processed: ${processed}/${totalFiles}`);
+    console.log(`   🐛 Issues discovered: ${results.length}`);
+    console.log(`   🎯 Processing mode: ${mode}`);
+    
+    if (results.length > 0) {
+      console.log(`\n🕵️ DISCOVERED ISSUES:`);
+      const byType = results.reduce((acc, issue) => {
+        acc[issue.type] = (acc[issue.type] || 0) + 1;
+        return acc;
+      }, {});
+      
+      Object.entries(byType).forEach(([type, count]) => {
+        console.log(`   ${type}: ${count} issues`);
+      });
+      
+      console.log(`\n💡 The books have been un-cooked! Consider adding these patterns to .debtignore if they're acceptable.`);
+    } else {
+      console.log(`\n🎉 Surprisingly clean! No obvious debt found in ignored files.`);
+    }
+    
+    return {
+      processed,
+      totalFiles,
+      issues: results,
+      mode,
+      summary: `Processed ${processed}/${totalFiles} files, found ${results.length} issues`
+    };
+  }
 }
 
 module.exports = { Accountant }; 

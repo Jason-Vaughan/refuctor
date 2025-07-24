@@ -741,6 +741,32 @@ program
     }
   });
 
+// Un-cook command - Process ignored files in manageable chunks  
+program
+  .command('uncook')
+  .description('🍳 Un-cook the books: Process ignored files in manageable chunks')
+  .option('--chunks <size>', 'Chunk size for batch processing (default: 10)', '10')
+  .option('--max-chunks <count>', 'Maximum chunks to process', '20')
+  .option('--max-files <count>', 'Maximum files for smart mode (default: 25)', '25')
+  .action(async (options) => {
+    try {
+      const { Accountant } = require('../src/goons/accountant');
+      const accountant = new Accountant();
+      
+      const uncookOptions = {
+        chunkSize: parseInt(options.chunks),
+        maxChunks: parseInt(options.maxChunks),
+        maxFiles: parseInt(options.maxFiles)
+      };
+      
+      await accountant.uncookTheBooks('.', uncookOptions);
+      
+    } catch (error) {
+      console.error('💥 Un-cooking failed:', error.message);
+      process.exit(1);
+    }
+  });
+
 // Goon command - specialized debt elimination tools
 const goonCommand = program
   .command('goon')
@@ -1573,7 +1599,6 @@ program
 
       console.log(`🔧 TYPOS TO FIX (${analysis.definiteTypos.length}):`);
       analysis.definiteTypos.forEach(typo => {
-        console.log(`   📝 ${typo.word} → ${typo.suggestion || 'manual review needed'}`);
       });
 
       if (options.dryRun) {

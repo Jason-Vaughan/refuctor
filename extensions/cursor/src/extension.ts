@@ -1,12 +1,10 @@
 import * as vscode from 'vscode';
-import { 
+// Import Refuctor components using local path since NPM package not published yet
+const { 
   DebtDetector, 
-  Accountant, 
-  GamificationSystem, 
-  CommentKiller, 
-  ImportCleaner, 
-  Fixer 
-} from '@puberty-labs/refuctor';
+  gamificationSystem, 
+  GamificationSystem 
+} = require('../../../src/index.js'); // Local path to main project
 
 /**
  * Refuctor Cursor Extension

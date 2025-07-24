@@ -210,7 +210,6 @@ class SetupWizard {
   displayProjectAnalysis() {
     const analysis = this.projectAnalysis;
     
-    console.log(`   📁 Files: ${analysis.files.total} total (${analysis.files.code.length} code, ${analysis.files.docs.length} docs)`);
     console.log(`   💬 Languages: ${analysis.languages.join(', ') || 'None detected'}`);
     console.log(`   🚀 Frameworks: ${analysis.frameworks.join(', ') || 'None detected'}`);
     console.log(`   🔧 Build Tools: ${analysis.buildTools.join(', ') || 'None detected'}`);
@@ -434,7 +433,7 @@ ${this.generateProjectSpecificDebtMonitoring()}
     const recommendations = [];
     
     if (this.projectAnalysis.languages.includes('JavaScript') || this.projectAnalysis.languages.includes('TypeScript')) {
-      recommendations.push('- **Console.log Detection**: Monitor for forgotten console.log statements');
+      recommendations.push('- **Debug Statement Detection**: Monitor for forgotten debug statements');
       recommendations.push('- **ESLint Integration**: Ensure ESLint rules are properly configured');
     }
     

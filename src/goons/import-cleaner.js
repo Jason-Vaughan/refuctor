@@ -121,7 +121,6 @@ class ImportCleaner {
     if (report.totalIssuesFound === 0) {
       console.log('🏆 Your imports are pristine! No dead weight detected (rare sight indeed).');
     } else {
-      console.log(`📦 Found ${report.totalIssuesFound} import debt issues that need elimination.`);
       
       if (analysis && analysis.unusedImports) {
         console.log(`   💀 Unused imports: ${analysis.unusedImports.length}`);

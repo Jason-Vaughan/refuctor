@@ -310,7 +310,7 @@ class Fixer {
     const changes = [];
     
     switch (fixType) {
-      case 'syntax':
+      case 'syntax': {
         // Fix missing semicolons (conservative approach)
         const semicolonFixes = modifiedContent.replace(
           /^(\s*(?:const|let|var|return|throw|break|continue)\s+[^;{}\n]+)(\s*)$/gm,
@@ -324,6 +324,7 @@ class Fixer {
         );
         modifiedContent = semicolonFixes;
         break;
+      }
         
       case 'formatting':
         // Fix trailing commas in objects/arrays
