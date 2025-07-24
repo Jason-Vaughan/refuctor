@@ -1,24 +1,46 @@
 import * as vscode from 'vscode';
-// Import Refuctor components using local path since NPM package not published yet
-const { 
-  DebtDetector, 
-  gamificationSystem, 
-  GamificationSystem 
-} = require('../../../src/index.js'); // Local path to main project
+
+// Use dynamic imports to avoid TypeScript issues
+let DebtDetector: any;
+let GamificationSystem: any;
+let Accountant: any;
+let Fixer: any;
+let CommentKiller: any;
+let ImportCleaner: any;
+
+// Initialize imports
+async function initializeRefuctorImports() {
+  try {
+    const refuctor = require('@puberty-labs/refuctor');
+    DebtDetector = refuctor.DebtDetector;
+    GamificationSystem = refuctor.GamificationSystem;
+    
+    // Import goons
+    Accountant = require('@puberty-labs/refuctor/src/goons/accountant.js').Accountant;
+    Fixer = require('@puberty-labs/refuctor/src/goons/fixer.js').Fixer;
+    CommentKiller = require('@puberty-labs/refuctor/src/goons/comment-killer.js').CommentKiller;
+    ImportCleaner = require('@puberty-labs/refuctor/src/goons/import-cleaner.js').ImportCleaner;
+  } catch (error) {
+    console.error('Failed to load Refuctor modules:', error);
+  }
+}
 
 /**
  * Refuctor Cursor Extension
  * "The Debt Collector" - Comprehensive technical debt management for Cursor IDE
  */
 
-let debtDetector: DebtDetector;
-let accountant: Accountant;
-let gamificationSystem: GamificationSystem;
+let debtDetector: any;
+let accountant: any;
+let gamificationSystem: any;
 let statusBarItems: { debtCount: vscode.StatusBarItem; creditScore: vscode.StatusBarItem };
 let afterDarkClickCount = 0;
 let isAfterDarkMode = false;
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+  
+  // Initialize imports first
+  await initializeRefuctorImports();
   
   // Initialize core components
   initializeRefuctorCore();

@@ -96,6 +96,7 @@
     "templates/",
     "dashboard/build/",
     "README.md",
+    "LICENSE",
     "package.json"
   ],
   "preferGlobal": true,
