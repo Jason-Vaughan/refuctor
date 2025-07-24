@@ -7,7 +7,7 @@
   "icon": "assets/refuctor-icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/puberty-labs/refuctor-cursor-extension.git"
+    "url": "https://github.com/Jason-Vaughan/refuctor.git"
   },
   "engines": {
     "vscode": "^1.74.0"
@@ -313,6 +313,6 @@
     "vsce": "^2.15.0"
   },
   "dependencies": {
-    "@puberty-labs/refuctor": "^1.0.2"
+    "@puberty-labs/refuctor": "^1.0.6"
   }
 } 
