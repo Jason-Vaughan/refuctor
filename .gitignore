@@ -323,3 +323,53 @@ extensions/**/*.vsix
 
 # Large development artifacts
 vscode-debt-report.json 
+
+# ==========================================
+# INTERNAL DEVELOPMENT FILES (NOT FOR PUBLIC)
+# ==========================================
+
+# Internal planning and roadmaps
+REFUCTOR_ROADMAP.md
+MARKETPLACE_PUBLICATION_GUIDE.md
+TRIPLE_PUBLICATION_COMPLETE.md
+
+# Development logs and notes
+IMPLEMENTATION_LOG.md
+MCP_TESTING_LOG.md
+GOON_CASE_STUDY.md
+ORIGINAL_IDEAS.md
+PHASE_4_CONSOLIDATED_PLAN.md
+REFUCTOR_DEPLOYMENT_GUIDE.md
+
+# Testing and troubleshooting docs
+BITCH_COMPLETE_TESTING_INSTRUCTIONS.md
+TROUBLESHOOT_DASHBOARD.md
+quick-dashboard-test.sh
+vscode-debt-report.md
+
+# Development artifacts and mythos
+REFUCTOR_MYTHOS.md
+TECHDEBT_TEMPLATE.md
+cursorrules_template.mdc
+refuctorrulesclone.txt
+
+# Cursor and IDE specific
+CURSOR_MCP_SETUP.md
+cursor-mcp-config.json
+Refuctor.code-workspace
+.cursor/
+
+# Development configurations
+.markdownlint.json
+.eslintrc.json
+
+# Package archives
+*.tgz
+
+# Log files
+*.log
+dashboard.log
+dashboard-server.log
+
+# Release assets directory (keep local only)
+release-assets/ 
