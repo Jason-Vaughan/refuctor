@@ -37,31 +37,20 @@ actually works.
 
 ## 📦 Installation
 
-### **Global Installation (Recommended)**
+### **Install from GitHub**
 
 ```bash
+# Clone the repository
+git clone https://github.com/Jason-Vaughan/refuctor.git
+cd refuctor
+npm install
 
-# Install globally for CLI access
-
-npm install -g @puberty-labs/refuctor
+# Link globally for CLI access
+npm link
 
 # Verify installation
-
 refuctor --version
-```text
-
-### **Local Installation**
-
-```bash
-
-# Install locally in your project
-
-npm install --save-dev @puberty-labs/refuctor
-
-# Use with npx
-
-npx refuctor scan
-```text
+```
 
 ### **Cursor Extension**
 
@@ -291,7 +280,7 @@ Advanced spelling analysis that distinguishes between actual typos and intention
 refuctor snarky-scan
 
 # Add legitimate snarky terms to project dictionary
-refuctor snarky-add "refuctor" "puberty-labs" "bitchuation"
+refuctor snarky-add "refuctor" "bitchuation"
 
 # Fix real typos while preserving snarky language
 refuctor snarky-fix
@@ -531,7 +520,7 @@ refuctor mcp-server
 
 ### **For Individual Developers**
 
-1. **Install globally**: `npm install -g @puberty-labs/refuctor`
+1. **Clone and link**: `git clone https://github.com/Jason-Vaughan/refuctor.git && cd refuctor && npm install && npm link`
 2. **Initialize project**: `refuctor init`
 3. **Scan for debt**: `refuctor scan`
 4. **Launch dashboard**: `refuctor serve`
@@ -539,7 +528,7 @@ refuctor mcp-server
 
 ### **For Teams**
 
-1. **Install in project**: `npm install --save-dev @puberty-labs/refuctor`
+1. **Clone into project**: `git clone https://github.com/Jason-Vaughan/refuctor.git`
 2. **Add to package.json scripts**: `"debt-scan": "refuctor scan"`
 3. **Set up CI integration**: Run `refuctor scan` in build pipeline
 4. **Use dashboard for monitoring**: `refuctor serve` for real-time tracking
@@ -557,9 +546,9 @@ refuctor mcp-server
 
 ### **Issues & Support**
 
-- **Bug Reports**: [GitHub Issues](https://github.com/puberty-labs/refuctor/issues)
-- **Feature Requests**: [GitHub Discussions](https://github.com/puberty-labs/refuctor/discussions)
-- **Documentation**: [GitHub Wiki](https://github.com/puberty-labs/refuctor/wiki)
+- **Bug Reports**: [GitHub Issues](https://github.com/Jason-Vaughan/refuctor/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/Jason-Vaughan/refuctor/discussions)
+- **Documentation**: [GitHub Wiki](https://github.com/Jason-Vaughan/refuctor/wiki)
 
 ---
 

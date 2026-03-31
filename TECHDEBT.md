@@ -441,7 +441,7 @@ technical debt management system with native AI assistant integration via MCP!**
 ### 🚀 **Next Session Opportunities:**
 
 - **Phase 4 Goons Development**: Build specialized debt elimination tools
-- **NPM Distribution**: Package and publish @puberty-labs/refuctor
+- **NPM Distribution**: Package and publish refuctor
 - **IDE Extension Creation**: Build native Cursor/VS Code extensions
 - **Team Collaboration Features**: Multi-user debt coordination
 - **Advanced AI Integration**: Custom refactoring suggestions

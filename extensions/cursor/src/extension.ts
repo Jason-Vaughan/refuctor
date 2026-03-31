@@ -11,15 +11,15 @@ let ImportCleaner: any;
 // Initialize imports
 async function initializeRefuctorImports() {
   try {
-    const refuctor = require('@puberty-labs/refuctor');
+    const refuctor = require('refuctor');
     DebtDetector = refuctor.DebtDetector;
     GamificationSystem = refuctor.GamificationSystem;
     
     // Import goons
-    Accountant = require('@puberty-labs/refuctor/src/goons/accountant.js').Accountant;
-    Fixer = require('@puberty-labs/refuctor/src/goons/fixer.js').Fixer;
-    CommentKiller = require('@puberty-labs/refuctor/src/goons/comment-killer.js').CommentKiller;
-    ImportCleaner = require('@puberty-labs/refuctor/src/goons/import-cleaner.js').ImportCleaner;
+    Accountant = require('refuctor/src/goons/accountant.js').Accountant;
+    Fixer = require('refuctor/src/goons/fixer.js').Fixer;
+    CommentKiller = require('refuctor/src/goons/comment-killer.js').CommentKiller;
+    ImportCleaner = require('refuctor/src/goons/import-cleaner.js').ImportCleaner;
   } catch (error) {
     console.error('Failed to load Refuctor modules:', error);
   }

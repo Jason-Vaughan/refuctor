@@ -1,4 +1,4 @@
-// Main entry point for @puberty-labs/refuctor
+// Main entry point for refuctor
 // Exports core modules for programmatic use
 
 const { DebtDetector } = require('./debt-detector');

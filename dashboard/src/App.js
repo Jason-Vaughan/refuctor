@@ -794,7 +794,7 @@ const App = () => {
             💀 Refactor or Be Repossessed 💀
           </div>
           <div className="footer-info">
-            The Debt Collector © 2024 Puberty Labs
+            The Debt Collector © 2024 Jason Vaughan
           </div>
         </div>
       </footer>
