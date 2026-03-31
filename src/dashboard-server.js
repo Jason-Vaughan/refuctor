@@ -394,7 +394,7 @@ class DashboardServer {
         try {
             const { fixType, targetFile, category, targetFiles } = req.body;
             
-            // Enhanced fix operation handling
+            // REAL FIX IMPLEMENTATION - No more mocks!
             let results;
             
             if (targetFile && category) {
@@ -404,13 +404,13 @@ class DashboardServer {
                 // File-specific fix
                 results = await this.handleFileFix(targetFile, fixType);
             } else {
-                // Global fix (existing functionality)
+                // Global fix - REAL IMPLEMENTATION
                 results = await this.handleGlobalFix(fixType, targetFiles);
             }
             
             // Emit real-time update
             this.io.emit('debt-update', {
-                type: 'fix-started',
+                type: 'fix-complete',
                 data: results,
                 timestamp: new Date().toISOString()
             });
@@ -421,6 +421,13 @@ class DashboardServer {
                 message: `🔧 ${fixType} fix completed: ${results.message}`
             });
         } catch (error) {
+            console.error('❌ Dashboard fix failed:', error.message);
+            this.io.emit('debt-update', {
+                type: 'fix-error', 
+                error: error.message,
+                timestamp: new Date().toISOString()
+            });
+            
             res.status(500).json({
                 success: false,
                 error: error.message,
@@ -430,70 +437,260 @@ class DashboardServer {
     }
 
     async handleFileFix(targetFile, fixType) {
-        // Mock file-specific fix operation
+        // REAL FILE-SPECIFIC FIX using actual goons
+        const path = require('path');
+        const filePath = path.join(this.projectPath, targetFile);
         
-        // Simulate fix time based on file type
-        const fileExt = targetFile.split('.').pop();
-        const fixTime = fileExt === 'md' ? 500 : fileExt === 'js' ? 1000 : 750;
-        
-        await new Promise(resolve => setTimeout(resolve, fixTime));
-        
-        return {
-            targetFile,
-            fixType,
-            fixed: Math.floor(Math.random() * 5) + 1,
-            status: 'completed',
-            message: `File-specific ${fixType} fixes applied to ${targetFile.split('/').pop()}`
-        };
+        try {
+            if (targetFile.endsWith('.md')) {
+                // Use markdown fixer goon
+                const MarkdownFixer = require('./goons/markdown-fixer');
+                const fixer = new MarkdownFixer();
+                const result = await fixer.eliminateDebt(filePath, false);
+                
+                return {
+                    targetFile,
+                    fixType,
+                    fixed: result.fixesApplied || 0,
+                    status: 'completed',
+                    message: result.message || `Markdown fixes applied to ${path.basename(targetFile)}`
+                };
+            } else if (targetFile.match(/\.(js|ts|jsx|tsx)$/)) {
+                // Use JavaScript/TypeScript fixer goon
+                const { Fixer } = require('./goons/fixer');
+                const fixer = new Fixer();
+                const result = await fixer.fixFile(filePath, [], { 
+                    dryRun: false, 
+                    fixTypes: ['syntax', 'formatting', 'console']
+                });
+                
+                return {
+                    targetFile,
+                    fixType,
+                    fixed: result.fixesApplied || 0,
+                    status: 'completed',
+                    message: `Code fixes applied to ${path.basename(targetFile)}`
+                };
+            } else {
+                return {
+                    targetFile,
+                    fixType,
+                    fixed: 0,
+                    status: 'skipped',
+                    message: `No fixer available for ${path.basename(targetFile)}`
+                };
+            }
+        } catch (error) {
+            throw new Error(`Failed to fix ${targetFile}: ${error.message}`);
+        }
     }
 
     async handleCategoryFix(targetFile, category) {
-        // Mock category-specific fix operation
+        // REAL CATEGORY-SPECIFIC FIXES
+        const path = require('path');
+        const filePath = path.join(this.projectPath, targetFile);
         
-        const categoryFixes = {
-            'markdown': { fixed: 3, message: 'Markdown formatting issues resolved' },
-            'spelling': { fixed: 2, message: 'Spelling errors corrected' },
-            'eslint-errors': { fixed: 4, message: 'ESLint errors fixed' },
-            'eslint-warnings': { fixed: 6, message: 'ESLint warnings addressed' },
-            'typescript': { fixed: 2, message: 'TypeScript errors resolved' },
-            'console-logs': { fixed: 3, message: 'Console.log statements cleaned up' },
-            'todos': { fixed: 1, message: 'TODO comments converted to issues' },
-            'formatting': { fixed: 5, message: 'Code formatting standardized' }
-        };
-        
-        const result = categoryFixes[category] || { fixed: 1, message: 'Category fixes applied' };
-        
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        return {
-            targetFile,
-            category,
-            status: 'completed',
-            ...result,
-            message: `${result.message} in ${targetFile.split('/').pop()}`
-        };
+        try {
+            let result = { fixed: 0, message: 'No fixes available' };
+            
+                         switch (category) {
+                 case 'markdown': {
+                     if (targetFile.endsWith('.md')) {
+                         const MarkdownFixer = require('./goons/markdown-fixer');
+                         const fixer = new MarkdownFixer();
+                         const fixResult = await fixer.eliminateDebt(filePath, false);
+                         result = {
+                             fixed: fixResult.fixesApplied || 0,
+                             message: 'Markdown formatting issues resolved'
+                         };
+                     }
+                     break;
+                 }
+                     
+                 case 'console-logs': {
+                     if (targetFile.match(/\.(js|ts|jsx|tsx)$/)) {
+                         const { Fixer } = require('./goons/fixer');
+                         const fixer = new Fixer();
+                         const fixResult = await fixer.fixFile(filePath, [], {
+                             dryRun: false,
+                             fixTypes: ['console']
+                         });
+                         result = {
+                             fixed: fixResult.fixesApplied || 0,
+                             message: 'Console.log statements cleaned up'
+                         };
+                     }
+                     break;
+                 }
+                     
+                 case 'formatting': {
+                     const { Fixer } = require('./goons/fixer');
+                     const fixer = new Fixer();
+                     const fixResult = await fixer.fixFile(filePath, [], {
+                         dryRun: false,
+                         fixTypes: ['formatting', 'syntax']
+                     });
+                     result = {
+                         fixed: fixResult.fixesApplied || 0,
+                         message: 'Code formatting standardized'
+                     };
+                     break;
+                 }
+                     
+                 case 'spelling': {
+                     // Use snarky spell handler for intelligent spelling fixes
+                     const SnarkySpellHandler = require('./snarky-spell-handler');
+                     const spellHandler = new SnarkySpellHandler();
+                     try {
+                         // This would need project-level analysis
+                         result = {
+                             fixed: 0,
+                             message: 'Spelling fixes require project-level analysis'
+                         };
+                     } catch (error) {
+                         result = {
+                             fixed: 0,
+                             message: 'Spelling fix unavailable'
+                         };
+                     }
+                     break;
+                 }
+                     
+                 default:
+                     result = {
+                         fixed: 0,
+                         message: `Category '${category}' fixes not implemented yet`
+                     };
+             }
+            
+            return {
+                targetFile,
+                category,
+                status: 'completed',
+                ...result,
+                message: `${result.message} in ${path.basename(targetFile)}`
+            };
+        } catch (error) {
+            throw new Error(`Failed to fix ${category} in ${targetFile}: ${error.message}`);
+        }
     }
 
     async handleGlobalFix(fixType, targetFiles) {
-        // Mock global fix operation - existing functionality
-        const fixResults = {
-            auto: { fixed: 12, remaining: 48, message: 'Safe fixes applied automatically' },
-            schedule: { scheduled: 25, priority: 'p2', message: 'Debt payment plan created' },
-            'ai-help': { suggestions: 8, automated: 3, message: 'AI assistance provided' },
-            nuclear: { eliminated: 60, warning: 'Nuclear option executed', message: 'Complete debt elimination performed' }
-        };
-        
-        const result = fixResults[fixType] || { message: 'Unknown fix type' };
-        
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        return {
-            fixType,
-            targetFiles,
-            status: 'completed',
-            ...result
-        };
+        // REAL GLOBAL FIXES using actual goons and systems
+        try {
+            let result = { message: 'Unknown fix type' };
+            
+            switch (fixType) {
+                case 'auto': {
+                    // Use The Fixer goon for emergency fixes
+                    const { Fixer } = require('./goons/fixer');
+                    const fixer = new Fixer();
+                    const fixResult = await fixer.emergencyFix(this.projectPath, {
+                        dryRun: false,
+                        fixTypes: ['syntax', 'formatting', 'console']
+                    });
+                    
+                    result = {
+                        fixed: fixResult.fixesApplied || 0,
+                        remaining: 'Will be determined in next scan',
+                        message: 'Safe automated fixes applied',
+                        filesModified: fixResult.filesModified || 0,
+                        buildStatus: fixResult.buildStatus
+                    };
+                    break;
+                }
+                    
+                case 'schedule': {
+                    // Debt payment scheduling - update TECHDEBT.md
+                    const { techDebtManager } = require('./techdebt-manager');
+                    const currentScan = await debtDetector.scanProject(this.projectPath);
+                    const scheduleResult = await techDebtManager.updateDebtFile(
+                        this.projectPath, 
+                        currentScan, 
+                        'Debt payment plan created via dashboard'
+                    );
+                    
+                    result = {
+                        scheduled: currentScan.totalDebt || 0,
+                        priority: currentScan.p1?.length > 0 ? 'p1' : 
+                                 currentScan.p2?.length > 0 ? 'p2' : 'p3',
+                        message: 'Debt payment plan documented in TECHDEBT.md'
+                    };
+                    break;
+                }
+                    
+                case 'ai-help':
+                    // AI assistance - placeholder for future MCP integration
+                    result = {
+                        suggestions: 'AI assistance integration coming soon',
+                        automated: 0,
+                        message: 'AI debt resolution system not yet implemented'
+                    };
+                    break;
+                    
+                case 'nuclear': {
+                    // Nuclear option - aggressive cleanup
+                    const { Fixer } = require('./goons/fixer');
+                    const fixer = new Fixer();
+                    const nuclearFixes = [];
+                    
+                    // 1. Emergency syntax fixes
+                    const emergencyResult = await fixer.emergencyFix(this.projectPath, {
+                        dryRun: false,
+                        fixTypes: ['syntax', 'formatting', 'console', 'imports']
+                    });
+                    nuclearFixes.push(`Emergency: ${emergencyResult.fixesApplied} fixes`);
+                    
+                    // 2. Markdown cleanup
+                    const glob = require('glob');
+                    const MarkdownFixer = require('./goons/markdown-fixer');
+                    const mdFixer = new MarkdownFixer();
+                    
+                    const mdFiles = glob.sync('**/*.{md,mdc}', {
+                        cwd: this.projectPath,
+                        ignore: ['node_modules/**', '.git/**']
+                    });
+                    
+                    let mdFixCount = 0;
+                    for (const mdFile of mdFiles.slice(0, 10)) { // Limit to prevent timeout
+                        try {
+                            const mdResult = await mdFixer.eliminateDebt(
+                                require('path').join(this.projectPath, mdFile), 
+                                false
+                            );
+                            mdFixCount += mdResult.fixesApplied || 0;
+                        } catch (error) {
+                            // Skip problematic files
+                        }
+                    }
+                    nuclearFixes.push(`Markdown: ${mdFixCount} fixes`);
+                    
+                    const totalEliminated = emergencyResult.fixesApplied + mdFixCount;
+                    
+                    result = {
+                        eliminated: totalEliminated,
+                        warning: 'Nuclear option executed - verify changes carefully',
+                        message: `Complete debt elimination: ${nuclearFixes.join(', ')}`,
+                        breakdown: nuclearFixes
+                    };
+                    break;
+                }
+                    
+                default:
+                    throw new Error(`Unknown fix type: ${fixType}`);
+            }
+            
+            return {
+                fixType,
+                targetFiles,
+                status: 'completed',
+                timestamp: new Date().toISOString(),
+                ...result
+            };
+            
+        } catch (error) {
+            throw new Error(`Global fix failed: ${error.message}`);
+        }
     }
 
     async handleProjectInfo(req, res) {

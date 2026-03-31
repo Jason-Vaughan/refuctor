@@ -337,18 +337,57 @@ class Fixer {
         );
         break;
         
-      case 'console':
-        // Remove console statements
-        const consoleBefore = modifiedContent.split('\n').length;
-        modifiedContent = modifiedContent.replace(
-          this.syntaxPatterns.consoleStatements,
-          ''
-        );
-        const consoleAfter = modifiedContent.split('\n').length;
-        if (consoleBefore !== consoleAfter) {
-          changes.push(`Removed ${consoleBefore - consoleAfter} console statements`);
-        }
-        break;
+             case 'console': {
+         // ENHANCED: Use smart console.log detection (same logic as debt-detector)
+         try {
+           const { DebtDetector } = require('../debt-detector');
+           const smartDetector = new DebtDetector();
+           
+           // Parse content into lines for smart analysis
+           const lines = modifiedContent.split('\n');
+        const consolesToRemove = [];
+        
+        lines.forEach((line, index) => {
+          if (line.includes('console.log') || line.includes('console.warn') || line.includes('console.error')) {
+            const consoleStatement = {
+              file: 'current-file',
+              line: index + 1,
+              content: line.trim(),
+              context: this.getLineContext(lines, index, 3)
+            };
+            
+            // Use smart detection to check if this is actually debug code
+            if (smartDetector.isActualDebugStatement(consoleStatement, 'current-file', modifiedContent)) {
+              consolesToRemove.push(index);
+            }
+          }
+        });
+        
+        if (consolesToRemove.length > 0) {
+          // Remove only the debug console statements (working backwards to preserve line numbers)
+          consolesToRemove.reverse().forEach(lineIndex => {
+            lines[lineIndex] = ''; // Replace with empty line to preserve structure
+          });
+          
+          modifiedContent = lines.join('\n');
+          changes.push(`Removed ${consolesToRemove.length} debug console statements (kept legitimate UI output)`);
+                 } else {
+           changes.push('No debug console statements found to remove (legitimate UI output preserved)');
+         }
+         } catch (error) {
+           // Fallback to simple console removal if smart detection fails
+           const consoleBefore = modifiedContent.split('\n').length;
+           modifiedContent = modifiedContent.replace(
+             this.syntaxPatterns.consoleStatements,
+             ''
+           );
+           const consoleAfter = modifiedContent.split('\n').length;
+           if (consoleBefore !== consoleAfter) {
+             changes.push(`Removed ${consoleBefore - consoleAfter} console statements (fallback method)`);
+           }
+         }
+         break;
+       }
         
       case 'quotes':
         // Standardize to double quotes (conservative)
@@ -388,6 +427,20 @@ class Fixer {
       modified: content !== modifiedContent,
       content: modifiedContent,
       changes
+    };
+  }
+
+  /**
+   * Get surrounding lines for context analysis
+   */
+  getLineContext(lines, currentIndex, contextSize = 3) {
+    const start = Math.max(0, currentIndex - contextSize);
+    const end = Math.min(lines.length, currentIndex + contextSize + 1);
+    
+    return {
+      before: lines.slice(start, currentIndex),
+      current: lines[currentIndex],
+      after: lines.slice(currentIndex + 1, end)
     };
   }
 

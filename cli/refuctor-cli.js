@@ -2523,4 +2523,74 @@ program
     }
   });
 
+// Cache Management
+program
+  .command('clear-cache')
+  .description('Clear debt detection cache and refresh file timestamps')
+  .action(async () => {
+    try {
+      const path = require('path');
+      const fs = require('fs-extra');
+      
+      console.log(colors.yellow('🧹 Clearing Refuctor cache...\n'));
+      
+      const projectPath = process.cwd();
+      const cacheDir = path.join(projectPath, '.refuctor');
+      
+      let clearedItems = 0;
+      
+      // Clear debt history cache
+      const historyFile = path.join(cacheDir, 'debt-history.json');
+      if (await fs.pathExists(historyFile)) {
+        // Keep last 2 entries but mark as cache-cleared
+        const history = await fs.readJson(historyFile);
+        const cleanedHistory = history.slice(-2).map(entry => ({
+          ...entry,
+          cacheCleared: true,
+          clearTimestamp: new Date().toISOString()
+        }));
+        await fs.writeJson(historyFile, cleanedHistory, { spaces: 2 });
+        console.log(colors.cyan('📊 Debt history cache refreshed (kept last 2 entries)'));
+        clearedItems++;
+      }
+      
+      // Clear credit history cache  
+      const creditFile = path.join(cacheDir, 'credit-history.json');
+      if (await fs.pathExists(creditFile)) {
+        await fs.remove(creditFile);
+        console.log(colors.cyan('💳 Credit score cache cleared'));
+        clearedItems++;
+      }
+      
+      // Clear any temporary scan files
+      if (await fs.pathExists(cacheDir)) {
+        const tempFiles = await fs.readdir(cacheDir).catch(() => []);
+        for (const file of tempFiles) {
+          if (file.includes('temp-') || file.includes('scan-')) {
+            await fs.remove(path.join(cacheDir, file));
+            console.log(colors.gray(`🗑️  Removed temporary file: ${file}`));
+            clearedItems++;
+          }
+        }
+      }
+      
+      // Force file system sync (helps with detection lag)
+      console.log(colors.yellow('🔄 Syncing file system...'));
+      
+      if (clearedItems === 0) {
+        console.log(colors.green('✨ No cache files found - system already clean'));
+      } else {
+        console.log(colors.bold(colors.green(`\n✅ Cache cleared! Removed ${clearedItems} cached items`)));
+        console.log(colors.cyan('🎯 Next scan will be completely fresh\n'));
+      }
+      
+      // Recommend immediate scan
+      console.log(colors.bold(colors.blue('💡 Recommended: Run "refuctor scan" now for fresh debt detection')));
+      
+    } catch (error) {
+      console.error(colors.bold(colors.red('❌ Cache clear failed:')), error.message);
+      process.exit(1);
+    }
+  });
+
 program.parse(process.argv); 

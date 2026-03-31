@@ -125,6 +125,9 @@ class DebtDetector {
       // Check for mafia takeover and Guido escalation
               await this.checkMafiaStatus(debtReport, projectPath);
         await this.checkForGuidoDeployment(debtReport, projectPath);
+        
+        // NEW: De-escalation logic - clear Guido/Mafia if debt has been significantly reduced
+        await this.checkForDeEscalation(debtReport, projectPath);
 
       // Generate summary
       debtReport.summary = {
@@ -2019,6 +2022,71 @@ class DebtDetector {
     }
     
     return false;
+  }
+
+  /**
+   * Check if debt has been reduced enough to de-escalate Guido/Mafia
+   */
+  async checkForDeEscalation(debtReport, projectPath) {
+    const currentTotalDebt = debtReport.totalDebt;
+    const currentP1Count = debtReport.p1.length;
+    const currentP2Count = debtReport.p2.length;
+    
+    // Load debt history to check previous levels
+    const { DebtHistoryTracker } = require('./debt-history');
+    const historyTracker = new DebtHistoryTracker(projectPath);
+    const recentHistory = await historyTracker.getHistory(5); // Last 5 scans
+    
+    if (recentHistory.length < 2) {
+      return; // Need history to compare
+    }
+    
+    const previousScan = recentHistory[recentHistory.length - 2];
+    const previousTotalDebt = previousScan.summary?.total || 0;
+    const previousP1Count = previousScan.summary?.p1 || 0;
+    
+    // Calculate debt reduction
+    const debtReduction = previousTotalDebt - currentTotalDebt;
+    const debtReductionPercentage = previousTotalDebt > 0 ? 
+      (debtReduction / previousTotalDebt) * 100 : 0;
+    
+    // Clear Guido if significant debt reduction has occurred
+    if (debtReport.guido.length > 0) {
+      // Guido leaves if total debt drops below 50 OR P1 issues are eliminated
+      if (currentTotalDebt < 50 || (currentP1Count === 0 && debtReductionPercentage > 30)) {
+        console.log(`\n🎉 GUIDO DE-ESCALATION: Debt reduced from ${previousTotalDebt} to ${currentTotalDebt}`);
+        console.log(`🚪 Guido says: "Good work. I'm watching, but you're off the hook... for now."`);
+        debtReport.guido = [];
+        debtReport.guidoAppearance = null;
+      }
+    }
+    
+    // Clear Mafia if moderate debt reduction has occurred  
+    if (debtReport.mafia.length > 0) {
+      // Mafia backs off if total debt drops below 100 OR significant reduction
+      if (currentTotalDebt < 100 || debtReductionPercentage > 40) {
+        console.log(`\n💼 MAFIA DE-ESCALATION: Debt reduced from ${previousTotalDebt} to ${currentTotalDebt}`);
+        console.log(`🤝 The Family says: "We appreciate your... cooperation. Keep it clean."`);
+        debtReport.mafia = [];
+        debtReport.mafiaStatus = null;
+      }
+    }
+    
+    // Store de-escalation event in history for tracking
+    if (debtReduction > 0) {
+      const deEscalationNote = {
+        timestamp: new Date().toISOString(),
+        debtReduction,
+        debtReductionPercentage: Math.round(debtReductionPercentage),
+        previousDebt: previousTotalDebt,
+        currentDebt: currentTotalDebt,
+        guidoCleared: debtReport.guido.length === 0 && previousScan.summary?.guido > 0,
+        mafiaCleared: debtReport.mafia.length === 0 && previousScan.summary?.mafia > 0
+      };
+      
+      // Could store this in a separate de-escalation log if needed
+      console.log(`📊 Debt progress: ${debtReduction > 0 ? '⬇️' : '⬆️'} ${Math.abs(debtReduction)} issues (${Math.abs(Math.round(debtReductionPercentage))}%)`);
+    }
   }
 }
 
