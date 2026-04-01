@@ -2,7 +2,7 @@
   "name": "refuctor",
   "version": "1.0.6",
   "description": "AI-powered, snark-fueled technical debt cleansing suite with automatic snarky language detection that turns code cleanup into a darkly humorous financial metaphor.",
-  "logo": "https://raw.githubusercontent.com/Jason-Vaughan/puberty-labs-assets/refs/heads/main/refuctor-logo.png",
+  "logo": "https://raw.githubusercontent.com/Jason-Vaughan/project-assets/refs/heads/main/refuctor-logo.png",
   "main": "src/index.js",
   "bin": {
     "refuctor": "cli/refuctor-cli.js"
